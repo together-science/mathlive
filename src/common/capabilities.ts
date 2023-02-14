@@ -14,6 +14,7 @@ export function throwIfNotInBrowser(): void {
 }
 
 export function isTouchCapable(): boolean {
+  return true;
   if (!isBrowser()) return false;
   if ('matchMedia' in globalThis)
     return globalThis.matchMedia('(any-pointer: coarse)').matches;
