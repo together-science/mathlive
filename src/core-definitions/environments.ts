@@ -1,8 +1,4 @@
-import type {
-  Dimension,
-  Environment,
-  TabularEnvironment,
-} from '../public/core-types';
+import type { Dimension, Environment } from '../public/core-types';
 import type { GlobalContext } from '../core/types';
 
 import { Atom } from '../core/atom-class';
@@ -43,7 +39,7 @@ defineTabularEnvironment(
   '{columns:colspec}',
   (
     context: GlobalContext,
-    name: TabularEnvironment,
+    name: Environment,
     array: Atom[][][],
     rowGaps: Dimension[],
     args
@@ -66,7 +62,7 @@ defineTabularEnvironment(
   '',
   (
     context: GlobalContext,
-    name: TabularEnvironment,
+    name: Environment,
     array: Atom[][][],
     rowGaps: Dimension[]
   ): Atom => {
@@ -360,7 +356,6 @@ export function makeEnvironment(
         arraycolsep: 0,
         columns,
         // colSeparationType: 'align',
-        jot: 0.3,
         minColumns: 2,
       });
     }

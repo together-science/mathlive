@@ -220,6 +220,7 @@ export class VBox extends Box {
       height,
       depth,
       type: options?.type,
+      newList: true,
     });
   }
 }
@@ -360,6 +361,5 @@ export function makeLimitsStack(
       children: [{ box: base }, metrics.bigOpSpacing5],
     }).wrap(context);
   }
-  console.assert(options.type !== undefined);
-  return new Box(result, { type: options.type ?? 'mop' });
+  return new Box(result, { type: options.type ?? 'op' });
 }

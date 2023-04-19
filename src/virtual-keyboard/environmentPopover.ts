@@ -5,7 +5,6 @@ import {
   isCasesEnvironment,
   isMatrixEnvironment,
 } from '../core-definitions/environment-types';
-import { Scrim } from '../editor/scrim';
 import { SelectorPrivate } from '../editor/types';
 import { VirtualKeyboard } from './virtual-keyboard';
 
@@ -187,29 +186,40 @@ export function showEnvironmentPanel(
   arrayAtom: ArrayAtom,
   bounds: DOMRect
 ): void {
-  hideEnvironmentPanel();
+  hideEnvironmentPanel(keyboard);
   const array = (arrayAtom as ArrayAtom).array;
 
   let columnCount = 0;
-  const rowCount = array.length;
   array.forEach((column) => {
     if (!columnCount || column.length > columnCount)
       columnCount = column.length;
   });
+  //@TODO: display current matrix dimensions
 
-  const environmentPanel = document.createElement('div');
+  let environmentPanel;
+  const possiblyExistentPanel = keyboard.container?.querySelector(
+    '.MLK__environment-panel'
+  );
+  if (possiblyExistentPanel) environmentPanel = possiblyExistentPanel;
+  else {
+    environmentPanel = document.createElement('div');
+    keyboard.container
+      ?.querySelector('.ML__keyboard')
+      ?.appendChild(environmentPanel);
+  }
+
   environmentPanel.setAttribute('aria-hidden', 'true');
   environmentPanel.className = 'MLK__environment-panel';
 
-  // console.log(keyboard.container?.querySelector('.ML__keyboard'));
-  if (!Scrim.matrixScrim) Scrim.matrixScrim = new Scrim();
-  Scrim.matrixScrim.open({
-    root: keyboard.container?.querySelector('.ML__keyboard'),
-    child: environmentPanel,
-    zIndex: 3,
-  });
-
-  const flexbox = document.createElement('div');
+  let flexbox;
+  const possiblyExistentFlexbox = environmentPanel.querySelector(
+    '.MLK__environment-controls'
+  );
+  if (possiblyExistentFlexbox) flexbox = possiblyExistentFlexbox;
+  else {
+    flexbox = document.createElement('div');
+    environmentPanel.appendChild(flexbox);
+  }
   flexbox.className = 'MLK__environment-controls';
   flexbox.style.display = 'flex';
   flexbox.style.width = '100%';
@@ -252,15 +262,12 @@ export function showEnvironmentPanel(
 
   delimiterControls.innerHTML = `
   <div class='MLK__array-delimiter-options'>
-    ${activeDelimeter}
-    ${delimiterOptions.join('')}
+  ${activeDelimeter}
+  ${delimiterOptions.join('')}
   </div>`;
 
   // If we're in cases or matrix, show the delimiter controls
   if (activeDelimeter) flexbox.appendChild(delimiterControls);
-
-  environmentPanel.appendChild(flexbox);
-
   const arrayControls = flexbox.querySelectorAll(
     '[data-command]'
   ) as NodeListOf<SVGSVGElement>;
@@ -275,7 +282,7 @@ export function showEnvironmentPanel(
       // just a string command
     }
     control.addEventListener('mousedown', (ev) => ev.preventDefault());
-    command &&
+    if (command)
       control.addEventListener('click', () => keyboard.executeCommand(command));
   });
 
@@ -291,8 +298,10 @@ export function showEnvironmentPanel(
   return;
 }
 
-export function hideEnvironmentPanel(): void {
-  Scrim.matrixScrim?.close();
+export function hideEnvironmentPanel(keyboard: VirtualKeyboard): void {
+  keyboard.container
+    ?.querySelector('.MLK__environment-panel')
+    ?.classList.remove('is-visible');
 }
 
 const normalizedMatrices = [

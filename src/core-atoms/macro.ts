@@ -2,9 +2,11 @@ import { Atom, AtomJson, ToLatexOptions } from '../core/atom-class';
 import { Context } from '../core/context';
 import { Box } from '../core/box';
 import type { GlobalContext } from '../core/types';
+import { latexCommand } from '../core/tokenizer';
+import { Style } from '../public/core-types';
 
 export class MacroAtom extends Atom {
-  readonly macroArgs: string;
+  readonly macroArgs: null | string;
   private readonly expand: boolean;
 
   constructor(
@@ -12,12 +14,13 @@ export class MacroAtom extends Atom {
     context: GlobalContext,
     options: {
       expand?: boolean;
-      args?: string;
+      args: null | string;
       body: Atom[];
       captureSelection?: boolean;
+      style: Style;
     }
   ) {
-    super('macro', context, { command: macro });
+    super('macro', context, { command: macro, style: options.style });
     this.body = options.body;
     // Set the `captureSelection` attribute to true so that the atom is handled
     // as an unbreakable unit
@@ -28,7 +31,7 @@ export class MacroAtom extends Atom {
 
     // Don't use verbatimLatex to save the macro, as it can get wiped when
     // the atom is modified (adding super/subscript, for example).
-    this.macroArgs = options.args ?? '';
+    this.macroArgs = options.args;
 
     this.expand = options.expand ?? false;
   }
@@ -49,7 +52,9 @@ export class MacroAtom extends Atom {
   serialize(options: ToLatexOptions): string {
     return options.expandMacro && this.expand
       ? this.bodyToLatex(options)
-      : this.command + this.macroArgs;
+      : this.macroArgs
+      ? latexCommand(this.command, this.macroArgs)
+      : this.command;
   }
 
   render(context: Context): Box | null {

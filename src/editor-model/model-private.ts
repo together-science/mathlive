@@ -36,6 +36,7 @@ import {
 } from './utils';
 import { compareSelection, range } from './selection-utils';
 import { ArrayAtom } from '../core-atoms/array';
+import { LatexAtom } from 'core-atoms/latex';
 
 export type ModelState = {
   content: AtomJson;
@@ -180,13 +181,17 @@ export class ModelPrivate implements Model {
   }
 
   setPositionHandlingPlaceholder(pos: Offset): void {
-    if (this.at(pos)?.type === 'placeholder') {
+    const atom = this.at(pos);
+    if (atom?.type === 'placeholder') {
       // We're going right of a placeholder: select it
       this.setSelection(pos - 1, pos);
-    } else if (this.at(pos)?.rightSibling?.type === 'placeholder') {
+    } else if (atom?.rightSibling?.type === 'placeholder') {
       // We're going left of a placeholder: select it
       this.setSelection(pos, pos + 1);
     } else this.position = pos;
+
+    if (atom instanceof LatexAtom && atom.isSuggestion)
+      atom.isSuggestion = false;
   }
 
   getState(): ModelState {
@@ -435,11 +440,13 @@ export class ModelPrivate implements Model {
     const format: string = inFormat ?? 'latex';
 
     if (format.startsWith('latex')) {
-      return Mode.serialize([atom], {
-        expandMacro: format === 'latex-expanded',
-        skipStyles: format === 'latex-unstyled',
-        defaultMode: this.mathfield.options.defaultMode,
-      });
+      return joinLatex(
+        Mode.serialize([atom], {
+          expandMacro: format === 'latex-expanded',
+          skipStyles: format === 'latex-unstyled',
+          defaultMode: this.mathfield.options.defaultMode,
+        })
+      );
     }
 
     if (format === 'math-ml') return toMathML(atom);
@@ -553,53 +560,6 @@ export class ModelPrivate implements Model {
   }
 
   /**
-   * Method called in response to a user interaction
-   */
-  extendSelection(direction: 'forward' | 'backward'): boolean {
-    let anchor = this._anchor;
-    // Keep the anchor anchored, move the position forward or back
-    if (direction === 'forward') {
-      let pos = this._position;
-      do {
-        let atom = this.at(pos + 1);
-        if (atom?.inCaptureSelection) {
-          // When going forward, if in a capture selection, jump to
-          // after
-          while (!atom.captureSelection) atom = atom.parent!;
-          pos = this.offsetOf(atom?.lastChild) + 1;
-        } else pos += 1;
-      } while (pos <= this.lastOffset && this.at(pos).isFirstSibling);
-
-      if (pos === anchor - 1 && this.at(anchor).type === 'first') pos = anchor;
-
-      return this.extendSelectionTo(anchor, pos);
-    }
-
-    //
-    // Extending backward
-    //
-    let pos = this._position - 1;
-
-    if (pos < 0) return false;
-
-    while (pos >= 0 && this.at(pos).isLastSibling) {
-      let atom = this.at(pos);
-      if (atom?.inCaptureSelection) {
-        // When going backward, if in a capture selection, jump to
-        // before
-        while (!atom.captureSelection) atom = atom.parent!;
-        pos = this.offsetOf(atom.firstChild) - 1;
-      } else pos -= 1;
-    }
-
-    if (pos < 0) pos = 0;
-
-    if (pos === anchor + 1 && this.at(pos).type === 'first') anchor = pos;
-
-    return this.extendSelectionTo(anchor, pos);
-  }
-
-  /**
    * Unlike `setSelection`, this method is intended to be used in response
    * to a user action, and it performs various adjustments to result
    * in a more intuitive selection.
@@ -619,7 +579,7 @@ export class ModelPrivate implements Model {
       // Include the parent if all the children are selected
       let { parent } = this.at(end);
       if (parent) {
-        if (parent.type === 'genfrac' || parent.type === 'msubsup') {
+        if (parent.type === 'genfrac' || parent.type === 'subsup') {
           while (
             parent !== this.root &&
             childrenInRange(this, parent!, [start, end])

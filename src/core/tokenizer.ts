@@ -184,7 +184,7 @@ class Tokenizer {
 // (the 'gullet')
 function expand(
   lex: Tokenizer,
-  args: null | ((arg: string) => string)
+  args: null | ((arg: string) => string | undefined)
 ): Token[] {
   const result: Token[] = [];
   let token = lex.next();
@@ -286,7 +286,7 @@ function expand(
  */
 export function tokenize(
   s: string,
-  args: null | ((arg: string) => string) = null
+  args: null | ((arg: string) => string | undefined) = null
 ): Token[] {
   // Merge multiple lines into one, and remove comments
   const stream: string[] = [];
@@ -315,13 +315,16 @@ export function joinLatex(segments: string[]): string {
     if (segment) {
       // If the segment begins with a char that *could* be in a command
       // name... insert a separator (if one was needed for the previous segment)
-      if (/[a-zA-Z\*]/.test(segment[0])) result.push(sep);
+      if (sep && /^[a-zA-Z\*]/.test(segment)) result.push(sep);
 
       result.push(segment);
 
-      if (/\\[a-zA-Z]+\*?[\"\'][^\ ]+$/.test(segment)) result.push(' ');
+      // If the segment is a command with an unbraced argument using a hex
+      // number, add a separator now.
+      if (/^\\[a-zA-Z]+\*?[\"\'][^\ ]+$/.test(segment)) result.push(' ');
 
-      // If the segment ends in a command...
+      // If the segment ends in a command, we may need a separator for
+      // the next segment
       sep = /\\[a-zA-Z]+\*?$/.test(segment) ? ' ' : '';
     }
   }
@@ -329,18 +332,34 @@ export function joinLatex(segments: string[]): string {
   return result.join('');
 }
 
+/**
+ * Return a LaTeX fragment given a command and its arguments.
+ * Note that `command` may include optional arguments, e.g. `\\bbox[red]`
+ */
+export function latexCommand(command: string, ...args: string[]): string {
+  console.assert(command.startsWith('\\'));
+
+  if (args.length === 0) return command;
+
+  // While TeX (Knuth) tends to minimize the use of braces, e.g. prefering
+  // `\frac xy` over `\frac{x}{y}` we are implementing the more conservative
+  // LaTeX convention that use braces by default.
+  // See a discussion on this topic here: https://tex.stackexchange.com/questions/82329/how-bad-for-tex-is-omitting-braces-even-if-the-result-is-the-same
+
+  return joinLatex([command, ...args.map((x) => `{${x}}`)]);
+}
+
 export function tokensToString(tokens: Token[]): string {
   return joinLatex(
-    tokens.map((token) => {
-      return (
-        {
+    tokens.map(
+      (token) =>
+        ({
           '<space>': ' ',
           '<$$>': '$$',
           '<$>': '$',
           '<{>': '{',
           '<}>': '}',
-        }[token] ?? token
-      );
-    })
+        }[token] ?? token)
+    )
   );
 }

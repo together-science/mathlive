@@ -6,10 +6,38 @@ import { Context } from './context';
 import { highlight } from './color';
 import { BoxCSSProperties, ParseMode } from '../public/core-types';
 import { Mode } from './modes-utils';
-import { BOX_TYPE, BoxInterface, BoxOptions, BoxType } from './types';
+import { BoxInterface, BoxOptions, BoxType } from './types';
+import { Atom, AtomType } from './atom-class';
 
-export function isBoxType(type: string): type is BoxType {
-  return (BOX_TYPE as unknown as string[]).includes(type);
+export function boxType(type: AtomType): BoxType | undefined {
+  const result = {
+    chem: 'chem',
+    mord: 'ord',
+    mbin: 'bin',
+    mop: 'op',
+    mrel: 'rel',
+    mopen: 'open',
+    mclose: 'close',
+    mpunct: 'punct',
+    minner: 'inner',
+    spacing: 'spacing',
+    first: 'first',
+    latex: 'latex',
+    composition: 'composition',
+    error: 'error',
+    placeholder: 'placeholder',
+    supsub: 'supsub',
+  }[type];
+
+  return result;
+}
+
+export function atomsBoxType(atoms: Atom[]): BoxType {
+  if (atoms.length === 0) return 'ord';
+  const first = boxType(atoms[0].type);
+  const last = boxType(atoms[atoms.length - 1].type);
+  if (first && first === last) return first;
+  return 'ord';
 }
 
 /*
@@ -18,19 +46,21 @@ export function isBoxType(type: string): type is BoxType {
  */
 
 /**
- * TeXBook, p. 170
  *
- * > In fact, TEX’s rules for spacing in formulas are fairly simple. A formula is
- * > converted to a math list as described at the end of Chapter 17, and the math
- * > list consists chiefly of “atoms” of eight basic types: Ord (ordinary),
- * > Op (large operator), Bin (binary operation), Rel (relation), Open (opening),
- * > Close (closing), Punct (punctuation), and Inner (a delimited subformula).
+ *
+ * > In fact, TEX’s rules for spacing in formulas are fairly simple. A
+ * > formula is converted to a math list as described at the end of Chapter 17,
+ * > and the math list consists chiefly of “atoms” of eight basic types:
+ * > Ord (ordinary), Op (large operator), Bin (binary operation),
+ * > Rel (relation), Open (opening), Close (closing), Punct (punctuation),
+ * > and Inner (a delimited subformula).
  * > Other kinds of atoms, which arise from commands like \overline or
  * > \mathaccent or \vcenter, etc., are all treated as type Ord; fractions are
  * > treated as type Inner.
  *
- * > The following table is used to determine the spacing between pair of adjacent
- * > atoms.
+ * > The following table is used to determine the spacing between pair of
+ * > adjacent atoms.
+ *                                                          -- TeXBook, p. 170
  *
  * In this table
  * - "3" = `\thinmuskip`
@@ -39,25 +69,25 @@ export function isBoxType(type: string): type is BoxType {
  *
  */
 
-const INTER_ATOM_SPACING = {
-  mord: { mop: 3, mbin: 4, mrel: 5, minner: 3 },
-  mop: { mord: 3, mop: 3, rel: 5, minner: 3 },
-  mbin: { mord: 4, mop: 4, mopen: 4, minner: 4 },
-  mrel: { mord: 5, mop: 5, mopen: 5, minner: 5 },
-  mclose: { mop: 3, mbin: 4, mrel: 5, minner: 3 },
-  mpunct: { mord: 3, mop: 3, mrel: 3, mopen: 3, mpunct: 3, minner: 3 },
-  minner: { mord: 3, mop: 3, mbin: 4, mrel: 5, mopen: 3, mpunct: 3, minner: 3 },
+const INTER_BOX_SPACING = {
+  ord: { op: 3, bin: 4, rel: 5, inner: 3 },
+  op: { ord: 3, op: 3, rel: 5, inner: 3 },
+  bin: { ord: 4, op: 4, open: 4, inner: 4 },
+  rel: { ord: 5, op: 5, open: 5, inner: 5 },
+  close: { op: 3, bin: 4, rel: 5, inner: 3 },
+  punct: { ord: 3, op: 3, rel: 3, open: 3, punct: 3, inner: 3 },
+  inner: { ord: 3, op: 3, bin: 4, rel: 5, open: 3, punct: 3, inner: 3 },
 };
 
 /**
  * This table is used when the mathstyle is 'tight' (scriptstyle or
  * scriptscriptstyle).
  */
-const INTER_ATOM_TIGHT_SPACING = {
-  mord: { mop: 3 },
-  mop: { mord: 3, mop: 3 },
-  mclose: { mop: 3 },
-  minner: { mop: 3 },
+const INTER_BOX_TIGHT_SPACING = {
+  ord: { op: 3 },
+  op: { ord: 3, op: 3 },
+  close: { op: 3 },
+  inner: { op: 3 },
 };
 
 /**
@@ -113,9 +143,9 @@ export class Box implements BoxInterface {
   children?: Box[];
   // If true, this atom (and its children) should be considered as part of
   // a 'new list', in the TeX sense. That happens when a new branch
-  // (superscript, etc...) is begun. This is important to correctly adjust
+  // (superscript, etc...) begins. This is important to correctly adjust
   // the 'type' of boxes, and calculate their interspacing correctly.
-  newList: boolean;
+  break: boolean;
   value: string;
 
   classes: string;
@@ -141,8 +171,6 @@ export class Box implements BoxInterface {
   svgOverlay?: string;
   svgStyle?: string;
 
-  delim?: string; // @revisit
-
   attributes?: Record<string, string>; // HTML attributes, for example 'data-atom-id'
 
   cssProperties: Partial<Record<BoxCSSProperties, string>>;
@@ -160,7 +188,7 @@ export class Box implements BoxInterface {
     this.type = options?.type ?? '';
     this.isSelected = false;
     this.isTight = options?.isTight ?? false;
-    this.newList = options?.newList ?? false;
+    this.break = options?.newList ?? false;
 
     // CSS style, as a set of key value pairs.
     // Use `Box.setStyle()` to modify it.
@@ -366,7 +394,7 @@ export class Box implements BoxInterface {
     context: Context,
     options?: {
       classes: string;
-      type: '' | 'mopen' | 'mclose' | 'minner';
+      type: '' | 'open' | 'close' | 'inner';
     }
   ): Box {
     const parent = context.parent;
@@ -428,26 +456,6 @@ export class Box implements BoxInterface {
       result.italic *= factor;
       result.skew *= factor;
     }
-    return result;
-  }
-
-  /** If necessary, wrap this box in another that accounts for
-   * selected backgroundColor
-   */
-  wrapSelect(context: Context): Box {
-    if (!this.isSelected) return this;
-
-    const parent = context.parent;
-
-    // If we're at the root, nothing to do
-    if (!parent) return this;
-
-    const newBackgroundColor = highlight(context.computedBackgroundColor);
-
-    const result = makeStruts(this);
-    result.selected(true);
-    result.setStyle('background-color', newBackgroundColor);
-    result.setStyle('display', 'inline-block');
     return result;
   }
 
@@ -609,7 +617,7 @@ export class Box implements BoxInterface {
     // Only coalesce some types
     if (
       !/ML__text/.test(this.classes) &&
-      !['mord', 'mbin', 'mrel'].includes(this.type)
+      !['ord', 'bin', 'rel'].includes(this.type)
     )
       return false;
 
@@ -701,27 +709,28 @@ export function coalesce(box: Box): Box {
  */
 function adjustType(root: Box | null): void {
   forEachBox(root, (prevBox: Box, box: Box) => {
-    // TexBook p. 442:
-    // > 5. If the current item is a Bin atom, and if this was the first atom in the
-    // >   list, or if the most recent previous atom was Bin, Op, Rel, Open, or
-    // >   Punct, change the current Bin to Ord and continue with Rule 14.
+    // > 5. If the current item is a Bin atom, and if this was the first atom
+    // >   in the list, or if the most recent previous atom was Bin, Op, Rel,
+    // >   Open, or Punct, change the current Bin to Ord and continue with
+    // >   Rule 14.
     // >   Otherwise continue with Rule 17.
+    //                                                    -- TexBook p. 442
 
     if (
-      box.type === 'mbin' &&
-      (!prevBox || /first|none|mbin|mop|mrel|mopen|mpunct/.test(prevBox.type))
+      box.type === 'bin' &&
+      (!prevBox || /^(first|none|bin|op|rel|open|punct)$/.test(prevBox.type))
     )
-      box.type = 'mord';
+      box.type = 'ord';
 
     // > 6. If the current item is a Rel or Close or Punct atom, and if the most
     // >   recent previous atom was Bin, change that previous Bin to Ord. Continue
     // >   with Rule 17.
     if (
       prevBox &&
-      prevBox.type === 'mbin' &&
-      /mrel|mclose|mpunct|placeholder/.test(box.type)
+      prevBox.type === 'bin' &&
+      /^(rel|close|punct|placeholder)$/.test(box.type)
     )
-      prevBox.type = 'mord';
+      prevBox.type = 'ord';
   });
 }
 
@@ -729,16 +738,22 @@ function adjustType(root: Box | null): void {
 // Adjust the atom(/box) types according to the TeX rules
 //
 function applyInterAtomSpacing(root: Box | null, context: Context): void {
-  forEachBox(root, (prevBox: Box, box: Box) => {
-    const prevType: BoxType = prevBox?.type ?? 'none';
+  const thin = context.getRegisterAsEm('thinmuskip');
+  const med = context.getRegisterAsEm('medmuskip');
+  const thick = context.getRegisterAsEm('thickmuskip');
+
+  forEachBox(root, (prevBox, box) => {
+    if (!prevBox?.type) return;
+    // console.log(prevBox?.value, prevBox?.type, box.value, box.type);
+    const prevType = prevBox.type;
     const table = box.isTight
-      ? INTER_ATOM_TIGHT_SPACING[prevType] ?? null
-      : INTER_ATOM_SPACING[prevType] ?? null;
+      ? INTER_BOX_TIGHT_SPACING[prevType] ?? null
+      : INTER_BOX_SPACING[prevType] ?? null;
     const hskip = table?.[box.type] ?? 'none';
     if (hskip !== 'none') {
-      if (hskip === 3) box.left += context.getRegisterAsEm('thinmuskip');
-      if (hskip === 4) box.left += context.getRegisterAsEm('medmuskip');
-      if (hskip === 5) box.left += context.getRegisterAsEm('thickmuskip');
+      if (hskip === 3) box.left += thin;
+      if (hskip === 4) box.left += med;
+      if (hskip === 5) box.left += thick;
     }
   });
 }
@@ -757,37 +772,37 @@ function forEachBoxRecursive(
   prevBox: Box | null,
   box: Box,
   f: (prevBox: Box | null, curBox: Box) => void
-): Box | null {
+): Box | undefined | null {
   // The TeX algorithms scan each elements, and consider them to be part
-  // of the same list of atoms, until they reach some branch points (superscript,
-  // numerator,etc..). The boxes that indicate the start of a new list have
-  // the `newList` property set.
-  if (box.newList) prevBox = null;
+  // of the same list of atoms, until they reach some branch points
+  // (superscript, numerator,etc..). The boxes that indicate the start of a
+  // new list have the `break` property set.
+  if (box.break) prevBox = null;
+
+  // Ignore empty boxes, i.e. {}
+  if (box.children?.length === 1 && box.children[0].type === 'first')
+    return undefined;
+
   const type = box.type;
+  const skipBox =
+    type === 'none' ||
+    type === 'first' ||
+    type === 'spacing' ||
+    type === undefined ||
+    type.length === 0;
 
-  if (type === 'first') {
-    console.assert(box.newList === true);
-    return null;
+  if (!skipBox) f(prevBox, box);
+
+  if (!box.children) return skipBox ? undefined : box;
+
+  let childPrev: Box | null = prevBox;
+
+  for (const child of box.children) {
+    const nextChild = forEachBoxRecursive(childPrev, child, f);
+    if (nextChild !== undefined) childPrev = nextChild;
   }
 
-  // Skip over first and spacing atoms
-  if (type === 'spacing') return prevBox;
-
-  f(prevBox, box);
-
-  if (box.children) {
-    let childPrev: Box | null = null;
-    if (type === undefined || type.length === 0) childPrev = prevBox;
-
-    for (const child of box.children)
-      childPrev = forEachBoxRecursive(childPrev, child, f);
-
-    if (type === undefined || type.length === 0) prevBox = childPrev;
-  }
-
-  if (type !== 'supsub' && type !== undefined && type.length > 0) prevBox = box;
-
-  return prevBox;
+  return childPrev;
 }
 
 function forEachBox(box: Box | null, f: (prevBox: Box, curBox: Box) => void) {

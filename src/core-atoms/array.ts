@@ -22,6 +22,7 @@ import { AXIS_HEIGHT, BASELINE_SKIP } from '../core/font-metrics';
 import { convertDimensionToEm } from '../core/registers-utils';
 
 import { PlaceholderAtom } from './placeholder';
+import { isMatrixEnvironment } from '../core-definitions/environment-types';
 
 export type ColumnFormat =
   | {
@@ -55,9 +56,6 @@ export type ArrayAtomConstructorOptions = {
   colSeparationType?: ColSeparationType;
   leftDelim?: string;
   rightDelim?: string;
-  // Jot is an extra gap between lines of numbered equation.
-  // It's 3pt by default in LaTeX (ltmath.dtx:181)
-  jot?: number;
   // A multiplication factor applied to the spacing between rows and columns
   arraystretch?: number;
   arraycolsep?: number;
@@ -213,7 +211,6 @@ export class ArrayAtom extends Atom {
   arraystretch?: number;
   arraycolsep?: number;
   colSeparationType?: ColSeparationType;
-  jot?: number;
   leftDelim?: string;
   rightDelim?: string;
   mathstyleName?: MathstyleName;
@@ -256,11 +253,12 @@ export class ArrayAtom extends Atom {
     // console.log(arrayToString(this.array));
     if (options.leftDelim) this.leftDelim = options.leftDelim;
     if (options.rightDelim) this.rightDelim = options.rightDelim;
-    if (options.jot !== undefined) this.jot = options.jot;
-    if (options.arraycolsep) this.arraycolsep = options.arraycolsep;
+    if (options.arraycolsep !== undefined)
+      this.arraycolsep = options.arraycolsep;
     this.colSeparationType = options.colSeparationType;
     // Default \arraystretch from lttab.dtx
-    this.arraystretch = options.arraystretch ?? 1.0;
+    if (options.arraystretch !== undefined)
+      this.arraystretch = options.arraystretch;
     this.minColumns = options.minColumns ?? 1;
   }
 
@@ -286,11 +284,11 @@ export class ArrayAtom extends Atom {
       colSeparationType: this.colSeparationType,
     };
 
-    if (this.arraystretch !== 1.0) result.arraystretch = this.arraystretch;
-    if (this.arraycolsep) result.arraycolsep = this.arraycolsep;
+    if (this.arraystretch !== undefined)
+      result.arraystretch = this.arraystretch;
+    if (this.arraycolsep !== undefined) result.arraycolsep = this.arraycolsep;
     if (this.leftDelim) result.leftDelim = this.leftDelim;
     if (this.rightDelim) result.rightDelim = this.rightDelim;
-    if (this.jot !== undefined) result.jot = this.jot;
 
     return result;
   }
@@ -364,7 +362,10 @@ export class ArrayAtom extends Atom {
     const doubleRuleSep = innerContext.getRegisterAsEm('doublerulesep');
 
     // Row spacing
-    const arraystretch = this.arraystretch ?? 1.0;
+    const arraystretch =
+      this.arraystretch ??
+      innerContext.getRegisterAsNumber('arraystretch') ??
+      1.0;
     let arraycolsep =
       typeof this.arraycolsep === 'number' ? this.arraycolsep : arrayColSep;
     if (this.colSeparationType === 'small') {
@@ -416,7 +417,16 @@ export class ArrayAtom extends Atom {
         gap = 0;
       }
 
-      if (this.jot !== undefined) depth += this.jot;
+      // If not last row, add 'jot' of depth
+      // This does not apply to matrix environments, and cases.
+      // It *does* appear to apply to `dcases` and `rcases` environments
+      if (
+        r < nr - 1 &&
+        !isMatrixEnvironment(this.environmentName) &&
+        this.environmentName !== 'cases' &&
+        this.environmentName !== 'array'
+      )
+        depth += innerContext.getRegisterAsEm('jot');
 
       outrow.height = height;
       outrow.depth = depth;
@@ -558,7 +568,7 @@ export class ArrayAtom extends Atom {
           this.bind(
             context,
             makeLeftRightDelim(
-              'mopen',
+              'open',
               this.leftDelim ?? '.',
               innerHeight,
               innerDepth,
@@ -569,7 +579,7 @@ export class ArrayAtom extends Atom {
           this.bind(
             context,
             makeLeftRightDelim(
-              'mclose',
+              'close',
               this.rightDelim ?? '.',
               innerHeight,
               innerDepth,
@@ -577,7 +587,7 @@ export class ArrayAtom extends Atom {
             )
           ),
         ],
-        { type: 'mord' }
+        { type: 'ord' }
       )
     );
     if (!result) return null;
@@ -587,38 +597,41 @@ export class ArrayAtom extends Atom {
   }
 
   serialize(options: ToLatexOptions): string {
-    let result = '\\begin{' + this.environmentName + '}';
+    const result = [`\\begin{${this.environmentName}}`];
     if (this.environmentName === 'array') {
-      result += '{';
+      result.push('{');
       if (this.colFormat !== undefined) {
         for (const format of this.colFormat) {
-          if ('align' in format) result += format.align;
+          if ('align' in format && typeof format.align === 'string')
+            result.push(format.align);
           else if ('separator' in format && format.separator === 'solid')
-            result += '|';
+            result.push('|');
           else if ('separator' in format && format.separator === 'dashed')
-            result += ':';
+            result.push(':');
         }
       }
 
-      result += '}';
+      result.push('}');
     }
 
     for (let row = 0; row < this.array.length; row++) {
       for (let col = 0; col < this.array[row].length; col++) {
-        if (col > 0) result += ' & ';
-        result = joinLatex([
-          result,
-          Atom.serialize(this.array[row][col], options),
-        ]);
+        if (col > 0) result.push(' & ');
+        result.push(Atom.serialize(this.array[row][col], options));
       }
 
       // Adds a separator between rows (but not after the last row)
-      if (row < this.array.length - 1) result += ' \\\\ ';
+      if (row < this.array.length - 1) {
+        const gap = this.rowGaps[row];
+        if (gap?.dimension)
+          result.push(`\\\\[${gap.dimension} ${gap.unit ?? 'pt'}] `);
+        else result.push('\\\\ ');
+      }
     }
 
-    result += '\\end{' + this.environmentName + '}';
+    result.push(`\\end{${this.environmentName}}`);
 
-    return result;
+    return joinLatex(result);
   }
 
   getCell(row: number, col: number): Atom[] | undefined {

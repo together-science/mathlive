@@ -54,7 +54,8 @@ export class LineAtom extends Atom {
     if (this.caret) stack.caret = this.caret;
     return new Box(stack, {
       classes: this.position,
-      type: 'mord',
+      type: 'ord',
+      newList: true,
     });
   }
 }
