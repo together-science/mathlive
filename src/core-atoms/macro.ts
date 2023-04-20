@@ -2,7 +2,6 @@ import { Atom, AtomJson, ToLatexOptions } from '../core/atom-class';
 import { Context } from '../core/context';
 import { Box } from '../core/box';
 import type { GlobalContext } from '../core/types';
-import { latexCommand } from '../core/tokenizer';
 import { Style } from '../public/core-types';
 
 export class MacroAtom extends Atom {
@@ -52,9 +51,7 @@ export class MacroAtom extends Atom {
   serialize(options: ToLatexOptions): string {
     return options.expandMacro && this.expand
       ? this.bodyToLatex(options)
-      : this.macroArgs
-      ? latexCommand(this.command, this.macroArgs)
-      : this.command;
+      : this.command + (this.macroArgs ?? '');
   }
 
   render(context: Context): Box | null {

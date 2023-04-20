@@ -1,8 +1,19 @@
 ## [Unreleased]
 
+## Bug Fixes
+- **#1646** **mhchem**: states of aggregation is now rendered correctly. Added 
+  support for the `\mskip` command
+- When editing a mathfield, after inserting both a superscript and 
+  subscript, the subscript would be offset from the superscript.
+- **#1668** Correctly handle `\space`, `~`
+
+
+## 0.92.1 (2023-04-19)
+
 ## Improvements
 - Replaced the `(x)` ASCIIMath inline shortcut with `(*)`
 - Correctly parse empty sub/superscripts, i.e. `x^{}`
+- Fixed serialization of macros (regression)
 
 ## 0.92.0 (2023-04-18)
 
