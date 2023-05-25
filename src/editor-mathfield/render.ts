@@ -273,17 +273,17 @@ export function renderSelection(
       );
 
       if (bounds) {
-        bounds.left /= scaleFactor;
-        bounds.right /= scaleFactor;
-        bounds.top /= scaleFactor;
-        bounds.bottom /= scaleFactor;
+        bounds.left = Math.floor(bounds.left) / scaleFactor;
+        bounds.right = Math.ceil(bounds.right) / scaleFactor;
+        bounds.top = Math.floor(bounds.top) / scaleFactor;
+        bounds.bottom = Math.ceil(bounds.bottom) / scaleFactor;
 
         const element = document.createElement('div');
         element.classList.add('ML__contains-highlight');
         element.style.position = 'absolute';
         element.style.left = `${bounds.left}px`;
         element.style.top = `${bounds.top}px`;
-        element.style.width = `${Math.ceil(bounds.right - bounds.left)}px`;
+        element.style.width = `${Math.ceil(bounds.right - bounds.left + 2)}px`;
         element.style.height = `${Math.ceil(bounds.bottom - bounds.top - 1)}px`;
         field.insertBefore(element, field.childNodes[0]);
       }
@@ -299,17 +299,17 @@ export function renderSelection(
   for (const x of unionRects(
     getSelectionBounds(mathfield, { excludeAtomsWithBackground: true })
   )) {
-    x.left /= scaleFactor;
-    x.right /= scaleFactor;
-    x.top /= scaleFactor;
-    x.bottom /= scaleFactor;
+    x.left = Math.floor(x.left) / scaleFactor;
+    x.right = Math.ceil(x.right) / scaleFactor;
+    x.top = Math.floor(x.top) / scaleFactor;
+    x.bottom = Math.ceil(x.bottom) / scaleFactor;
 
     const selectionElement = document.createElement('div');
     selectionElement.classList.add('ML__selection');
     selectionElement.style.position = 'absolute';
     selectionElement.style.left = `${x.left}px`;
     selectionElement.style.top = `${x.top}px`;
-    selectionElement.style.width = `${Math.ceil(x.right - x.left)}px`;
+    selectionElement.style.width = `${Math.ceil(x.right - x.left + 2)}px`;
     selectionElement.style.height = `${Math.ceil(x.bottom - x.top - 1)}px`;
     field.insertBefore(selectionElement, field.childNodes[0]);
   }
