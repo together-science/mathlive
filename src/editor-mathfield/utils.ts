@@ -1,4 +1,3 @@
-import { throwIfNotInBrowser } from '../common/capabilities';
 import { Atom } from '../core/atom-class';
 import type { Range } from '../public/mathfield';
 import { OriginValidator } from '../public/options';
@@ -47,35 +46,6 @@ export function off(
       element.removeEventListener(m[1], listener, options2);
     } else element.removeEventListener(sel, listener, options);
   }
-}
-
-export function getSharedElement(id: string): HTMLElement {
-  throwIfNotInBrowser();
-
-  let result = document.getElementById(id);
-  if (result) {
-    result.dataset.refcount = Number(
-      Number.parseInt(result.getAttribute('data-refcount') ?? '0') + 1
-    ).toString();
-  } else {
-    result = document.createElement('div');
-    result.setAttribute('aria-hidden', 'true');
-    result.dataset.refcount = '1';
-    result.id = id;
-    document.body.append(result);
-  }
-
-  return result;
-}
-
-// @revisit: check the elements are correctly released
-export function releaseSharedElement(element?: HTMLElement): void {
-  if (!element) return;
-  const refcount = Number.parseInt(
-    element.getAttribute('data-refcount') ?? '0'
-  );
-  if (refcount <= 1) element.remove();
-  else element.dataset.refcount = Number(refcount - 1).toString();
 }
 
 /**
@@ -128,22 +98,19 @@ function branchId(atom: Atom): string {
 
 export function adjustForScrolling(
   mathfield: MathfieldPrivate,
-  rect: Rect | null
+  rect: Rect | null,
+  scaleFactor: number
 ): Rect | null {
   if (!rect) return null;
   const fieldRect = mathfield.field!.getBoundingClientRect();
   const w = rect.right - rect.left;
   const h = rect.bottom - rect.top;
   const left = Math.ceil(
-    rect.left - fieldRect.left + mathfield.field!.scrollLeft
+    rect.left - fieldRect.left + mathfield.field.scrollLeft * scaleFactor
   );
+
   const top = Math.ceil(rect.top - fieldRect.top);
-  return {
-    left,
-    right: left + w,
-    top,
-    bottom: top + h,
-  };
+  return { left, right: left + w, top, bottom: top + h };
 }
 
 function getNodeBounds(node: Element): Rect {
@@ -182,7 +149,9 @@ export function getAtomBounds(
   if (!atom.id) return null;
   let result: Rect | null = mathfield.atomBoundsCache?.get(atom.id) ?? null;
   if (result !== null) return result;
-  const node = mathfield.field!.querySelector(`[data-atom-id="${atom.id}"]`);
+  const node = mathfield.fieldContent!.querySelector(
+    `[data-atom-id="${atom.id}"]`
+  );
   result = node ? getNodeBounds(node) : null;
   if (mathfield.atomBoundsCache) {
     if (result) mathfield.atomBoundsCache.set(atom.id, result);
@@ -207,11 +176,23 @@ function getRangeBounds(
     includeChildren: true,
   })) {
     if (options?.excludeAtomsWithBackground && atom.style.backgroundColor)
-      break;
+      continue;
+
+    // Logic to accommodate mathfield hosted in an isotropically scale-transformed element.
+    // Without this, the selection indicator will not be in the right place.
+    // 1. Inquire how big the mathfield thinks it is
+    const field = mathfield.field;
+    const supposedWidth = parseFloat(getComputedStyle(field).width);
+    // 2. Get the actual screen width of the box
+    const actualWidth = field.getBoundingClientRect().width;
+    // 3. Divide the two to get the scale factor
+    let scaleFactor = actualWidth / supposedWidth;
+    scaleFactor = isNaN(scaleFactor) ? 1 : scaleFactor;
 
     const bounds = adjustForScrolling(
       mathfield,
-      getAtomBounds(mathfield, atom)
+      getAtomBounds(mathfield, atom),
+      scaleFactor
     );
     if (bounds) {
       const id = branchId(atom);

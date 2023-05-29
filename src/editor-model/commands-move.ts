@@ -17,6 +17,7 @@ export function moveAfterParent(model: ModelPrivate): boolean {
   }
 
   model.position = model.offsetOf(parent);
+  model.mathfield.stopCoalescingUndo();
   model.announce('move', previousPosition);
   return true;
 }
@@ -79,7 +80,7 @@ function moveToSuperscript(model: ModelPrivate): boolean {
     // add an adjacent `msubsup` atom instead.
     if (target.rightSibling?.type !== 'subsup') {
       target.parent!.addChildAfter(
-        new SubsupAtom(model.mathfield, { style: target.computedStyle }),
+        new SubsupAtom({ style: target.computedStyle }),
         target
       );
     }
@@ -114,9 +115,7 @@ function moveToSubscript(model: ModelPrivate): boolean {
     // add an adjacent `msubsup` atom instead.
     if (model.at(model.position + 1)?.type !== 'subsup') {
       target.parent!.addChildAfter(
-        new SubsupAtom(model.mathfield, {
-          style: model.at(model.position).computedStyle,
-        }),
+        new SubsupAtom({ style: model.at(model.position).computedStyle }),
         target
       );
     }
@@ -357,6 +356,7 @@ function leap(
 
     tabbable[index].focus();
 
+    model.mathfield.stopCoalescingUndo();
     return true;
   }
 
@@ -374,6 +374,8 @@ function leap(
     else model.position = newPosition;
   }
   model.announce('move', previousPosition);
+
+  model.mathfield.stopCoalescingUndo();
   return true;
 }
 
@@ -407,9 +409,12 @@ register(
         oppositeRelation = OPPOSITE_RELATIONS[relation];
 
       if (!oppositeRelation) {
-        if (!cursor.subsupPlacement) return moveToSuperscript(model);
+        const result = cursor.subsupPlacement
+          ? moveToSubscript(model)
+          : moveToSuperscript(model);
 
-        return moveToSubscript(model);
+        model.mathfield.stopCoalescingUndo();
+        return result;
       }
 
       if (!parent.branch(oppositeRelation)) {
@@ -418,9 +423,11 @@ register(
         parent.createBranch(oppositeRelation);
       }
 
-      return model.setSelection(
+      const result = model.setSelection(
         model.getBranchRange(model.offsetOf(parent), oppositeRelation)
       );
+      model.mathfield.stopCoalescingUndo();
+      return result;
     },
     moveBeforeParent: (model: ModelPrivate): boolean => {
       const { parent } = model.at(model.position);
@@ -430,14 +437,11 @@ register(
       }
 
       model.position = model.offsetOf(parent);
+      model.mathfield.stopCoalescingUndo();
       return true;
     },
     moveAfterParent: (model: ModelPrivate): boolean => moveAfterParent(model),
 
-    moveToNextPlaceholder: (model: ModelPrivate): boolean =>
-      leap(model, 'forward'),
-    moveToPreviousPlaceholder: (model: ModelPrivate): boolean =>
-      leap(model, 'backward'),
     moveToNextChar: (model: ModelPrivate): boolean => move(model, 'forward'),
     moveToPreviousChar: (model: ModelPrivate): boolean =>
       move(model, 'backward'),
@@ -454,6 +458,7 @@ register(
       }
 
       model.position = pos;
+      model.mathfield.stopCoalescingUndo();
       return true;
     },
     moveToGroupEnd: (model: ModelPrivate): boolean => {
@@ -464,7 +469,74 @@ register(
       }
 
       model.position = pos;
+      model.mathfield.stopCoalescingUndo();
       return true;
+    },
+    moveToNextGroup: (model: ModelPrivate): boolean => {
+      let atom = model.at(model.position);
+      const mode = atom.mode;
+      if (mode === 'text') {
+        // Move to first non-text atom
+        while (atom && atom.mode === 'text') atom = atom.rightSibling;
+        if (!atom) return leap(model, 'forward');
+        model.position = model.offsetOf(atom.leftSibling);
+        return true;
+      }
+      if (mode === 'math') {
+        const parent = atom.parent;
+        if (parent) {
+          // If in an atom with a supsub, try subsup
+          if (atom.parentBranch === 'superscript' && parent.subscript) {
+            model.position = model.offsetOf(parent.subscript[0]);
+            return true;
+          }
+          if (atom.parentBranch === 'above' && parent.below) {
+            model.position = model.offsetOf(parent.below[0]);
+            return true;
+          }
+          if (
+            atom.parentBranch === 'subscript' ||
+            atom.parentBranch === 'below'
+          ) {
+            model.position = model.offsetOf(parent);
+            return true;
+          }
+        }
+      }
+      return leap(model, 'forward');
+    },
+    moveToPreviousGroup: (model: ModelPrivate): boolean => {
+      let atom = model.at(model.position);
+      const mode = atom.mode;
+      if (mode === 'text') {
+        // Move to first text atom
+        while (atom && atom.mode === 'text') atom = atom.leftSibling;
+        if (!atom) return leap(model, 'backward');
+        model.position = model.offsetOf(atom);
+        return true;
+      }
+      if (mode === 'math') {
+        const parent = atom.parent;
+        if (parent) {
+          // If in an atom with a supsub, try subsup
+          if (atom.parentBranch === 'subscript' && parent.superscript) {
+            model.position = model.offsetOf(parent.superscript[0]);
+            return true;
+          }
+          if (atom.parentBranch === 'below' && parent.above) {
+            model.position = model.offsetOf(parent.above[0]);
+            return true;
+          }
+          if (
+            atom.parentBranch === 'superscript' ||
+            atom.parentBranch === 'above'
+          ) {
+            model.position = model.offsetOf(parent.leftSibling);
+            return true;
+          }
+        }
+      }
+      return leap(model, 'backward');
     },
     moveToMathfieldStart: (model: ModelPrivate): boolean => {
       if (model.position === 0) {
@@ -473,6 +545,7 @@ register(
       }
 
       model.position = 0;
+      model.mathfield.stopCoalescingUndo();
       return true;
     },
     moveToMathfieldEnd: (model: ModelPrivate): boolean => {
@@ -482,11 +555,20 @@ register(
       }
 
       model.position = model.lastOffset;
+      model.mathfield.stopCoalescingUndo();
       return true;
     },
     moveToSuperscript: (model: ModelPrivate): boolean =>
       moveToSuperscript(model),
     moveToSubscript: (model: ModelPrivate): boolean => moveToSubscript(model),
   },
-  { target: 'model', category: 'selection-anchor' }
+  { target: 'model', changeSelection: true }
+);
+
+register(
+  {
+    moveToNextPlaceholder: (model) => leap(model, 'forward'),
+    moveToPreviousPlaceholder: (model) => leap(model, 'backward'),
+  },
+  { target: 'model', changeSelection: true, audioFeedback: 'return' }
 );

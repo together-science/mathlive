@@ -30,9 +30,6 @@ export const DEFAULT_KEYBINDINGS: Keybinding[] = [
   { key: 'shift+ctrl+[ArrowLeft]', command: 'extendToGroupStart' },
   { key: 'shift+ctrl+[ArrowRight]', command: 'extendToGroupEnd' },
 
-  { key: '[Space]', ifMode: 'math', command: 'moveAfterParent' },
-  { key: 'shift+[Space]', ifMode: 'math', command: 'moveBeforeParent' },
-
   { key: '[Home]', command: 'moveToMathfieldStart' },
   { key: 'cmd+[ArrowLeft]', command: 'moveToMathfieldStart' },
   { key: 'shift+[Home]', command: 'extendToMathFieldStart' },
@@ -46,18 +43,11 @@ export const DEFAULT_KEYBINDINGS: Keybinding[] = [
   { key: '[Pageup]', command: 'moveToGroupStart' },
   { key: '[Pagedown]', command: 'moveToGroupEnd' },
 
-  { key: '[Tab]', ifMode: 'math', command: 'moveToNextPlaceholder' },
+  { key: '[Tab]', command: 'moveToNextGroup' },
   {
     key: 'shift+[Tab]',
     ifMode: 'math',
-    command: 'moveToPreviousPlaceholder',
-  },
-
-  { key: '[Tab]', ifMode: 'text', command: 'moveToNextPlaceholder' },
-  {
-    key: 'shift+[Tab]',
-    ifMode: 'text',
-    command: 'moveToPreviousPlaceholder',
+    command: 'moveToPreviousGroup',
   },
 
   { key: '[Escape]', ifMode: 'math', command: ['switchMode', 'latex'] },
@@ -109,12 +99,17 @@ export const DEFAULT_KEYBINDINGS: Keybinding[] = [
   { key: '[Redo]', command: 'redo' },
   { key: '[EraseEof]', command: 'deleteToGroupEnd' },
 
-  { key: 'ctrl+x', command: 'cutToClipboard' },
-  { key: 'cmd+x', command: 'cutToClipboard' },
-  { key: 'ctrl+c', command: 'copyToClipboard' },
-  { key: 'cmd+c', command: 'copyToClipboard' },
-  { key: 'ctrl+v', command: 'pasteFromClipboard' },
-  { key: 'cmd+v', command: 'pasteFromClipboard' },
+  // Safari on iOS does not send cut/copy/paste commands when the mathfield
+  // is focused, so intercept the keyboard shortcuts.
+  // This is less desirable because the full clipboard API is not accessible
+  // by this path, and user authorization is required.
+  { key: 'ctrl+x', ifPlatform: 'ios', command: 'cutToClipboard' },
+  { key: 'cmd+x', ifPlatform: 'ios', command: 'cutToClipboard' },
+  { key: 'ctrl+c', ifPlatform: 'ios', command: 'copyToClipboard' },
+  { key: 'cmd+c', ifPlatform: 'ios', command: 'copyToClipboard' },
+  { key: 'ctrl+v', ifPlatform: 'ios', command: 'pasteFromClipboard' },
+  { key: 'cmd+v', ifPlatform: 'ios', command: 'pasteFromClipboard' },
+
   { key: 'ctrl+z', ifPlatform: '!macos', command: 'undo' },
   { key: 'cmd+z', command: 'undo' },
   { key: 'ctrl+y', ifPlatform: '!macos', command: 'redo' }, // ARIA recommendation
