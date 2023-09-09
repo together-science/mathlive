@@ -15,7 +15,7 @@ import type {
   VirtualKeyboardMessageAction,
 } from '../public/virtual-keyboard';
 import type { OriginValidator } from '../public/options';
-import type { MathfieldElement } from '../public/mathfield-element';
+import { MathfieldElement } from '../public/mathfield-element';
 
 import { isTouchCapable } from '../common/capabilities';
 import { isArray } from '../common/types';
@@ -207,8 +207,8 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
 
   private _normalizedLayouts:
     | (VirtualKeyboardLayoutCore & {
-        layers: NormalizedVirtualKeyboardLayer[];
-      })[]
+      layers: NormalizedVirtualKeyboardLayer[];
+    })[]
     | undefined;
   get normalizedLayouts(): (VirtualKeyboardLayoutCore & {
     layers: NormalizedVirtualKeyboardLayer[];
@@ -287,7 +287,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
       const target = event.target as HTMLElement;
       if (
         target?.isConnected &&
-        target.tagName?.toLowerCase() === 'math-field' &&
+        target instanceof MathfieldElement &&
         isTouchCapable()
       ) {
         const mf = target as MathfieldElement;
@@ -306,7 +306,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
           let target = document.activeElement;
           let focusedMathfield = false;
           while (target) {
-            if (target.tagName?.toLowerCase() === 'math-field') {
+            if (target instanceof MathfieldElement) {
               focusedMathfield = true;
               break;
             }
@@ -643,7 +643,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
           if (commandTarget !== 'virtual-keyboard' && window === window.parent)
             return;
         }
-      } catch (e) {}
+      } catch (e) { }
 
       this.executeCommand(command!);
       return;
