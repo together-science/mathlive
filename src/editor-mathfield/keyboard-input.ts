@@ -171,11 +171,8 @@ export function onKeystroke(
   const buffer = mathfield.inlineShortcutBuffer;
   if (mathfield.isSelectionEditable) {
     if (model.mode === 'math') {
-      if (keystroke === '[Backspace]') {
-        // Special case for backspace to correctly handle undoing
-        buffer.pop();
-        mathfield.flushInlineShortcutBuffer({ defer: true });
-      } else if (!mightProducePrintableCharacter(evt)) {
+      if (keystroke === '[Backspace]') buffer.pop();
+      else if (!mightProducePrintableCharacter(evt)) {
         // It was a non-alpha character (PageUp, End, etc...)
         mathfield.flushInlineShortcutBuffer();
       } else {
@@ -192,7 +189,9 @@ export function onKeystroke(
           leftSiblings: getLeftSiblings(mathfield),
         });
 
+        //
         // Loop  over possible candidates, from the longest possible, to the shortest
+        //
         let i = 0;
         let candidate = '';
         while (!shortcut && i < keystrokes.length) {
@@ -534,9 +533,8 @@ export function onInput(
   // David Bowie emoji: 👨🏻‍🎤
   let graphemes = splitGraphemes(text);
 
-  // Check if virtual keyboard is visible and the shift key is pressed
   const keyboard = window.mathVirtualKeyboard;
-  if (keyboard?.visible && keyboard.isShifted) {
+  if (keyboard?.isShifted) {
     graphemes =
       typeof graphemes === 'string'
         ? graphemes.toUpperCase()
@@ -635,7 +633,9 @@ function insertMathModeChar(
     /\d/.test(c) &&
     mathfield.options.smartSuperscript &&
     atom.parentBranch === 'superscript' &&
-    atom.parent?.type !== 'mop' &&
+    atom.parent!.type !== 'mop' &&
+    atom.parent!.type !== 'operator' &&
+    atom.parent!.type !== 'extensible-symbol' &&
     atom.hasNoSiblings
   ) {
     // We are inserting a digit into an empty superscript
@@ -1023,9 +1023,9 @@ function isValidClose(open: string | undefined, close: string): boolean {
   if (!open) return true;
 
   if (
-    ['(', '{', '[', '\\lbrace', '\\lparen', '\\{', '\\lbrack'].includes(open)
+    ['(', '\\lparen', '{', '\\{', '\\lbrace', '[', '\\lbrack'].includes(open)
   ) {
-    return [')', '}', ']', '\\rbrace', '\\rparen', '\\}', '\\rbrack'].includes(
+    return [')', '\\rparen', '}', '\\}', '\\rbrace', ']', '\\rbrack'].includes(
       close
     );
   }
@@ -1036,9 +1036,9 @@ function isValidOpen(open: string, close: string | undefined): boolean {
   if (!close) return true;
 
   if (
-    [')', '}', ']', '\\rbrace', '\\rparen', '\\}', '\\rbrack'].includes(close)
+    [')', '\\rparen', '}', '\\}', '\\rbrace', ']', '\\rbrack'].includes(close)
   ) {
-    return ['(', '{', '[', '\\lbrace', '\\lparen', '\\{', '\\lbrack'].includes(
+    return ['(', '\\lparen', '{', '\\{', '\\lbrace', '[', '\\lbrack'].includes(
       open
     );
   }

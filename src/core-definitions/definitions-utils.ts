@@ -408,6 +408,12 @@ const DEFAULT_MACROS: MacroDictionary = {
   'iff': '\\;\u27FA\\;', // >2,000 Note: additional spaces around the arrows
   'nicefrac': '^{#1}\\!\\!/\\!_{#2}',
 
+  'phase': {
+    def: '\\enclose{phasorangle}{#1}',
+    args: 1,
+    captureSelection: false,
+  },
+
   // Proof Wiki
   'rd': '\\mathrm{d}',
   'rD': '\\mathrm{D}',
@@ -436,6 +442,101 @@ const DEFAULT_MACROS: MacroDictionary = {
 
   'mathstrut': { def: '\\vphantom{(}', primitive: true },
 
+  // https://ctan.math.washington.edu/tex-archive/macros/latex/contrib/actuarialangle/actuarialangle.pdf
+  'angl': '\\enclose{actuarial}{#1}',
+  'angln': '\\enclose{actuarial}{n}',
+  'anglr': '\\enclose{actuarial}{r}',
+  'anglk': '\\enclose{actuarial}{k}',
+
+  //////////////////////////////////////////////////////////////////////
+  // mathtools.sty
+
+  //\providecommand\ordinarycolon{:}
+  'ordinarycolon': ':',
+  //\def\vcentcolon{\mathrel{\mathop\ordinarycolon}}
+  //TODO(edemaine): Not yet centered. Fix via \raisebox or #726
+  'vcentcolon': '\\mathrel{\\mathop\\ordinarycolon}',
+  // \providecommand*\dblcolon{\vcentcolon\mathrel{\mkern-.9mu}\vcentcolon}
+  'dblcolon': '{\\mathop{\\char"2237}}',
+  // \providecommand*\coloneqq{\vcentcolon\mathrel{\mkern-1.2mu}=}
+  'coloneqq': '{\\mathop{\\char"2254}}', // ≔
+  // \providecommand*\Coloneqq{\dblcolon\mathrel{\mkern-1.2mu}=}
+  'Coloneqq': '{\\mathop{\\char"2237\\char"3D}}',
+  // \providecommand*\coloneq{\vcentcolon\mathrel{\mkern-1.2mu}\mathrel{-}}
+  'coloneq': '{\\mathop{\\char"3A\\char"2212}}',
+  // \providecommand*\Coloneq{\dblcolon\mathrel{\mkern-1.2mu}\mathrel{-}}
+  'Coloneq': '{\\mathop{\\char"2237\\char"2212}}',
+  // \providecommand*\eqqcolon{=\mathrel{\mkern-1.2mu}\vcentcolon}
+  'eqqcolon': '{\\mathop{\\char"2255}}', // ≕
+  // \providecommand*\Eqqcolon{=\mathrel{\mkern-1.2mu}\dblcolon}
+  'Eqqcolon': '{\\mathop{\\char"3D\\char"2237}}',
+  // \providecommand*\eqcolon{\mathrel{-}\mathrel{\mkern-1.2mu}\vcentcolon}
+  'eqcolon': '{\\mathop{\\char"2239}}',
+  // \providecommand*\Eqcolon{\mathrel{-}\mathrel{\mkern-1.2mu}\dblcolon}
+  'Eqcolon': '{\\mathop{\\char"2212\\char"2237}}',
+  // \providecommand*\colonapprox{\vcentcolon\mathrel{\mkern-1.2mu}\approx}
+  'colonapprox': '{\\mathop{\\char"003A\\char"2248}}',
+  // \providecommand*\Colonapprox{\dblcolon\mathrel{\mkern-1.2mu}\approx}
+  'Colonapprox': '{\\mathop{\\char"2237\\char"2248}}',
+  // \providecommand*\colonsim{\vcentcolon\mathrel{\mkern-1.2mu}\sim}
+  'colonsim': '{\\mathop{\\char"3A\\char"223C}}',
+  // \providecommand*\Colonsim{\dblcolon\mathrel{\mkern-1.2mu}\sim}
+  'Colonsim': '{\\mathop{\\char"2237\\char"223C}}',
+
+  // Some Unicode characters are implemented with macros to mathtools functions.
+  // defineMacro("\u2237", "\\dblcolon");  // ::
+  // defineMacro("\u2239", "\\eqcolon");  // -:
+  // defineMacro("\u2254", "\\coloneqq");  // :=
+  // defineMacro("\u2255", "\\eqqcolon");  // =:
+  // defineMacro("\u2A74", "\\Coloneqq");  // ::=
+
+  //////////////////////////////////////////////////////////////////////
+  // colonequals.sty
+
+  // Alternate names for mathtools's macros:
+  'ratio': '\\vcentcolon',
+  'coloncolon': '\\dblcolon',
+  'colonequals': '\\coloneqq',
+  'coloncolonequals': '\\Coloneqq',
+  'equalscolon': '\\eqqcolon',
+  'equalscoloncolon': '\\Eqqcolon',
+  'colonminus': '\\coloneq',
+  'coloncolonminus': '\\Coloneq',
+  'minuscolon': '\\eqcolon',
+  'minuscoloncolon': '\\Eqcolon',
+  // \colonapprox name is same in mathtools and colonequals.
+  'coloncolonapprox': '\\Colonapprox',
+  // \colonsim name is same in mathtools and colonequals.
+  'coloncolonsim': '\\Colonsim',
+
+  // Additional macros, implemented by analogy with mathtools definitions:
+  'simcolon': '\\mathrel{\\sim\\mathrel{\\mkern-1.2mu}\\vcentcolon}',
+  'simcoloncolon': '\\mathrel{\\sim\\mathrel{\\mkern-1.2mu}\\dblcolon}',
+  'approxcolon': '\\mathrel{\\approx\\mathrel{\\mkern-1.2mu}\\vcentcolon}',
+  'approxcoloncolon': '\\mathrel{\\approx\\mathrel{\\mkern-1.2mu}\\dblcolon}',
+
+  // Present in newtxmath, pxfonts and txfonts
+  'notni': '\\mathrel{\\char`\u220C}',
+  'limsup': '\\operatorname*{lim\\,sup}',
+  'liminf': '\\operatorname*{lim\\,inf}',
+
+  //////////////////////////////////////////////////////////////////////
+  // From amsopn.sty
+  'injlim': '\\operatorname*{inj\\,lim}',
+  'projlim': '\\operatorname*{proj\\,lim}',
+  'varlimsup': '\\operatorname*{\\overline{lim}}',
+  'varliminf': '\\operatorname*{\\underline{lim}}',
+  'varinjlim': '\\operatorname*{\\underrightarrow{lim}}',
+  'varprojlim': '\\operatorname*{\\underleftarrow{lim}}',
+
+  //////////////////////////////////////////////////////////////////////
+  // statmath.sty
+  // https://ctan.math.illinois.edu/macros/latex/contrib/statmath/statmath.pdf
+
+  'argmin': '\\operatorname*{arg\\,min}',
+  'argmax': '\\operatorname*{arg\\,max}',
+  'plim': '\\mathop{\\operatorname{plim}}\\limits',
+
   // mhchem
 
   'tripledash': {
@@ -456,19 +557,22 @@ const DEFAULT_MACROS: MacroDictionary = {
 // Body-text symbols
 // See http://ctan.mirrors.hoobly.com/info/symbols/comprehensive/symbols-a4.pdf, p14
 
-export const TEXT_SYMBOLS: Record<string, number> = {
+const TEXT_SYMBOLS: Record<string, number> = {
   ' ': 0x0020,
   // want that in Text mode.
+  '\\!': 0x0021,
   '\\#': 0x0023,
-  '\\&': 0x0026,
   '\\$': 0x0024,
   '\\%': 0x0025,
+  '\\&': 0x0026,
   '-': 0x002d, // In Math mode, '-' is substituted to U+2212, but we don't
-  '\\_': 0x005f,
+  '\\textunderscore': 0x005f, // '_'
   '\\euro': 0x20ac,
   '\\maltese': 0x2720,
   '\\{': 0x007b,
   '\\}': 0x007d,
+  '\\textbraceleft': 0x007b,
+  '\\textbraceright': 0x007d,
   '\\nobreakspace': 0x00a0,
   '\\ldots': 0x2026,
   '\\textellipsis': 0x2026,
@@ -481,9 +585,7 @@ export const TEXT_SYMBOLS: Record<string, number> = {
   '\\textasciicircum': 0x005e,
   '\\textasciitilde': 0x007e,
   '\\textasteriskcentered': 0x002a,
-  '\\textbackslash': 0x005c,
-  '\\textbraceleft': 0x007b,
-  '\\textbraceright': 0x007d,
+  '\\textbackslash': 0x005c, // '\'
   '\\textbullet': 0x2022,
   '\\textdollar': 0x0024,
   '\\textsterling': 0x00a3,
@@ -509,10 +611,11 @@ export const TEXT_SYMBOLS: Record<string, number> = {
   '\\AA': 0x00c5, // LATIN CAPITAL LETTER A WITH RING ABOVE
 };
 
-export const COMMAND_MODE_CHARACTERS = /[\w!@*()-=+{}[\]\\';:?/.,~<>`|$%#&^" ]/;
+export const COMMAND_MODE_CHARACTERS =
+  /[\w!@*()-=+{}\[\]\\';:?/.,~<>`|$%#&^" ]/;
 
-export let LETTER;
-export let LETTER_AND_DIGITS;
+export let LETTER: RegExp;
+export let LETTER_AND_DIGITS: RegExp;
 
 if (supportRegexPropertyEscape()) {
   LETTER = new RegExp('\\p{Letter}', 'u');
@@ -531,22 +634,19 @@ if (supportRegexPropertyEscape()) {
  */
 function newSymbol(
   symbol: string,
-  value: number | undefined,
+  codepoint: number | undefined,
   type: AtomType = 'mord',
   variant?: Variant
 ): void {
-  if (value === undefined) return;
+  if (codepoint === undefined) return;
   MATH_SYMBOLS[symbol] = {
     definitionType: 'symbol',
     type,
     variant,
-    codepoint: value,
+    codepoint,
   };
-  if (!REVERSE_MATH_SYMBOLS[value]) REVERSE_MATH_SYMBOLS[value] = symbol;
-
-  // We accept all math symbols in text mode as well
-  // which is a bit more permissive than TeX
-  if (!TEXT_SYMBOLS[symbol]) TEXT_SYMBOLS[symbol] = value;
+  if (!REVERSE_MATH_SYMBOLS[codepoint])
+    REVERSE_MATH_SYMBOLS[codepoint] = symbol;
 }
 
 /**
@@ -945,10 +1045,7 @@ export function getMacroDefinition(
   return macros[command];
 }
 
-export function unicodeCharToLatex(
-  parseMode: ArgumentType,
-  char: string
-): string {
+export function unicodeCharToLatex(parseMode: ParseMode, char: string): string {
   if (parseMode === 'text')
     return charToLatex(parseMode, char.codePointAt(0)) ?? char;
 
@@ -978,7 +1075,7 @@ export function unicodeCharToLatex(
  * If there is a matching command (e.g. `\alpha`) it is returned.
  */
 export function charToLatex(
-  parseMode: ArgumentType,
+  parseMode: ParseMode,
   codepoint: number | undefined
 ): string {
   if (codepoint === undefined) return '';
@@ -986,16 +1083,14 @@ export function charToLatex(
     return REVERSE_MATH_SYMBOLS[codepoint];
 
   if (parseMode === 'text') {
-    let textSymbol = Object.keys(TEXT_SYMBOLS).find(
+    const textSymbol = Object.keys(TEXT_SYMBOLS).find(
       (x) => TEXT_SYMBOLS[x] === codepoint
     );
-    if (!textSymbol) {
-      const hex = codepoint.toString(16);
-      textSymbol = '^'.repeat(hex.length) + hex;
-    }
-
-    return textSymbol;
+    if (textSymbol) return textSymbol;
+    return String.fromCodePoint(codepoint);
   }
 
+  // const hex = codepoint.toString(16).toLowerCase();
+  // return '^'.repeat(hex.length) + hex;
   return String.fromCodePoint(codepoint);
 }

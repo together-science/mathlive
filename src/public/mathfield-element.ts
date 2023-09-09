@@ -38,7 +38,8 @@ import { defaultReadAloudHook } from '../editor/speech-read-aloud';
 import type { ComputeEngine } from '@cortex-js/compute-engine';
 
 import { l10n } from '../core/l10n';
-import { getStylesheet } from 'common/stylesheet';
+import { getStylesheet, getStylesheetContent } from 'common/stylesheet';
+import { Scrim } from 'editor/scrim';
 
 export declare type Expression =
   | number
@@ -345,20 +346,34 @@ const DEPRECATED_OPTIONS = {
 };
 
 /**
- * The `MathfieldElement` class provides special properties and
- * methods to control the display and behavior of `<math-field>`
- * elements.
+ * The `MathfieldElement` class represent a DOM element that displays
+ * math equations.
+ * It is a subclass of the standard
+ * [`HTMLElement`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement)
+ * class and as such inherits all of its properties and methods.
  *
  * It inherits many useful properties and methods from [[`HTMLElement`]] such
  * as `style`, `tabIndex`, `addEventListener()`, `getAttribute()`,  etc...
+ *
+ * It is the main entry point to the MathLive library.
+ *
+ * It is typically used to render a single equation.
+ * To render multiple equations, use multiple instances of `MathfieldElement`.
+ * The `MathfieldElement` class
+ * provides special properties and
+ * methods to control the display and behavior of `<math-field>`
+ * elements.
+ *
+ *
  *
  * To create a new `MathfieldElement`:
  *
  * ```javascript
  * // 1. Create a new MathfieldElement
- * const mfe = new MathfieldElement();
+ * const mf = new MathfieldElement();
+ *
  * // 2. Attach it to the DOM
- * document.body.appendChild(mfe);
+ * document.body.appendChild(mf);
  * ```
  *
  * The `MathfieldElement` constructor has an optional argument of
@@ -367,12 +382,13 @@ const DEPRECATED_OPTIONS = {
  *
  * ```javascript
  * // Setting options during construction
- * const mfe = new MathfieldElement({ smartFence: false });
+ * const mf = new MathfieldElement({ smartFence: false });
+ *
  * // Modifying options after construction
- * mfe.setOptions({ smartFence: true });
+ * mf.smartFence = true;
  * ```
  *
- * ### CSS Variables
+ * ### MathfieldElement CSS Variables
  *
  * To customize the appearance of the mathfield, declare the following CSS
  * variables (custom properties) in a ruleset that applies to the mathfield.
@@ -386,7 +402,7 @@ const DEPRECATED_OPTIONS = {
  * Alternatively you can set these CSS variables programatically:
  *
  * ```js
- *   document.body.style.setProperty("--hue", "10");
+ * document.body.style.setProperty("--hue", "10");
  * ```
  * <div class='symbols-table' style='--first-col-width:25ex'>
  *
@@ -407,7 +423,7 @@ const DEPRECATED_OPTIONS = {
  *
  * Read more about [customizing the virtual keyboard appearance](https://cortexjs.io/mathlive/guides/virtual-keyboards/#custom-appearance)
  *
- * ### CSS Parts
+ * ### MathfieldElement CSS Parts
  *
  * To style the virtual keyboard toggle, use the `virtual-keyboard-toggle` CSS
  * part. To use it, define a CSS rule with a `::part()` selector
@@ -419,7 +435,7 @@ const DEPRECATED_OPTIONS = {
  * ```
  *
  *
- * ### Attributes
+ * ### MathfieldElement Attributes
  *
  * An attribute is a key-value pair set as part of the tag:
  *
@@ -489,7 +505,7 @@ const DEPRECATED_OPTIONS = {
  * - `tabindex`
  *
  *
- * ### Events
+ * ### MathfieldElement Events
  *
  * Listen to these events by using `addEventListener()`. For events with
  * additional arguments, the arguments are available in `event.detail`.
@@ -614,6 +630,7 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
       reloadFonts();
     }
   }
+  /** @internal */
   static _fontsDirectory: string | null = './fonts';
 
   /**
@@ -623,7 +640,7 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
    * Some default sounds are available in the `/dist/sounds` directory of the SDK.
    *
    * Use `null` to prevent any sound from being loaded.
-   *
+   * @category Virtual Keyboard
    */
   static get soundsDirectory(): string | null {
     return this._soundsDirectory;
@@ -632,11 +649,13 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
     this._soundsDirectory = value;
     this.audioBuffers = {};
   }
+  /** @internal */
   static _soundsDirectory: string | null = './sounds';
 
   /**
    * When a key on the virtual keyboard is pressed, produce a short haptic
    * feedback, if the device supports it.
+   * @category Virtual Keyboard
    */
   static keypressVibration = true;
 
@@ -656,6 +675,7 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
    *
    * The value of the properties should be either a string, the name of an
    * audio file in the `soundsDirectory` directory or `null` to suppress the sound.
+   * @category Virtual Keyboard
    */
   static get keypressSound(): {
     spacebar: null | string;
@@ -701,6 +721,7 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
       };
     }
   }
+  /** @internal */
   static _keypressSound: {
     spacebar: null | string;
     return: null | string;
@@ -713,6 +734,8 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
     default: 'keypress-standard.wav',
   };
 
+  /** @internal */
+  static _plonkSound: string | null = 'plonk.wav';
   /**
    * Sound played to provide feedback when a command has no effect, for example
    * when pressing the spacebar at the root level.
@@ -721,7 +744,6 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
    * - a string, the name of an audio file in the `soundsDirectory` directory
    * - null to turn off the sound
    */
-  static _plonkSound: string | null = 'plonk.wav';
   static get plonkSound(): string | null {
     return this._plonkSound;
   }
@@ -734,6 +756,7 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
   static audioBuffers: { [key: string]: AudioBuffer } = {};
   /** @internal */
   static _audioContext: AudioContext;
+  /** @internal */
   static get audioContext(): AudioContext {
     if (!this._audioContext) this._audioContext = new AudioContext();
     return this._audioContext;
@@ -869,6 +892,7 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
    * The locale (language + region) to use for string localization.
    *
    * If none is provided, the locale of the browser is used.
+   * @category Localization
    *
    */
   static get locale(): string {
@@ -893,6 +917,7 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
    * - the label and behavior of the "." key in the default virtual keyboard
    *
    * **Default**: `"."`
+   * @category Localization
    */
   static get decimalSeparator(): ',' | '.' {
     return this._decimalSeparator;
@@ -919,6 +944,7 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
    *   the keyboard navigation follows this convention.
    *
    * **Default**: `"numerator-denominator"`
+   * @category Localization
    */
   static fractionNavigationOrder:
     | 'numerator-denominator'
@@ -940,6 +966,7 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
   ```
   *
   * This will override the default localized strings.
+  * @category Localization
   */
   static get strings(): Record<string, Record<string, string>> {
     return l10n.strings;
@@ -956,16 +983,11 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
     if (this._computeEngine === undefined) {
       const ComputeEngineCtor =
         window[Symbol.for('io.cortexjs.compute-engine')]?.ComputeEngine;
-      if (ComputeEngineCtor) this._computeEngine = new ComputeEngineCtor();
-      else {
-        console.error(
-          `MathLive {{SDK_VERSION}}: The CortexJS Compute Engine library is not available.
-          
-          Load the library, for example with:
-          
-          import "https://unpkg.com/@cortex-js/compute-engine?module"`
-        );
-      }
+
+      if (!ComputeEngineCtor) return null;
+
+      this._computeEngine = new ComputeEngineCtor();
+
       if (this._computeEngine && this.decimalSeparator === ',')
         this._computeEngine.latexOptions.decimalMarker = '{,}';
     }
@@ -1062,6 +1084,10 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
    */
   private _internals: ElementInternals;
 
+  // The content of <style> tags inside the element.
+  /** @internal */
+  private _style: string;
+
   /**
      * To create programmatically a new mathfield use:
      *
@@ -1131,18 +1157,33 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
     }
 
     this.attachShadow({ mode: 'open', delegatesFocus: true });
-    this.shadowRoot!.adoptedStyleSheets = [
-      getStylesheet('core'),
-      getStylesheet('mathfield'),
-      getStylesheet('mathfield-element'),
-    ];
-    this.shadowRoot!.innerHTML = `<span style="pointer-events:auto"></span><slot style="display:none"></slot>`;
-    // this.shadowRoot!.append(MATHFIELD_TEMPLATE!.content.cloneNode(true));
+    if (this.shadowRoot && 'adoptedStyleSheets' in this.shadowRoot) {
+      this.shadowRoot!.adoptedStyleSheets = [
+        getStylesheet('core'),
+        getStylesheet('mathfield'),
+        getStylesheet('mathfield-element'),
+      ];
+      this.shadowRoot!.innerHTML = `<span style="pointer-events:auto"></span><slot style="display:none"></slot>`;
+    } else {
+      this.shadowRoot!.innerHTML = `<style>${getStylesheetContent(
+        'core'
+      )}${getStylesheetContent('mathfield')}${getStylesheetContent(
+        'mathfield-element'
+      )}</style><span style="pointer-events:auto"></span><slot style="display:none"></slot>`;
+    }
 
     // Record the (optional) configuration options, as a deferred state
     if (options) this._setOptions(options);
   }
 
+  /** @internal */
+  get mathVirtualKeyboard(): never {
+    throw new Error(
+      'The `mathVirtualKeyboard` property is not available on the MathfieldElement. Use `window.mathVirtualKeyboard` instead.'
+    );
+  }
+
+  /** @internal */
   onPointerDown(): void {
     window.addEventListener(
       'pointerup',
@@ -1172,11 +1213,16 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
     );
   }
 
+  /**
+   * @inheritdoc Mathfield.getPromptValue
+   * @category Prompts */
   getPromptValue(placeholderId: string, format?: OutputFormat): string {
     return this._mathfield?.getPromptValue(placeholderId, format) ?? '';
   }
 
-  /** Return the id of the prompts matching the filter */
+  /** Return the id of the prompts matching the filter.
+   * @category Prompts
+   */
   getPrompts(filter?: {
     id?: string;
     locked?: boolean;
@@ -1198,7 +1244,10 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
   }
 
   get mode(): ParseMode {
-    return this._mathfield?.model.mode ?? 'math';
+    return (
+      this._mathfield?.model.mode ??
+      (this.defaultMode === 'text' ? 'text' : 'math')
+    );
   }
 
   set mode(value: ParseMode) {
@@ -1214,6 +1263,7 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
 import 'https://unpkg.com/@cortex-js/compute-engine?module';
 ```
    *
+   * @category Accessing and changing the content
    */
   get expression(): any | null {
     if (!this._mathfield) return undefined;
@@ -1225,6 +1275,7 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
         
         import "https://unpkg.com/@cortex-js/compute-engine?module"`
       );
+      return null;
     }
     return this._mathfield.expression;
   }
@@ -1245,6 +1296,10 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     }
   }
 
+  /**
+   * Return an array of LaTeX syntax errors, if any.
+   * @category Accessing and changing the content
+   */
   get errors(): LatexSyntaxError[] {
     return this._mathfield?.errors ?? [];
   }
@@ -1558,9 +1613,7 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
   }
 
   /**
-   * The bottom location of the caret (insertion point) in viewport
-   * coordinates.
-   *
+   * @inheritdoc Mathfield.getCaretPoint
    * @category Selection
    */
   get caretPoint(): null | { x: number; y: number } {
@@ -1622,7 +1675,8 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
 
   /**
    * Reset the undo stack
-   * (for parent components with their own undo/redo)
+   *
+   * @category Undo
    */
   resetUndo(): void {
     this._mathfield?.resetUndo();
@@ -1630,7 +1684,7 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
 
   /**
    * Return whether there are undoable items
-   * (for parent components with their own undo/redo)
+   * @category Undo
    */
   canUndo(): boolean {
     if (!this._mathfield) return false;
@@ -1639,17 +1693,22 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
 
   /**
    * Return whether there are redoable items
-   * (for parent components with their own undo/redo)
+   * @category Undo
    */
   canRedo(): boolean {
     if (!this._mathfield) return false;
     return this._mathfield.canRedo();
   }
 
+  /** @internal */
   handleEvent(evt: Event): void {
     if (evt.type === 'pointerdown') this.onPointerDown();
     if (evt.type === 'focus') this._mathfield?.focus();
-    if (evt.type === 'blur') this._mathfield?.blur();
+
+    // Ignore blur events if the scrim is open (case where the variant panel
+    // is open). Otherwise we disconect from the VK and end up in a weird state.
+    if (evt.type === 'blur' && Scrim.scrim?.state === 'closed')
+      this._mathfield?.blur();
   }
 
   /**
@@ -1680,6 +1739,22 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
 
     const slot =
       this.shadowRoot!.querySelector<HTMLSlotElement>('slot:not([name])');
+    try {
+      this._style = slot!
+        .assignedElements()
+        .filter((x) => x.tagName.toLowerCase() === 'style')
+        .map((x) => x.textContent)
+        .join('');
+    } catch (error: unknown) {
+      console.error(error);
+    }
+    // Add shadowed stylesheet if one was provided
+    // (this is important to support the `\class{}{}` command)
+    if (this._style) {
+      const styleElement = document.createElement('style');
+      styleElement.textContent = this._style;
+      this.shadowRoot!.appendChild(styleElement);
+    }
 
     let value = '';
     // Check if there is a `value` attribute and set the initial value
@@ -1894,6 +1969,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this.setValue(value);
   }
 
+  /** @category Customization
+   * @inheritDoc LayoutOptions.defaultMode
+   */
   get defaultMode(): 'inline-math' | 'math' | 'text' {
     return this._getOption('defaultMode');
   }
@@ -1901,6 +1979,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ defaultMode: value });
   }
 
+  /** @category Customization
+   * @inheritDoc LayoutOptions.macros
+   */
   get macros(): MacroDictionary {
     return this._getOption('macros');
   }
@@ -1908,6 +1989,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ macros: value });
   }
 
+  /** @category Customization
+   * @inheritDoc LayoutOptions.registers
+   */
   get registers(): Registers {
     return this._getOption('registers');
   }
@@ -1915,6 +1999,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ registers: value });
   }
 
+  /** @category Customization
+   * @inheritDoc LayoutOptions.colorMap
+   */
   get colorMap(): (name: string) => string | undefined {
     return this._getOption('colorMap');
   }
@@ -1922,6 +2009,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ colorMap: value });
   }
 
+  /** @category Customization
+   * @inheritDoc LayoutOptions.backgroundColorMap
+   */
   get backgroundColorMap(): (name: string) => string | undefined {
     return this._getOption('backgroundColorMap');
   }
@@ -1929,6 +2019,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ backgroundColorMap: value });
   }
 
+  /** @category Customization
+   * @inheritDoc LayoutOptions.letterShapeStyle
+   */
   get letterShapeStyle(): 'auto' | 'tex' | 'iso' | 'french' | 'upright' {
     return this._getOption('letterShapeStyle');
   }
@@ -1936,6 +2029,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ letterShapeStyle: value });
   }
 
+  /** @category Customization
+   * @inheritDoc LayoutOptions.minFontScale
+   */
   get minFontScale(): number {
     return this._getOption('minFontScale');
   }
@@ -1943,12 +2039,19 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ minFontScale: value });
   }
 
+  /** @category Customization
+   * @inheritDoc EditingOptions.smartMode
+   */
   get smartMode(): boolean {
     return this._getOption('smartMode');
   }
   set smartMode(value: boolean) {
     this._setOptions({ smartMode: value });
   }
+
+  /** @category Customization
+   * @inheritDoc EditingOptions.smartFence
+   */
   get smartFence(): boolean {
     return this._getOption('smartFence');
   }
@@ -1956,6 +2059,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ smartFence: value });
   }
 
+  /** @category Customization
+   * @inheritDoc EditingOptions.smartSuperscript
+   */
   get smartSuperscript(): boolean {
     return this._getOption('smartSuperscript');
   }
@@ -1963,6 +2069,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ smartSuperscript: value });
   }
 
+  /** @category Customization
+   * @inheritDoc EditingOptions.scriptDepth
+   */
   get scriptDepth(): number | [number, number] {
     return this._getOption('scriptDepth');
   }
@@ -1970,6 +2079,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ scriptDepth: value });
   }
 
+  /** @category Customization
+   * @inheritDoc EditingOptions.removeExtraneousParentheses
+   */
   get removeExtraneousParentheses(): boolean {
     return this._getOption('removeExtraneousParentheses');
   }
@@ -1977,6 +2089,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ removeExtraneousParentheses: value });
   }
 
+  /** @category Customization
+   * @inheritDoc EditingOptions.mathModeSpace
+   */
   get mathModeSpace(): string {
     return this._getOption('mathModeSpace');
   }
@@ -1984,6 +2099,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ mathModeSpace: value });
   }
 
+  /** @category Customization
+   * @inheritDoc EditingOptions.placeholderSymbol
+   */
   get placeholderSymbol(): string {
     return this._getOption('placeholderSymbol');
   }
@@ -1991,6 +2109,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ placeholderSymbol: value });
   }
 
+  /** @category Customization
+   * @inheritDoc EditingOptions.popoverPolicy
+   */
   get popoverPolicy(): 'auto' | 'off' {
     return this._getOption('popoverPolicy');
   }
@@ -1998,6 +2119,20 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ popoverPolicy: value });
   }
 
+  /** @category Customization
+   * @inheritDoc EditingOptions.environmentPopoverPolicy
+   */
+  get environmentPopoverPolicy(): 'auto' | 'off' | 'on' {
+    return this._getOption('environmentPopoverPolicy');
+  }
+  set environmentPopoverPolicy(value: 'auto' | 'off' | 'on') {
+    this._setOptions({ environmentPopoverPolicy: value });
+  }
+
+  /** @category Customization
+   * @category Virtual Keyboard
+   * @inheritDoc EditingOptions.mathVirtualKeyboardPolicy
+   */
   get mathVirtualKeyboardPolicy(): VirtualKeyboardPolicy {
     return this._getOption('mathVirtualKeyboardPolicy');
   }
@@ -2005,6 +2140,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ mathVirtualKeyboardPolicy: value });
   }
 
+  /** @category Customization
+   * @inheritDoc EditingOptions.inlineShortcuts
+   */
   get inlineShortcuts(): InlineShortcutDefinitions {
     return this._getOption('inlineShortcuts');
   }
@@ -2012,6 +2150,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ inlineShortcuts: value });
   }
 
+  /** @category Customization
+   * @inheritDoc EditingOptions.inlineShortcutTimeout
+   */
   get inlineShortcutTimeout(): number {
     return this._getOption('inlineShortcutTimeout');
   }
@@ -2019,6 +2160,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ inlineShortcutTimeout: value });
   }
 
+  /** @category Customization
+   * @inheritDoc EditingOptions.keybindings
+   */
   get keybindings(): Keybinding[] {
     return this._getOption('keybindings');
   }
@@ -2026,6 +2170,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ keybindings: value });
   }
 
+  /** @category Hooks
+   * @inheritDoc MathfieldHooks.onInlineShortcut
+   */
   get onInlineShortcut(): (sender: Mathfield, symbol: string) => string {
     return this._getOption('onInlineShortcut');
   }
@@ -2033,6 +2180,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ onInlineShortcut: value });
   }
 
+  /** @category Hooks
+   * @inheritDoc MathfieldHooks.onScrollIntoView
+   */
   get onScrollIntoView(): ((sender: Mathfield) => void) | null {
     return this._getOption('onScrollIntoView');
   }
@@ -2040,6 +2190,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._setOptions({ onScrollIntoView: value });
   }
 
+  /** @category Hooks
+   * @inheritDoc MathfieldHooks.onExport
+   */
   get onExport(): (from: Mathfield, latex: string, range: Range) => string {
     return this._getOption('onExport');
   }
@@ -2060,6 +2213,7 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     return this._mathfield?.isSelectionEditable ?? false;
   }
 
+  /** @category Prompts */
   setPromptState(
     id: string,
     state: 'correct' | 'incorrect' | 'undefined' | undefined,
@@ -2071,6 +2225,7 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     return this._mathfield?.getPromptState(id) ?? [undefined, true];
   }
 
+  /** @category Prompts */
   setPromptContent(
     id: string,
     content: string,
@@ -2079,7 +2234,9 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     this._mathfield?.setPromptValue(id, content, insertOptions);
   }
 
-  /** Remove the contents of all prompts, and return an object with the prompt contents */
+  /** Remove the contents of all prompts, and return an object with the prompt contents
+   * @category Prompts
+   */
   stripPromptContent(filter?: {
     id?: string;
     locked?: boolean;
@@ -2088,6 +2245,7 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     return this._mathfield?.stripPromptContent(filter) ?? {};
   }
 
+  /** @category Virtual Keyboard */
   get virtualKeyboardTargetOrigin(): string {
     return this._getOption('virtualKeyboardTargetOrigin');
   }
@@ -2139,6 +2297,10 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
     });
   }
 
+  /**
+   * @category Selection
+   */
+
   get selectionIsCollapsed(): boolean {
     const selection = this.selection;
     return (
@@ -2185,6 +2347,7 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
 
   /**
    * The depth of an offset represent the depth in the expression tree.
+   * @category Selection
    */
   getOffsetDepth(offset: Offset): number {
     if (this._mathfield)

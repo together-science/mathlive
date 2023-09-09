@@ -1,7 +1,7 @@
 import type { ParseMode, Style } from '../public/core-types';
 
 import { Atom, AtomJson, ToLatexOptions } from '../core/atom-class';
-import { addSVGOverlay, Box } from '../core/box';
+import { Box } from '../core/box';
 import { Context } from '../core/context';
 import { latexCommand } from '../core/tokenizer';
 
@@ -61,15 +61,17 @@ export class PromptAtom extends Atom {
     const context = new Context({ parent: parentContext });
 
     const fboxsep = context.getRegisterAsEm('fboxsep');
-    const padding = fboxsep;
+    const hPadding = fboxsep;
+    const vPadding = fboxsep;
 
     // Base is the main content "inside" the box
     const content = Atom.createBox(parentContext, this.body);
 
     if (!content) return null;
-    // An empty prompt should not be too small, pretend content has height 0.5em
+    // An empty prompt should not be too small, pretend content
+    // has height sigma 5 (x-height)
 
-    if (!content.height) content.height = 0.5;
+    if (!content.height) content.height = context.metrics.xHeight;
 
     content.setStyle('vertical-align', -content.height, 'em');
     if (this.correctness === 'correct') {
@@ -103,24 +105,27 @@ export class PromptAtom extends Atom {
 
     const box = new Box(null, {
       classes: boxClasses,
+      attributes: { part: 'prompt' },
     });
-    box.height = base.height + padding;
-    box.depth = base.depth + padding;
+    box.height = base.height + vPadding;
+    box.depth = base.depth + vPadding;
+    box.width = base.width + 2 * hPadding;
     box.setStyle('box-sizing', 'border-box');
     box.setStyle('position', 'absolute');
 
-    box.setStyle('height', base.height + base.depth + 2 * padding, 'em');
-    if (padding === 0) box.setStyle('width', '100%');
-    else {
-      box.setStyle('width', `calc(100% + ${2 * padding}em)`);
+    box.setStyle('height', base.height + base.depth + 2 * vPadding, 'em'); // @todo: remove
+    if (hPadding === 0) box.setStyle('width', '100%'); // @todo: remove
+    if (hPadding !== 0) {
+      box.setStyle('width', `calc(100% + ${2 * hPadding}em)`); // @todo: remove
       box.setStyle('top', fboxsep, 'em'); // empirical
-      box.setStyle('left', -padding, 'em');
+      box.setStyle('left', -hPadding, 'em');
     }
 
     // empty prompt should be a little wider
     if (!this.body || this.body.length === 1) {
-      box.setStyle('width', `calc(100% + ${3 * padding}em)`);
-      box.setStyle('left', -1.5 * padding, 'em');
+      box.width = 3 * hPadding;
+      box.setStyle('width', `calc(100% + ${3 * hPadding}em)`);
+      box.setStyle('left', -1.5 * hPadding, 'em');
     }
 
     let svg = ''; // strike through incorrect prompt, for users with impaired color vision
@@ -129,11 +134,11 @@ export class PromptAtom extends Atom {
       svg +=
         '<line x1="3%"  y1="97%" x2="97%" y2="3%" stroke-width="0.5" stroke="var(--incorrect-color, var(--ML__incorrect-color))" stroke-linecap="round" />';
     }
-    if (svg) addSVGOverlay(box, svg, '');
+    if (svg) box.svgOverlay = svg;
 
     base.setStyle('display', 'inline-block');
     base.setStyle('height', content.height + content.depth, 'em');
-    base.setStyle('vertical-align', -padding, 'em');
+    base.setStyle('vertical-align', -vPadding, 'em');
 
     // The result is a box that encloses the box and the base
     const result = new Box([box, base], { classes: 'ML__prompt-atom' });
@@ -144,13 +149,13 @@ export class PromptAtom extends Atom {
     result.setStyle('line-height', 0);
 
     // The padding adds to the width and height of the pod
-    result.height = base.height + padding + 0.2;
-    result.depth = base.depth + padding;
-    result.left = padding;
-    result.right = padding;
-    result.setStyle('height', base.height + padding, 'em');
+    result.height = base.height + vPadding + 0.2;
+    result.depth = base.depth + vPadding;
+    result.left = hPadding;
+    result.right = hPadding;
+    result.setStyle('height', base.height + vPadding, 'em');
     result.setStyle('top', base.depth - base.height, 'em');
-    result.setStyle('vertical-align', base.depth + padding, 'em');
+    result.setStyle('vertical-align', base.depth + vPadding, 'em');
     result.setStyle('margin-left', 0.5, 'em');
     result.setStyle('margin-right', 0.5, 'em');
 

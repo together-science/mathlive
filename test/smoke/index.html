@@ -11,9 +11,6 @@
     <link rel="icon" href="data:," />
     <style>
       math-field {
-        /* --caret-color: cyan; */
-        /* --selection-background-color: red;
-        --selection-color: beige; */
         border: 1px solid var(--editable-border);
         padding: 5px;
         margin: 10px 0 10px 0;
@@ -23,10 +20,10 @@
         max-width: 640px;
         width: 100%;
       }
-      /* math-field {
-        --selection-background-color: red;
-        --selection-color: #f80;
-      } */
+      #mathml-render {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+      }
     </style>
   </head>
   <body>
@@ -46,10 +43,18 @@
       </ul>
     </header>
     <main>
-      <math-field id="mf">x^2+1</math-field>
-
+      <math-field id="mf"> \sqrt[3]{x} \sqrt{1+2\ne\frac{1}{2345}}</math-field>
       <!-- <math-field id="mf"
-        >\colorbox{yellow}{$\cos^2(x)+\textcolor{red}{\sin^{-1}(x)}$}</math-field
+        >-=a\phase{abc}\enclose{longdiv}{\frac{1}{12+3+4+5}}\enclose{box}{\sqrt[1234567]{\frac{1}{x+1}}}</math-field
+      > -->
+      <!-- <math-field id="mf"
+        >\phase{abc}\enclose{box}{\sqrt{\frac{1}{x+1}}}\enclose{roundedbox}{\sqrt{\frac{1}{x+1}}}\enclose{circle}{\sqrt{\frac{1}{x+1}}}\enclose{top}{\sqrt{\frac{1}{x+1}}}\enclose{left}{\sqrt{\frac{1}{x+1}}}\enclose{right}{\sqrt{\frac{1}{x+1}}}\enclose{bottom}{\sqrt{\frac{1}{x+1}}}\enclose{horizontalstrike}{\sqrt{\frac{1}{x+1}}}\enclose{verticalstrike}{\sqrt{\frac{1}{x+1}}}\enclose{updiagonalstrike}{\sqrt{\frac{1}{x+1}}}\enclose{downdiagonalstrike}{\sqrt{\frac{1}{x+1}}}\enclose{updiagonalarrow}{\sqrt{\frac{1}{x+1}}}\enclose{downdiagonalarrow}{\sqrt{\frac{1}{x+1}}}\enclose{phasorangle}{\sqrt{\frac{1}{x+1}}}\enclose{radical}{\sqrt{\frac{1}{x+1}}}\enclose{longdiv}{\sqrt{\frac{1}{x+1}}}\enclose{actuarial}{\sqrt{\frac{1}{x+1}}}\enclose{madruwb}{\sqrt{\frac{1}{x+1}}}</math-field
+      > -->
+      <!-- <math-field id="mf"
+        >\phase{abc}\phase{\frac{x}{x+1}}\enclose{downdiagonalstrike}{\frac{1}{x+1}}</math-field -->
+      <!-- <math-field id="mf"
+        >\text{Hello
+        World}\int^{x+1}_{x-1}x^2+y^{1+a}_{b+2}+\frac{x+z}{y^{2+n}+2}+\left(a+3+\frac{2}{4}\right)+\sqrt[1+x]{\frac78}+\frac56</math-field
       > -->
 
       <h2>Selection</h2>
@@ -70,6 +75,7 @@
 
       <h2>MathML</h2>
       <div class="output" id="mathml"></div>
+      <div id="mathml-render"></div>
 
       <h2>Latex to Speakable Text</h2>
       <div class="output" id="latex2speech"></div>
@@ -96,42 +102,115 @@
 
       renderMathInDocument();
 
-      const mfe = new MathfieldElement({
-        mathVirtualKeyboardPolicy: 'manual',
-      });
+      const mfe = new MathfieldElement();
 
       // iframe.contentDocument.body.appendChild(mf.cloneNode(true));
 
-      // mathVirtualKeyboard.layouts = makeVirtualKeyboard(['x', 'y']);
+      /* mathVirtualKeyboard.layouts = makeVirtualKeyboard([
+        '\\operatorname*{arg~max}_#?}',
+        '\\%',
+      ]); */
       // mathVirtualKeyboard.layouts = 'alphabetic';
 
-      const ce = new ComputeEngine({
-        latexDictionary: [
-          ...ComputeEngine.getLatexDictionary(),
-          {
-            trigger: ['\\smallfrac'],
-            parse: (parser) => {
-              return [
-                'Smallfrac',
-                parser.matchRequiredLatexArgument() ?? ['Error', "'missing'"],
-                parser.matchRequiredLatexArgument() ?? ['Error', "'missing'"],
-              ];
-            },
-          },
-        ],
-      });
-      ce.defineFunction('Smallfrac', {
-        signature: {
-          domain: 'NumericFunction',
-          evaluate: (ce, args) => ce.box(args[0].N() / args[1].N()),
-        },
-      });
+      // const ce = new ComputeEngine({
+      //   latexDictionary: [
+      //     ...ComputeEngine.getLatexDictionary(),
+      //     {
+      //       trigger: ['\\smallfrac'],
+      //       parse: (parser) => {
+      //         return [
+      //           'Smallfrac',
+      //           parser.matchRequiredLatexArgument() ?? ['Error', "'missing'"],
+      //           parser.matchRequiredLatexArgument() ?? ['Error', "'missing'"],
+      //         ];
+      //       },
+      //     },
+      //   ],
+      // });
+      // ce.defineFunction('Smallfrac', {
+      //   signature: {
+      //     domain: 'NumericFunction',
+      //     evaluate: (ce, args) => ce.box(args[0].N() / args[1].N()),
+      //   },
+      // });
 
-      MathfieldElement.computeEngine = ce;
+      // MathfieldElement.computeEngine = ce;
+      // mathVirtualKeyboard.layouts = [
+      //   {
+      //     label: 'minimal',
+      //     tooltip: 'Only the essential',
+      //     layers: [
+      //       {
+      //         style:
+      //           '.digit { background: blue !important; color: white !important }',
+      //         rows: [
+      //           [
+      //             // {
+      //             //   latex: 'x',
+      //             //   insert: 'x',
+      //             //   shift: { latex: 'a', insert: 's' },
+      //             // },
+      //             {
+      //               label: 'Aa',
+      //               class: 'if-math-mode',
+      //               command: ['perform-with-feedback', ['switch-mode', 'text']],
+      //             },
+      //             {
+      //               label: '√x',
+      //               class: 'if-text-mode',
+      //               command: ['perform-with-feedback', ['switch-mode', 'math']],
+      //             },
+      //             '-',
+      //             '\\times',
+      //             '\\frac{#@}{#?}',
+      //             '=',
+      //             '.',
+      //             '(',
+      //             ')',
+      //             '\\sqrt{#0}',
+      //             '#@^{#?}',
+      //           ],
+      //           [
+      //             { class: 'digit', latex: '1' },
+      //             { class: 'digit', latex: '2' },
+      //             { class: 'digit', latex: '3' },
+      //             { class: 'digit', latex: '4' },
+      //             { class: 'digit', latex: '5' },
+      //             { class: 'digit', latex: '6' },
+      //             { class: 'digit', latex: '7' },
+      //             { class: 'digit', latex: '8' },
+      //             { class: 'digit', latex: '9' },
+      //             { class: 'digit', latex: '0' },
+      //           ],
+      //         ],
+      //       },
+      //     ],
+      //   },
+      //   'alphabetic',
+      // ];
 
       const mf = document.getElementById('mf');
+      mf.scriptDepth = [0, 0];
+      mf.addEventListener(
+        'keydown',
+        (ev) => {
+          if (ev.key === 'Escape') {
+            if (ev.shiftKey) mf.executeCommand('moveToPreviousGroup');
+            else mf.executeCommand('moveToNextGroup');
+            ev.preventDefault();
+          }
+        },
+        { capture: true }
+      );
 
-      mf.smartFence = false;
+      MathfieldElement.computeEngine.latexOptions = {
+        ...MathfieldElement.computeEngine.latexOptions,
+        parseUnknownIdentifier: (s) =>
+          /^[a-zA-Z]+$/.test(s) ? 'function' : 'unknown',
+      };
+
+      // mf.onInlineShortcut = (_mf, s) =>
+      //   /^[a-zA-Z]+$/.test(s) ? `\\mathrm{${s}}` : '';
       // mf.onInlineShortcut = (_mf, s) => {
       //   if (/^[a-zA-Z][a-zA-Z0-9]*'?(_[a-zA-Z0-9]+'?)?$/.test(s)) {
       //     const m = s.match(/^([a-zA-Z]+)([0-9]+)$/);
@@ -154,6 +233,11 @@
       //     captureSelection: true,
       //   },
       // };
+
+      mf.macros = {
+        ...mf.macros,
+        speed: '\\mathrm{speed}',
+      };
 
       mf.addEventListener('input', (ev) => {
         console.log('input event');
@@ -211,16 +295,22 @@
         const latex = mf.getValue('latex-expanded');
         try {
           setHtml('latex', mf.getValue('latex-expanded'));
-          setHtml('math-json', mf.getValue('math-json'));
           setHtml('ascii-math', mf.getValue('ascii-math'));
           setHtml('mathml', mf.getValue('math-ml'));
+          document.getElementById(
+            'mathml-render'
+          ).innerHTML = `<math>${mf.getValue('math-ml')}</math>`;
           // setHtml('math-json', ce.parse(mf.value));
           setHtml('latex2speech', convertLatexToSpeakableText(mf.getValue()));
-          const result = mf.expression?.evaluate().latex ?? '';
-          document.getElementById('result').innerText = result;
-          document.getElementById('result-latex').innerText = `$$${result}$$`;
 
-          renderMathInElement('result-latex');
+          const expr = mf.expression;
+          if (expr) {
+            setHtml('math-json', JSON.stringify(expr.json));
+            const result = expr.evaluate().latex ?? '';
+            document.getElementById('result').innerText = result;
+            document.getElementById('result-latex').innerText = `$$${result}$$`;
+            renderMathInElement('result-latex');
+          }
         } catch (e) {
           console.error('Error converting', e.toString());
         }
@@ -256,9 +346,8 @@
       updateContent(mf);
       // renderMathInDocument();
 
-      function makeVirtualKeyboard(variables) {
+      function makeVirtualKeyboard(customKeys = []) {
         const extraSpecificity = `.ML__keyboard .minimalist-backdrop`;
-        // const customKeys = symbolsToKeycaps(variables);
 
         return {
           label: '',
@@ -361,8 +450,8 @@
               backdrop: 'minimalist-backdrop',
               container: 'minimalist-container',
               rows: [
-                // customKeys,
-                // customKeys.length > 0 ? ['[hr]'] : [],
+                customKeys,
+                customKeys.length > 0 ? ['[hr]'] : [],
                 [
                   '+',
                   '-',

@@ -514,6 +514,7 @@ export class ArrayAtom extends Atom {
         //
 
         const separator = new Box(null, { classes: 'vertical-separator' });
+        separator.height = totalHeight;
         separator.setStyle('height', totalHeight, 'em');
         separator.setStyle(
           'border-right',
@@ -551,7 +552,7 @@ export class ArrayAtom extends Atom {
       // There are no delimiters around the array, just return what
       // we've built so far.
       if (this.caret) inner.caret = this.caret;
-      return inner;
+      return this.bind(context, inner);
     }
 
     // There is at least one delimiter. Wrap the inner of the array with
@@ -592,7 +593,7 @@ export class ArrayAtom extends Atom {
     if (!result) return null;
     if (this.caret) result.caret = this.caret;
 
-    return this.attachSupsub(context, { base: result });
+    return this.bind(context, this.attachSupsub(context, { base: result }));
   }
 
   _serialize(options: ToLatexOptions): string {

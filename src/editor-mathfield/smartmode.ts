@@ -36,10 +36,11 @@ function convertLastAtomsToText(
     done =
       count === 0 ||
       atom === undefined ||
+      atom.type === 'first' ||
       atom.mode !== 'math' ||
       !(
-        (atom.type && /mord|mpunct/.test(atom.type)) ||
-        (atom.type === 'mop' && /[a-zA-Z]+/.test(atom.value))
+        (atom.type && /mord|mpunct|operator/.test(atom.type)) ||
+        (atom.type === 'mop' && /[a-zA-Z ]+/.test(atom.value))
       ) ||
       !atom.hasEmptyBranch('superscript') ||
       !atom.hasEmptyBranch('subscript') ||
@@ -67,7 +68,7 @@ function convertLastAtomsToText(
 function convertLastAtomsToMath(
   model: ModelPrivate,
   count?: number,
-  until?
+  until?: (arg: Atom) => boolean
 ): void {
   if (typeof count === 'function') {
     until = count;
@@ -84,10 +85,11 @@ function convertLastAtomsToMath(
     done =
       count === 0 ||
       !atom ||
+      atom.type === 'first' ||
       atom.isFirstSibling ||
       atom.mode !== 'text' ||
       atom.value === ' ' ||
-      (until && !until(atom));
+      (typeof until === 'function' && !until(atom));
     if (!done) {
       data.push(Atom.serialize([atom], { defaultMode: 'math' }));
       atom.mode = 'math';
@@ -136,7 +138,7 @@ export function removeIsolatedSpace(model: ModelPrivate): void {
 /**
  * Return the characters before the insertion point that could potentially be
  * turned into text mode.
- * This excludes things like 'mop' (e.g. \sin)
+ * This excludes things like 'operator' (e.g. \sin)
  */
 function getTextBeforePosition(model: ModelPrivate): string {
   // Going backwards, accumulate
@@ -171,9 +173,10 @@ export function smartMode(
   keystroke: string,
   evt?: KeyboardEvent
 ): boolean {
-  if (mathfield.smartModeSuppressed) return false;
-
   const { model } = mathfield;
+
+  if (model.mode === 'latex') return false;
+
   // Are we at the end of a group?
   if (!model.at(model.position).isLastSibling) return false;
 

@@ -42,7 +42,7 @@ function validateShortcut(
   // Find first sibling left which is not a placeholder or subsup
   let sibling = siblings[0]; // sibling immediately left
   let index = 0;
-  while (sibling?.type && /msubsup|placeholder/.test(sibling.type)) {
+  while (sibling?.type && /^(subsup|placeholder)$/.test(sibling.type)) {
     index += 1;
     sibling = siblings[index];
   }
@@ -57,7 +57,10 @@ function validateShortcut(
     surd = sibling.type === 'surd';
     binop = sibling.type === 'mbin';
     relop = sibling.type === 'mrel';
-    operator = sibling.type === 'mop';
+    operator =
+      sibling.type === 'mop' ||
+      sibling.type === 'operator' ||
+      sibling.type === 'extensible-symbol';
     punct = sibling.type === 'mpunct' || sibling.type === 'minner';
     array = sibling.type === 'array';
     openfence = sibling.type === 'mopen';

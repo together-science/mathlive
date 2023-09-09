@@ -903,6 +903,7 @@ defineFunction(['operatorname', 'operatorname*'], '{operator:math}', {
           ? atom.attachLimits(context, { base })
           : atom.attachSupsub(context, { base });
     }
+    if (atom.caret) base.caret = atom.caret;
     return new Box(atom.bind(context, base), {
       type: 'op',
       isSelected: atom.isSelected,
@@ -984,7 +985,8 @@ defineFunction('rule', '[raise:value]{width:value}{thickness:value}', {
 
 // An overline
 defineFunction(['overline', 'underline'], '{:auto}', {
-  createAtom: (options) => new Atom(options),
+  createAtom: (options) =>
+    new Atom({ ...options, body: argAtoms(options.args![0]) }),
   render: (atom, parentContext) => {
     const position = atom.command.substring(1);
     // TeXBook:443. Rule 9 and 10
@@ -997,21 +999,31 @@ defineFunction(['overline', 'underline'], '{:auto}', {
     );
     const inner = Atom.createBox(context, atom.body);
     if (!inner) return null;
-    const ruleWidth =
+    const ruleThickness =
       context.metrics.defaultRuleThickness / context.scalingFactor;
     const line = new Box(null, { classes: position + '-line' });
-    line.height = ruleWidth;
-    line.maxFontSize = ruleWidth * 1.125 * context.scalingFactor;
+    line.height = ruleThickness;
+    line.maxFontSize = ruleThickness * 1.125 * context.scalingFactor;
     let stack: Box;
     if (position === 'overline') {
       stack = new VBox({
         shift: 0,
-        children: [{ box: inner }, 3 * ruleWidth, { box: line }, ruleWidth],
+        children: [
+          { box: inner },
+          3 * ruleThickness,
+          { box: line },
+          ruleThickness,
+        ],
       });
     } else {
       stack = new VBox({
         top: inner.height,
-        children: [ruleWidth, { box: line }, 3 * ruleWidth, { box: inner }],
+        children: [
+          ruleThickness,
+          { box: line },
+          3 * ruleThickness,
+          { box: inner },
+        ],
       });
     }
 

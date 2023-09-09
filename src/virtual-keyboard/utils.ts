@@ -133,7 +133,7 @@ function alphabeticLayout(): NormalizedVirtualKeyboardLayout {
       { label: '4', variants: '4' },
       { label: '5', shift: { latex: '\\frac{#@}{#?}' }, variants: '5' },
       { label: '6', shift: { latex: '#@^#?' }, variants: '6' },
-      { label: '7', variants: '4' },
+      { label: '7', variants: '7' },
       { label: '8', shift: { latex: '\\times' }, variants: '8' },
       { label: '9', shift: { label: '(', latex: '(' }, variants: '9' },
       { label: '0', shift: { label: ')', latex: ')' }, variants: '0' },
@@ -169,7 +169,7 @@ function alphabeticLayout(): NormalizedVirtualKeyboardLayout {
     '[+]',
     '[=]',
     { label: ' ', width: 1.5 },
-    ',',
+    { label: ',', shift: ';', variants: '.', class: 'hide-shift' },
     '[.]',
     '[left]',
     '[right]',
@@ -429,6 +429,9 @@ const SVG_ICONS = `<svg xmlns="http://www.w3.org/2000/svg" style="display: none;
   <path d="M135 432.1l-128-128C2.344 300.3 0 294.2 0 288s2.344-12.28 7.031-16.97l128-128c9.375-9.375 24.56-9.375 33.94 0s9.375 24.56 0 33.94L81.94 264H464v-208C464 42.75 474.8 32 488 32S512 42.75 512 56V288c0 13.25-10.75 24-24 24H81.94l87.03 87.03c9.375 9.375 9.375 24.56 0 33.94S144.4 442.3 135 432.1z"/>
 </symbol>
 
+
+<symbol id="circle-plus" viewBox="0 0 512 512"><path d="M256 48a208 208 0 1 1 0 416 208 208 0 1 1 0-416zm0 464A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM232 344c0 13.3 10.7 24 24 24s24-10.7 24-24V280h64c13.3 0 24-10.7 24-24s-10.7-24-24-24H280V168c0-13.3-10.7-24-24-24s-24 10.7-24 24v64H168c-13.3 0-24 10.7-24 24s10.7 24 24 24h64v64z"/></symbol>
+
 <symbol id="svg-command" viewBox="0 0 640 512">
   <path d="M34.495 36.465l211.051 211.05c4.686 4.686 4.686 12.284 0 16.971L34.495 475.535c-4.686 4.686-12.284 4.686-16.97 0l-7.071-7.07c-4.686-4.686-4.686-12.284 0-16.971L205.947 256 10.454 60.506c-4.686-4.686-4.686-12.284 0-16.971l7.071-7.07c4.686-4.687 12.284-4.687 16.97 0zM640 468v-10c0-6.627-5.373-12-12-12H300c-6.627 0-12 5.373-12 12v10c0 6.627 5.373 12 12 12h328c6.627 0 12-5.373 12-12z"/>
 </symbol>
@@ -590,7 +593,7 @@ function makeLayer(
   if (layer.rows) {
     layerMarkup += `<div class='MLK__rows'>`;
     for (const row of layer.rows) {
-      layerMarkup += `<div class=row>`;
+      layerMarkup += `<div dir='ltr' class=row>`;
       for (const keycap of row) {
         if (keycap) {
           const keycapId = keyboard.registerKeycap(keycap);
@@ -637,7 +640,8 @@ export function renderKeycap(
     else if (typeof keycap.shift === 'object') {
       markup = keycap.shift.label
         ? keycap.shift.label
-        : (latexToMarkup(keycap.shift.latex || keycap.shift.insert || '') ||
+        : // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+          (latexToMarkup(keycap.shift.latex || keycap.shift.insert || '') ||
             keycap.shift.key) ??
           '';
     }
@@ -649,7 +653,8 @@ export function renderKeycap(
     //
     markup = keycap.label
       ? keycap.label
-      : (latexToMarkup(keycap.latex || keycap.insert || '') || keycap.key) ??
+      : // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        (latexToMarkup(keycap.latex || keycap.insert || '') || keycap.key) ??
         '';
 
     if (keycap.shift) {
@@ -660,6 +665,7 @@ export function renderKeycap(
       else if (keycap.shift.label) shiftLabel = keycap.shift.label;
       else {
         shiftLabel =
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
           (latexToMarkup(keycap.shift.latex || keycap.shift.insert || '') ||
             keycap.shift.key) ??
           '';
@@ -707,14 +713,19 @@ const KEYCAP_SHORTCUTS: Record<string, Partial<VirtualKeyboardKeycap>> = {
     },
   },
   '[return]': {
-    class: 'action',
+    class: 'action hide-shift',
     command: ['performWithFeedback', 'commit'],
+    shift: { command: ['performWithFeedback', 'addRowAfter'] },
     width: 1.5,
     label: '<svg class=svg-glyph><use xlink:href=#svg-commit /></svg>',
   },
   '[action]': {
-    class: 'action',
+    class: 'action hide-shift',
     command: ['performWithFeedback', 'commit'],
+    shift: {
+      label: '<svg class=svg-glyph><use xlink:href=#circle-plus /></svg>',
+      command: ['performWithFeedback', 'addRowAfter'],
+    },
     width: 1.5,
     label: '<svg class=svg-glyph><use xlink:href=#svg-commit /></svg>',
   },
@@ -730,9 +741,10 @@ const KEYCAP_SHORTCUTS: Record<string, Partial<VirtualKeyboardKeycap>> = {
   },
   '[.]': {
     variants: '.',
-    command: 'insertDecimalSeparator',
+    command: ['performWithFeedback', 'insertDecimalSeparator'],
     shift: ',',
     class: 'big-op hide-shift',
+    label: '.',
   },
   '[+]': {
     variants: [{ latex: '\\sum_{#0}^{#0}', class: 'small' }, '\\oplus'],
@@ -741,7 +753,7 @@ const KEYCAP_SHORTCUTS: Record<string, Partial<VirtualKeyboardKeycap>> = {
     class: 'big-op hide-shift',
     shift: {
       latex: '\\sum',
-      insert: '\\sum_{#?}^{#?}',
+      insert: '\\sum',
       class: 'small',
     },
   },
@@ -760,14 +772,14 @@ const KEYCAP_SHORTCUTS: Record<string, Partial<VirtualKeyboardKeycap>> = {
     label: '&divide;',
   },
   '[*]': {
-    variants: [{ latex: '\\prod_{#0}^{#0}', class: 'small' }, '\\otimes'],
-    latex: '\\times',
+    variants: [
+      { latex: '\\prod_{#0}^{#0}', class: 'small' },
+      '\\otimes',
+      '\\cdot',
+    ],
+    latex: '\\cdot',
     label: '&times;',
-    shift: {
-      latex: '\\prod',
-      insert: '\\prod_{#?}^{#?}',
-      class: 'small',
-    },
+    shift: { latex: '\\times' },
     class: 'big-op hide-shift',
   },
   '[=]': {
@@ -1064,7 +1076,7 @@ function handlePointerDown(ev: PointerEvent) {
   // Is it the Shift key?
   if (isShiftKey(keycap)) {
     target.classList.add('is-active');
-    keyboard.incrementShiftPress();
+    keyboard.shiftPressCount++;
   }
 
   if (keycap.variants) {
@@ -1080,7 +1092,7 @@ function handlePointerDown(ev: PointerEvent) {
           target?.classList.remove('is-active');
         });
       }
-    }, 200);
+    }, 300);
   }
 
   ev.preventDefault();
@@ -1107,7 +1119,7 @@ function handleVirtualKeyboardEvent(controller) {
     if (ev.type === 'pointercancel') {
       target.classList.remove('is-pressed');
       if (isShiftKey(keycap)) {
-        keyboard.decrementShiftPress();
+        keyboard.shiftPressCount--;
         // Because of capslock, we may not have changed status
         target.classList.toggle('is-active', keyboard.isShifted);
       }
@@ -1118,7 +1130,7 @@ function handleVirtualKeyboardEvent(controller) {
     if (ev.type === 'pointerleave' && ev.target === target) {
       target.classList.remove('is-pressed');
       if (isShiftKey(keycap)) {
-        keyboard.decrementShiftPress();
+        keyboard.shiftPressCount--;
         // Because of capslock, we may not have changed status
         target.classList.toggle('is-active', keyboard.isShifted);
       }
@@ -1150,7 +1162,8 @@ function handleVirtualKeyboardEvent(controller) {
           } else executeKeycapCommand(keycap.shift);
         } else executeKeycapCommand(keycap);
 
-        if (keyboard.shiftPressCount === 1) keyboard.resetShiftPress();
+        if (keyboard.shiftPressCount === 1 && !(ev as MouseEvent).shiftKey)
+          keyboard.shiftPressCount = 0;
       }
       controller.abort();
       ev.preventDefault();

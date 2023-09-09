@@ -9,8 +9,12 @@ import { selectGroup } from '../editor-model/commands-select';
 let gLastTap: { x: number; y: number; time: number } | null = null;
 let gTapCount = 0;
 
-function isPointerEvent(evt: Event): evt is PointerEvent {
-  return evt instanceof PointerEvent;
+function isPointerEvent(evt: Event | null): evt is PointerEvent {
+  return (
+    evt !== null &&
+    globalThis.PointerEvent !== undefined &&
+    evt instanceof PointerEvent
+  );
 }
 
 export function onPointerDown(
@@ -48,8 +52,7 @@ export function onPointerDown(
         'pointerup pointercancel',
         endPointerTracking as EventListener
       );
-      if (evt instanceof PointerEvent)
-        field.releasePointerCapture(evt.pointerId);
+      if (isPointerEvent(evt)) field.releasePointerCapture(evt.pointerId);
     } else {
       off(window, 'mousemove', onPointerMove);
       off(window, 'mouseup blur', endPointerTracking as EventListener);
@@ -99,14 +102,13 @@ export function onPointerDown(
     const focus = offsetFromPoint(that, x, y, {
       bias: x <= anchorX ? (x === anchorX ? 0 : -1) : +1,
     });
-    if (trackingWords) {
-      // @todo: extend focus, actualAnchor to word boundary
-    }
 
     if (actualAnchor >= 0 && focus >= 0) {
       that.model.extendSelectionTo(actualAnchor, focus);
       requestUpdate(mathfield);
     }
+
+    if (trackingWords) selectGroup(that.model);
 
     // Prevent synthetic mouseMove event when this is a touch event
     evt.preventDefault();
@@ -138,16 +140,8 @@ export function onPointerDown(
     anchorY >= bounds.top &&
     anchorY <= bounds.bottom
   ) {
-    // Focus the mathfield
-    if (!mathfield.hasFocus()) {
-      dirty = 'none'; // focus() will refresh
-      mathfield.focus({ preventScroll: true });
-    }
-
-    // Clicking or tapping the field resets the keystroke buffer and
-    // smart mode
+    // Clicking or tapping the field resets the keystroke buffer
     mathfield.flushInlineShortcutBuffer();
-    mathfield.smartModeSuppressed = false;
     mathfield.adoptStyle = 'left';
 
     anchor = offsetFromPoint(mathfield, anchorX, anchorY, {
@@ -203,8 +197,7 @@ export function onPointerDown(
             'pointerup pointercancel',
             endPointerTracking as EventListener
           );
-          if (evt instanceof PointerEvent)
-            field.setPointerCapture(evt.pointerId);
+          if (isPointerEvent(evt)) field.setPointerCapture(evt.pointerId);
         } else {
           on(window, 'blur', endPointerTracking as EventListener);
           on(window, 'mousemove', onPointerMove);
@@ -218,6 +211,13 @@ export function onPointerDown(
           dirty = 'all';
         }
       }
+    }
+    // Focus the mathfield
+    // (do it after the selection has been set, since the
+    // logic on what to do on focus may depend on the selection)
+    if (!mathfield.hasFocus()) {
+      dirty = 'none'; // focus() will refresh
+      mathfield.focus({ preventScroll: true });
     }
   } else gLastTap = null;
 

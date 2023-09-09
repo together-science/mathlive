@@ -41,8 +41,9 @@ import { Context } from './context';
 // - Token: a space `<space>`, a literal, name, group or mode shift
 // - Name (control sequence): a token with an initial `\` followed by
 //      one or more letters /[a-zA-Z]+\*?/ or followed by a single
-//      non-letter (the `operatorname*` and `hspace*` names end with
-//      a `*`) or the `~` token, e.g. `\frac`, `\alpha`, `\!`
+//      non-letter (the name of some commands such as `operatorname*`
+//      and `hspace*` names end with a `*`) or the `~` token, e.g.
+//      `\frac`, `\alpha`, `\!`
 // - Symbol: a name which is not a command, with no arguments,
 //      e.g. `\pi`
 // - Group: a sequence of tokens that start with `<{>` and end
@@ -1004,7 +1005,6 @@ export class Parser {
       if (nestLevel !== 0) this.parseExpression();
     }
 
-    if (nestLevel === 0) this.match(')');
     const result = new LeftRightAtom('', this.mathlist, {
       leftDelim: '(',
       rightDelim: nestLevel === 0 ? ')' : '?',
@@ -1205,7 +1205,7 @@ export class Parser {
     const opAtom =
       this.mathlist.length > 0 ? this.mathlist[this.mathlist.length - 1] : null;
 
-    if (opAtom === null || opAtom.type !== 'mop') return false;
+    if (opAtom === null) return false;
 
     // Record that the limits was set through an explicit command
     // so we can generate the appropriate LaTeX later

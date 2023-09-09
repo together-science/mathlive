@@ -27,13 +27,7 @@ type StylesheetId =
 
 let gStylesheets: Partial<Record<StylesheetId, CSSStyleSheet>>;
 
-export function getStylesheet(id: StylesheetId): CSSStyleSheet {
-  if (!gStylesheets) gStylesheets = {};
-
-  if (gStylesheets[id]) return gStylesheets[id]!;
-
-  gStylesheets[id] = new CSSStyleSheet();
-
+export function getStylesheetContent(id: StylesheetId): string {
   let content = '';
 
   switch (id) {
@@ -42,7 +36,7 @@ export function getStylesheet(id: StylesheetId): CSSStyleSheet {
     //
     case 'mathfield-element':
       content = `
-    :host { display: inline-block; background-color: field; color: fieldtext; border-width: 1px; border-style: solid; border-color: #acacac; border-radius: 2px; padding:4px; pointer-events: none;}
+    :host { display: inline-block; background-color: field; color: fieldtext; border-width: 1px; border-style: solid; border-color: #acacac; border-radius: 2px; padding:4px;}
     :host([hidden]) { display: none; }
     :host([disabled]), :host([disabled]:focus), :host([disabled]:focus-within) { outline: none; opacity:  .5; }
     :host(:focus), :host(:focus-within) {
@@ -52,6 +46,9 @@ export function getStylesheet(id: StylesheetId): CSSStyleSheet {
     :host([readonly]:focus), :host([readonly]:focus-within),
     :host([read-only]:focus), :host([read-only]:focus-within) {
       outline: none;
+    }
+    @media (hover: none) and (pointer: coarse) {
+      :host(:not(:focus)) :first-child { pointer-events: none !important; }
     }`;
       break;
     case 'core':
@@ -75,8 +72,17 @@ export function getStylesheet(id: StylesheetId): CSSStyleSheet {
     default:
       debugger;
   }
+  return content;
+}
 
-  gStylesheets[id]!.replaceSync(content);
+export function getStylesheet(id: StylesheetId): CSSStyleSheet {
+  if (!gStylesheets) gStylesheets = {};
+
+  if (gStylesheets[id]) return gStylesheets[id]!;
+
+  gStylesheets[id] = new CSSStyleSheet();
+
+  gStylesheets[id]!.replaceSync(getStylesheetContent(id));
 
   return gStylesheets[id]!;
 }
@@ -84,6 +90,15 @@ export function getStylesheet(id: StylesheetId): CSSStyleSheet {
 let gInjectedStylesheets: Partial<Record<StylesheetId, number>>;
 
 export function injectStylesheet(id: StylesheetId): void {
+  if (!('adoptedStyleSheets' in document)) {
+    if (window.document.getElementById(`mathlive-style-${id}`)) return;
+    const styleNode = window.document.createElement('style');
+    styleNode.id = `mathlive-style-${id}`;
+    styleNode.append(window.document.createTextNode(getStylesheetContent(id)));
+    window.document.head.appendChild(styleNode);
+    return;
+  }
+
   if (!gInjectedStylesheets) gInjectedStylesheets = {};
   if ((gInjectedStylesheets[id] ?? 0) !== 0) gInjectedStylesheets[id]! += 1;
   else {
@@ -94,11 +109,12 @@ export function injectStylesheet(id: StylesheetId): void {
 }
 
 export function releaseStylesheet(id: StylesheetId): void {
+  if (!('adoptedStyleSheets' in document)) return;
+
   if (!gInjectedStylesheets?.[id]) return;
 
   gInjectedStylesheets[id]! -= 1;
   if (gInjectedStylesheets[id]! <= 0) {
-    console.log('releasign stylesheet ', id);
     const stylesheet = gStylesheets[id]!;
     document.adoptedStyleSheets = document.adoptedStyleSheets.filter(
       (x) => x !== stylesheet

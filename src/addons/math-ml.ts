@@ -1,5 +1,7 @@
 import { Atom } from '../core/atom-class';
 import { MacroAtom } from '../core-atoms/macro';
+import { mathVariantToUnicode } from '../core-definitions/unicode';
+import { LeftRightAtom } from '../core-atoms/leftright';
 
 export type MathMLStream = {
   atoms: Atom[];
@@ -41,12 +43,29 @@ function scanIdentifier(stream: MathMLStream, final: number, options) {
   const variantStyle = atom.style?.variantStyle ?? '';
   let variantProp = '';
   if (variant || variantStyle) {
+    const unicodeVariant = mathVariantToUnicode(
+      atom.value,
+      atom.style?.variant,
+      atom.style?.variantStyle
+    );
+    if (unicodeVariant !== atom.value) {
+      stream.index += 1;
+      mathML = `<mi${makeID(atom.id, options)}>${unicodeVariant}</mi>`;
+      if (!parseSubsup(mathML, stream, options)) {
+        stream.mathML += mathML;
+        stream.lastType = 'mi';
+      }
+
+      return true;
+    }
+
     variantProp =
       {
         'upnormal': 'normal',
         'boldnormal': 'bold',
         'italicmain': 'italic',
         'bolditalicmain': 'bold-italic',
+        'updouble-struck': 'double-struck',
         'double-struck': 'double-struck',
         'boldfraktur': 'bold-fraktur',
         'calligraphic': 'script',
@@ -61,7 +80,7 @@ function scanIdentifier(stream: MathMLStream, final: number, options) {
         'bolditalicsans-serif': 'sans-serif-bold-italic',
         'monospace': 'monospace',
       }[variantStyle + variant] ?? '';
-    variantProp = `mathvariant="${variantProp}"`;
+    variantProp = ` mathvariant="${variantProp}"`;
   }
 
   const SPECIAL_IDENTIFIERS = {
@@ -232,8 +251,10 @@ function scanText(stream: MathMLStream, final: number, options) {
   }
 
   if (mathML.length > 0) {
-    stream.mathML += `<mtext ${makeID(stream.atoms[initial].id, options)}
-      >${mathML}</mtext>`;
+    stream.mathML += `<mtext ${makeID(
+      stream.atoms[initial].id,
+      options
+    )}>${mathML}</mtext>`;
     stream.lastType = 'mtext';
     return true;
   }
@@ -340,6 +361,7 @@ function scanOperator(stream: MathMLStream, final: number, options) {
   let mathML = '';
   let lastType = '';
   const atom = stream.atoms[stream.index];
+  if (!atom) return false;
 
   const SPECIAL_OPERATORS = {
     '\\ne': '&ne;',
@@ -350,8 +372,12 @@ function scanOperator(stream: MathMLStream, final: number, options) {
     '\\vert': '|',
     '\\Vert': '\u2225',
     '\\mid': '\u2223',
+    '\\{': '{',
+    '\\}': '}',
     '\\lbrace': '{',
     '\\rbrace': '}',
+    '\\lbrack': '[',
+    '\\rbrack': ']',
     '\\lparen': '(',
     '\\rparen': ')',
     '\\langle': '\u27E8',
@@ -377,7 +403,12 @@ function scanOperator(stream: MathMLStream, final: number, options) {
     mathML += atomToMathML(stream.atoms[stream.index], options);
     stream.index += 1;
     lastType = 'mo';
-  } else if (stream.index < final && atom.type === 'mop') {
+  } else if (
+    stream.index < final &&
+    (atom.type === 'mop' ||
+      atom.type === 'operator' ||
+      atom.type === 'extensible-symbol')
+  ) {
     // MathML += '<mrow>';
 
     if (
@@ -599,6 +630,7 @@ function atomToMathML(atom, options): string {
     '\\ ': 6 / 18,
     '\\,': 3 / 18,
     '\\:': 4 / 18,
+    '\\>': 4 / 18,
     '\\;': 5 / 18,
     '\\enspace': 0.5,
     '\\quad': 1,
@@ -770,18 +802,21 @@ function atomToMathML(atom, options): string {
       break;
 
     case 'leftright':
+      const leftrightAtom = atom as LeftRightAtom;
+      const lDelim = leftrightAtom.leftDelim;
       result = '<mrow>';
-      if (atom.leftDelim && atom.leftDelim !== '.') {
-        result += `<mo${makeID(atom.id, options)}${
-          SPECIAL_DELIMS[atom.leftDelim] ?? atom.leftDelim
+      if (lDelim && lDelim !== '.') {
+        result += `<mo${makeID(atom.id, options)}>${
+          SPECIAL_DELIMS[lDelim] ?? lDelim
         }</mo>`;
       }
 
       if (atom.body) result += toMathML(atom.body, options);
 
-      if (atom.rightDelim && atom.rightDelim !== '.') {
+      const rDelim = leftrightAtom.matchingRightDelim();
+      if (rDelim && rDelim !== '.') {
         result += `<mo${makeID(atom.id, options)}>${
-          SPECIAL_DELIMS[atom.rightDelim] ?? atom.rightDelim
+          SPECIAL_DELIMS[rDelim] ?? rDelim
         }</mo>`;
       }
 
@@ -791,7 +826,7 @@ function atomToMathML(atom, options): string {
     case 'sizeddelim':
     case 'delim':
       result += `<mo${makeID(atom.id, options)}>${
-        SPECIAL_DELIMS[atom.delim] || atom.delim
+        SPECIAL_DELIMS[atom.value] || atom.value
       }</mo>`;
       break;
 
@@ -908,6 +943,8 @@ function atomToMathML(atom, options): string {
       break;
 
     case 'mop':
+    case 'operator':
+    case 'extensible-symbol':
       if (atom.body !== '\u200B') {
         // Not ZERO-WIDTH
         result = '<mo' + makeID(atom.id, options) + '>';
@@ -1022,6 +1059,9 @@ function atomToMathML(atom, options): string {
       break;
     case 'tooltip':
       result += toMathML(atom.body, options);
+      break;
+    case 'text':
+      result += `<mtext ${makeID(atom.id, options)}x>${atom.value}</mtext>`;
       break;
     default:
       console.log('MathML, unknown type : ', atom);

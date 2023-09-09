@@ -40,9 +40,8 @@ export type Token = string;
 export type ParseMode = 'math' | 'text' | 'latex';
 
 /**
- * Error code passed to the [[`ErrorListener`]] function.
+ * Error codes returned by the `mf.errors` property.
  *
- * See [[`MathfieldOptions`]], [[`convertLatexToMarkup`]]
  *
  *
     |  | |
@@ -88,10 +87,6 @@ export type LatexSyntaxError<T = ParserErrorCode> = {
   before?: string;
   after?: string;
 };
-
-export type ErrorListener<T = ParserErrorCode> = (
-  err: LatexSyntaxError<T>
-) => void;
 
 /**
  * Variants indicate a stylistic alternate for some characters.
@@ -356,7 +351,7 @@ export type BoxCSSProperties =
   | 'display'
   | 'font-family'
   | 'left'
-  | 'height'
+  | 'height' // @todo: remove
   | 'line-height'
   | 'margin-top'
   | 'margin-left'
@@ -369,7 +364,7 @@ export type BoxCSSProperties =
   | 'top'
   | 'bottom'
   | 'vertical-align'
-  | 'width'
+  | 'width' // @todo: remove
   | 'z-index';
 
 export type MatrixEnvironment =
