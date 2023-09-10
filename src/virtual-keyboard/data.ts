@@ -1,6 +1,11 @@
-import type { VirtualKeyboardLayout } from '../public/virtual-keyboard';
+import type {
+  VirtualKeyboardLayout,
+  VirtualKeyboardName,
+} from '../public/virtual-keyboard';
 
-export const LAYOUTS: Record<string, VirtualKeyboardLayout> = {
+export const LAYOUTS: Partial<
+  Record<VirtualKeyboardName, VirtualKeyboardLayout>
+> = {
   'numeric': {
     label: '123',
     labelClass: 'MLK__tex-math',
@@ -15,14 +20,14 @@ export const LAYOUTS: Record<string, VirtualKeyboardLayout> = {
             'z',
             't',
             'r',
-            { latex: 'f(#?)', class: 'small' },
-            { latex: 'g(#?)', class: 'small' },
             'x^2',
             'x^n',
+            'x^{#?}',
             'x_n',
-            'x_{n+1}',
             'x_i',
-            'x_{i+1}',
+            'x_{#?}',
+            { latex: 'f(#?)', class: 'small' },
+            { latex: 'g(#?)', class: 'small' },
           ],
         },
         { latex: 'n', shift: 'a', variants: ['i', 'j', 'p', 'k', 'a', 'u'] },
@@ -540,8 +545,8 @@ export const LAYOUTS: Record<string, VirtualKeyboardLayout> = {
           ],
         },
         {
-          latex: '\\mathrm{exp}',
-          insert: '\\mathrm{exp}\\left(#0\\right)',
+          latex: '\\exp',
+          insert: '\\exp\\left(#0\\right)',
           variants: ['\\exponentialE^{#0}'],
         },
         '\\left\\Vert#0\\right\\Vert',

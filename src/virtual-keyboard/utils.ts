@@ -133,7 +133,7 @@ function alphabeticLayout(): NormalizedVirtualKeyboardLayout {
       { label: '4', variants: '4' },
       { label: '5', shift: { latex: '\\frac{#@}{#?}' }, variants: '5' },
       { label: '6', shift: { latex: '#@^#?' }, variants: '6' },
-      { label: '7', variants: '4' },
+      { label: '7', variants: '7' },
       { label: '8', shift: { latex: '\\times' }, variants: '8' },
       { label: '9', shift: { label: '(', latex: '(' }, variants: '9' },
       { label: '0', shift: { label: ')', latex: ')' }, variants: '0' },
@@ -590,7 +590,7 @@ function makeLayer(
   if (layer.rows) {
     layerMarkup += `<div class='MLK__rows'>`;
     for (const row of layer.rows) {
-      layerMarkup += `<div class=row>`;
+      layerMarkup += `<div dir='ltr' class=row>`;
       for (const keycap of row) {
         if (keycap) {
           const keycapId = keyboard.registerKeycap(keycap);
@@ -637,7 +637,8 @@ export function renderKeycap(
     else if (typeof keycap.shift === 'object') {
       markup = keycap.shift.label
         ? keycap.shift.label
-        : (latexToMarkup(keycap.shift.latex || keycap.shift.insert || '') ||
+        : // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+          (latexToMarkup(keycap.shift.latex || keycap.shift.insert || '') ||
             keycap.shift.key) ??
           '';
     }
@@ -649,7 +650,8 @@ export function renderKeycap(
     //
     markup = keycap.label
       ? keycap.label
-      : (latexToMarkup(keycap.latex || keycap.insert || '') || keycap.key) ??
+      : // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        (latexToMarkup(keycap.latex || keycap.insert || '') || keycap.key) ??
         '';
 
     if (keycap.shift) {
@@ -660,6 +662,7 @@ export function renderKeycap(
       else if (keycap.shift.label) shiftLabel = keycap.shift.label;
       else {
         shiftLabel =
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
           (latexToMarkup(keycap.shift.latex || keycap.shift.insert || '') ||
             keycap.shift.key) ??
           '';
@@ -730,7 +733,7 @@ const KEYCAP_SHORTCUTS: Record<string, Partial<VirtualKeyboardKeycap>> = {
   },
   '[.]': {
     variants: '.',
-    command: 'insertDecimalSeparator',
+    command: ['performWithFeedback', 'insertDecimalSeparator'],
     shift: ',',
     class: 'big-op hide-shift',
   },
@@ -1064,7 +1067,7 @@ function handlePointerDown(ev: PointerEvent) {
   // Is it the Shift key?
   if (isShiftKey(keycap)) {
     target.classList.add('is-active');
-    keyboard.incrementShiftPress();
+    keyboard.shiftPressCount++;
   }
 
   if (keycap.variants) {
@@ -1080,7 +1083,7 @@ function handlePointerDown(ev: PointerEvent) {
           target?.classList.remove('is-active');
         });
       }
-    }, 200);
+    }, 300);
   }
 
   ev.preventDefault();
@@ -1107,7 +1110,7 @@ function handleVirtualKeyboardEvent(controller) {
     if (ev.type === 'pointercancel') {
       target.classList.remove('is-pressed');
       if (isShiftKey(keycap)) {
-        keyboard.decrementShiftPress();
+        keyboard.shiftPressCount--;
         // Because of capslock, we may not have changed status
         target.classList.toggle('is-active', keyboard.isShifted);
       }
@@ -1118,7 +1121,7 @@ function handleVirtualKeyboardEvent(controller) {
     if (ev.type === 'pointerleave' && ev.target === target) {
       target.classList.remove('is-pressed');
       if (isShiftKey(keycap)) {
-        keyboard.decrementShiftPress();
+        keyboard.shiftPressCount--;
         // Because of capslock, we may not have changed status
         target.classList.toggle('is-active', keyboard.isShifted);
       }
@@ -1150,7 +1153,8 @@ function handleVirtualKeyboardEvent(controller) {
           } else executeKeycapCommand(keycap.shift);
         } else executeKeycapCommand(keycap);
 
-        if (keyboard.shiftPressCount === 1) keyboard.resetShiftPress();
+        if (keyboard.shiftPressCount === 1 && !(ev as MouseEvent).shiftKey)
+          keyboard.shiftPressCount = 0;
       }
       controller.abort();
       ev.preventDefault();

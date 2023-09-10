@@ -1,6 +1,6 @@
 {
   "name": "mathlive",
-  "version": "0.94.6",
+  "version": "0.95.5",
   "description": "A web component for math input",
   "license": "MIT",
   "funding": {
@@ -37,6 +37,7 @@
         "require": "./dist/mathlive.min.js"
       }
     },
+    "./ssr": "./dist/mathlive-ssr.min.mjs",
     "./fonts.css": "./dist/mathlive-fonts.css",
     "./static.css": "./dist/mathlive-static.css",
     "./fonts/*": "./dist/fonts/*",
@@ -112,7 +113,8 @@
     "Luis Mesa (https://github.com/LuisMesa)",
     "Pablo Androetto (https://github.com/androettop)",
     "James Mullen (https://github.com/wildyellowfin)",
-    "Michael Greminger (https://github.com/mgreminger)"
+    "Michael Greminger (https://github.com/mgreminger)",
+    "Oscar Hermoso (https://github.com/oscarhermoso)"
   ],
   "browserslist": [
     "> 1%",
@@ -125,7 +127,7 @@
   },
   "prettier": "@cortex-js/prettier-config",
   "dependencies": {
-    "@cortex-js/compute-engine": "^0.12.2"
+    "@cortex-js/compute-engine": "0.12.3"
   },
   "devDependencies": {
     "@arnog/esbuild-plugin-less": "^1.1.0",
@@ -137,7 +139,7 @@
     "@typescript-eslint/parser": "^5.49.0",
     "autoprefixer": "^10.4.13",
     "cssnano": "^5.1.14",
-    "esbuild": "^0.17.5",
+    "esbuild": "^0.18.11",
     "eslint": "^8.33.0",
     "eslint-config-prettier": "^8.6.0",
     "eslint-plugin-import": "^2.27.5",

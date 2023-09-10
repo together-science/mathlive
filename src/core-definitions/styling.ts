@@ -903,6 +903,7 @@ defineFunction(['operatorname', 'operatorname*'], '{operator:math}', {
           ? atom.attachLimits(context, { base })
           : atom.attachSupsub(context, { base });
     }
+    if (atom.caret) base.caret = atom.caret;
     return new Box(atom.bind(context, base), {
       type: 'op',
       isSelected: atom.isSelected,
@@ -984,7 +985,8 @@ defineFunction('rule', '[raise:value]{width:value}{thickness:value}', {
 
 // An overline
 defineFunction(['overline', 'underline'], '{:auto}', {
-  createAtom: (options) => new Atom(options),
+  createAtom: (options) =>
+    new Atom({ ...options, body: argAtoms(options.args![0]) }),
   render: (atom, parentContext) => {
     const position = atom.command.substring(1);
     // TeXBook:443. Rule 9 and 10

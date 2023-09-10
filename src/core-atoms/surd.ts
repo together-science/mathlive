@@ -60,6 +60,27 @@ export class SurdAtom extends Atom {
     return latexCommand(command, body);
   }
 
+  // Custom implementation so that the navigation of the index feels natural
+  get children(): Atom[] {
+    if (this._children) return this._children;
+    const result: Atom[] = [];
+
+    if (this.above) {
+      for (const x of this.above) {
+        result.push(...x.children);
+        result.push(x);
+      }
+    }
+    if (this.body) {
+      for (const x of this.body) {
+        result.push(...x.children);
+        result.push(x);
+      }
+    }
+    this._children = result;
+    return result;
+  }
+
   render(context: Context): Box | null {
     // See the TeXbook pg. 443, Rule 11.
     // http://www.ctex.org/documents/shredder/src/texbook.pdf

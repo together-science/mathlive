@@ -171,11 +171,8 @@ export function onKeystroke(
   const buffer = mathfield.inlineShortcutBuffer;
   if (mathfield.isSelectionEditable) {
     if (model.mode === 'math') {
-      if (keystroke === '[Backspace]') {
-        // Special case for backspace to correctly handle undoing
-        buffer.pop();
-        mathfield.flushInlineShortcutBuffer({ defer: true });
-      } else if (!mightProducePrintableCharacter(evt)) {
+      if (keystroke === '[Backspace]') buffer.pop();
+      else if (!mightProducePrintableCharacter(evt)) {
         // It was a non-alpha character (PageUp, End, etc...)
         mathfield.flushInlineShortcutBuffer();
       } else {
@@ -192,7 +189,9 @@ export function onKeystroke(
           leftSiblings: getLeftSiblings(mathfield),
         });
 
+        //
         // Loop  over possible candidates, from the longest possible, to the shortest
+        //
         let i = 0;
         let candidate = '';
         while (!shortcut && i < keystrokes.length) {
@@ -534,9 +533,8 @@ export function onInput(
   // David Bowie emoji: 👨🏻‍🎤
   let graphemes = splitGraphemes(text);
 
-  // Check if virtual keyboard is visible and the shift key is pressed
   const keyboard = window.mathVirtualKeyboard;
-  if (keyboard?.visible && keyboard.isShifted) {
+  if (keyboard?.isShifted) {
     graphemes =
       typeof graphemes === 'string'
         ? graphemes.toUpperCase()

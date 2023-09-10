@@ -1,3 +1,103 @@
+## 0.95.5 (2023-08-18)
+
+### Bugs Fixed
+
+- **#2091** The variant panel for the `7` key was the variant panel for `4`.
+- **#2093** Inline shortcuts can be corrected with backspace, i.e. typing 
+ `sen[backspace][backspace]in` will be corrected to `\\sin`.
+- **#2018** Some VK toolbar items could be offset by a few pixels on some 
+  mobile devices
+- The caret was not visible when placed after an `\operator*{}` command
+- The `\class{}{}` command in a mathfield was not working correctly.
+
+### Improvements
+
+- **#2052** When double-clicking then dragging, the selection is now extended
+  to the nearest boundary. This applies to math, text and LaTeX zones.
+- Added `prompt` CSS part to the mathfield element. This allows styling of 
+  prompts (placeholders) in a fill-in-the-blank mathfield.
+- Added `w40` keycap class (4-wide)
+- When using `renderMathInElement()` preserve the LaTeX as a `data-` attribute
+  on the element.
+- Added speakable text for `\imaginaryI`, `\imaginaryJ`, `\ne` and `\neq`
+- Added ARIA label to keyboard toggle glyph
+- More robust check for `PointerEvent` support
+- Throw an error if attempting to access `mf.mathVirtualKeyboard`. The virtual
+  keyboard is now a singleton, accessible as `window.mathVirtualKeyboard`.
+- When a `command` attribute is associated with a keycap, a `math-virtual-keyboard-command` event is dispatched when the keycap is pressed.
+
+
+## 0.95.4 (2023-08-11)
+
+### Bugs Fixed
+
+- **#2090** A runtime error could occur when adding a superscript inside a square root
+- **#2068** Use a more compact keyboard layout for phones in landscape mode.
+### Improvements
+
+- **#2089** Added `x^{#?}` in the virtual keyboard variant panel for `x`
+- **#2082** The shortcut for `\int` was triggered with `sint`. Note that in case of similar conflicts, pressing the spacebar will prevent the shorcuts from taking effect, i.e. "sin t".
+- 
+## 0.95.2 (2023-08-09)
+
+### Improvements
+
+- Added `if-math-mode` and `if-text-mode` classes to conditionally show 
+  virtual keyboard keys.
+- **#2086** When navigation a root with an index, the index is now navigater first.
+
+## 0.95.1 (2023-07-25)
+
+### Improvements
+
+- **#2064**, **#2065** Improved behavior of virtual keyboard shift key, 
+  contributed by https://github.com/oscarhermoso
+
+### Bugs Fixed
+
+- **#1995** When right clicking to bring up the variant panel in the virtual 
+  keyboard, in some situations the virtual keyboard would lock up.
+- **#2047** Use `\exp` instead of `\mathrm{exp}` in the virtual keyboard
+- **#2067** When setting up the virtual keyboard policy to `"sandboxed"` in
+  a cross domain iframe, a runtime error would occur.
+
+## 0.95.0 (2023-07-04)
+
+
+### Improvements
+
+- Improved behavior when pressing the tab key
+- **#2015** New `environmentPopoverPolicy` option. Set to:
+  - `"auto"` to show environment popover when inside a tabular environment and
+    the virtual keyboard is visible (current behavior)
+  - `"on"` to show it when in a tabular environment
+  - `"off"` to never show it
+  
+### Bugs Fixed
+
+- **#2008** The `\underline` and `\overline` commands now render correctly.
+- **#1996**, **#2025** MathML output could occasionally be incorrect for the  
+  `\left...\right` command
+- **#2009** Chemical equations did not render correctly
+- **#1990** The closing delimiter of a `\left...\right` command was incorrectly
+  adopting the style of the last atom inside the command.
+- **#2044** When overflowing the mathfield using the virtual keyboard, the 
+  caret would be hidden from view.
+- **#2000**, **#2016** Correctly handle when the root is not a group, i.e. 
+  when it's a multi-line array.
+
+## 0.94.8 (2023-06-15)
+
+## Improvements
+
+- On RTL system, do not flip the direction of the virtual keyboard keycaps rows
+
+## 0.94.7 (2023-06-08)
+
+## Improvements
+
+- **#1989** Temporarily add back support for iOS versions older than 16.3.
+
 ## 0.94.6 (2023-05-25)
 
 ### Bug Fixes
@@ -216,7 +316,7 @@
 ### Bug Fixes
 - Update editing toolbar when virtual keyboard is made visible
 - **#1919** Correctly position the popover panel above or below the mathfield based on the space available. Allow for more suggestions to be displayed, and include a scrollbar when necessary.
-
+  
 ## 0.91.1 (2023-04-05)
 
 ### Bug Fix

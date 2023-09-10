@@ -61,7 +61,7 @@ import {
   getCommandTarget,
 } from '../editor/commands';
 import {
-  MathfieldOptionsPrivate,
+  _MathfieldOptions,
   update as updateOptions,
   getDefault as getDefaultOptions,
   get as getOptions,
@@ -126,7 +126,9 @@ import {
   updateEnvironmentPopover,
 } from 'editor/environment-popover';
 
-const DEFAULT_KEYBOARD_TOGGLE_GLYPH = `<svg style="width: 21px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M528 64H48C21.49 64 0 85.49 0 112v288c0 26.51 21.49 48 48 48h480c26.51 0 48-21.49 48-48V112c0-26.51-21.49-48-48-48zm16 336c0 8.823-7.177 16-16 16H48c-8.823 0-16-7.177-16-16V112c0-8.823 7.177-16 16-16h480c8.823 0 16 7.177 16 16v288zM168 268v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm-336 80v-24c0-6.627-5.373-12-12-12H84c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm384 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zM120 188v-24c0-6.627-5.373-12-12-12H84c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm-96 152v-8c0-6.627-5.373-12-12-12H180c-6.627 0-12 5.373-12 12v8c0 6.627 5.373 12 12 12h216c6.627 0 12-5.373 12-12z"/></svg>`;
+const DEFAULT_KEYBOARD_TOGGLE_GLYPH = `<svg style="width: 21px;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" role="img" aria-label="${localize(
+  'tooltip.toggle virtual keyboard'
+)}"><path d="M528 64H48C21.49 64 0 85.49 0 112v288c0 26.51 21.49 48 48 48h480c26.51 0 48-21.49 48-48V112c0-26.51-21.49-48-48-48zm16 336c0 8.823-7.177 16-16 16H48c-8.823 0-16-7.177-16-16V112c0-8.823 7.177-16 16-16h480c8.823 0 16 7.177 16 16v288zM168 268v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm-336 80v-24c0-6.627-5.373-12-12-12H84c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm384 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zM120 188v-24c0-6.627-5.373-12-12-12H84c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm96 0v-24c0-6.627-5.373-12-12-12h-24c-6.627 0-12 5.373-12 12v24c0 6.627 5.373 12 12 12h24c6.627 0 12-5.373 12-12zm-96 152v-8c0-6.627-5.373-12-12-12H180c-6.627 0-12 5.373-12 12v8c0 6.627 5.373 12 12 12h216c6.627 0 12-5.373 12-12z"/></svg>`;
 
 /** @internal */
 export class MathfieldPrivate implements Mathfield, KeyboardDelegateInterface {
@@ -134,7 +136,7 @@ export class MathfieldPrivate implements Mathfield, KeyboardDelegateInterface {
 
   readonly undoManager: UndoManager;
 
-  options: Required<MathfieldOptionsPrivate>;
+  options: Required<_MathfieldOptions>;
 
   style: Style;
   // When inserting new characters, if not `"none"`, adopt the style
@@ -142,7 +144,6 @@ export class MathfieldPrivate implements Mathfield, KeyboardDelegateInterface {
   adoptStyle: 'left' | 'right' | 'none';
 
   dirty: boolean; // If true, need to be redrawn
-  smartModeSuppressed: boolean;
 
   element:
     | (HTMLElement & {
@@ -206,7 +207,7 @@ export class MathfieldPrivate implements Mathfield, KeyboardDelegateInterface {
    */
   constructor(
     element: HTMLElement & { mathfield?: MathfieldPrivate },
-    options: Partial<MathfieldOptionsPrivate> & {
+    options: Partial<_MathfieldOptions> & {
       eventSink?: HTMLElement;
     }
   ) {
@@ -255,9 +256,9 @@ export class MathfieldPrivate implements Mathfield, KeyboardDelegateInterface {
     let elementText = options.value ?? this.element.textContent ?? '';
     elementText = elementText.trim();
 
-    // The input mode (text, math, latex).
-    // It indicates the mode the next character typed will be interpreted in,
-    // which may be different from the mode of the current selection.
+    // The initial input mode (text or math): the mode the next character
+    // typed will be interpreted in, which may be different from the mode
+    // of the current selection.
     const mode = effectiveMode(this.options);
 
     // Setup the model
@@ -271,8 +272,6 @@ export class MathfieldPrivate implements Mathfield, KeyboardDelegateInterface {
       onSelectionDidChange: () => this.onSelectionDidChange(),
       onContentWillChange: (options) => this.onContentWillChange(options),
     });
-
-    this.smartModeSuppressed = false;
 
     // Prepare to manage undo/redo
     this.undoManager = new UndoManager(this.model);
@@ -592,7 +591,7 @@ If you are using Vue, this may be because you are using the runtime-only build o
     return keybindings;
   }
 
-  setOptions(config: Partial<MathfieldOptionsPrivate>): void {
+  setOptions(config: Partial<_MathfieldOptions>): void {
     this.options = { ...this.options, ...updateOptions(config) };
 
     this._keybindings = undefined;
@@ -600,6 +599,12 @@ If you are using Vue, this may be because you are using the runtime-only build o
     if (this.options.defaultMode === 'inline-math')
       this.element!.classList.add('ML__is-inline');
     else this.element!.classList.remove('ML__is-inline');
+
+    // The mode of the 'first' atom is the mode of the  expression when empty
+    let mode = this.options.defaultMode;
+    if (mode === 'inline-math') mode = 'math';
+    if (this.model.root.firstChild?.mode !== mode)
+      this.model.root.firstChild.mode = mode;
 
     if (this.options.readOnly) {
       if (this.hasFocus() && window.mathVirtualKeyboard.visible)
@@ -636,20 +641,18 @@ If you are using Vue, this may be because you are using the runtime-only build o
       requestUpdate(this);
   }
 
-  getOptions<K extends keyof MathfieldOptionsPrivate>(
+  getOptions<K extends keyof _MathfieldOptions>(
     keys: K[]
-  ): Pick<MathfieldOptionsPrivate, K>;
-  getOptions(): MathfieldOptionsPrivate;
+  ): Pick<_MathfieldOptions, K>;
+  getOptions(): _MathfieldOptions;
   getOptions(
-    keys?: keyof MathfieldOptionsPrivate | (keyof MathfieldOptionsPrivate)[]
-  ): any | Partial<MathfieldOptionsPrivate> {
+    keys?: keyof _MathfieldOptions | (keyof _MathfieldOptions)[]
+  ): any | Partial<_MathfieldOptions> {
     return getOptions(this.options, keys);
   }
 
-  getOption<K extends keyof MathfieldOptionsPrivate>(
-    key: K
-  ): MathfieldOptionsPrivate[K] {
-    return getOptions(this.options, key) as MathfieldOptionsPrivate[K];
+  getOption<K extends keyof _MathfieldOptions>(key: K): _MathfieldOptions[K] {
+    return getOptions(this.options, key) as _MathfieldOptions[K];
   }
 
   /*
@@ -970,8 +973,6 @@ If you are using Vue, this may be because you are using the runtime-only build o
       window.MathfieldElement.playSound('keypress');
     }
 
-    if (options.scrollIntoView) this.scrollIntoView();
-
     if (s === '\\\\') {
       // This string is interpreted as an "insert row after" command
       addRowAfter(this.model);
@@ -990,6 +991,8 @@ If you are using Vue, this may be because you are using the runtime-only build o
     this.snapshot(`insert-${this.model.at(this.model.position).type}`);
 
     requestUpdate(this);
+    if (options.scrollIntoView) this.scrollIntoView();
+
     return true;
   }
 
@@ -1027,10 +1030,6 @@ If you are using Vue, this may be because you are using the runtime-only build o
         let contentChanged = false;
         this.flushInlineShortcutBuffer();
         this.stopCoalescingUndo();
-        // Suppress (temporarily) smart mode if switching to/from text or math
-        // This prevents switching to/from command mode from suppressing smart mode.
-        this.smartModeSuppressed =
-          /text|math/.test(this.model.mode) && /text|math/.test(mode);
         if (prefix && mode !== 'latex') {
           const atoms = parseLatex(prefix, {
             context: this.context,
@@ -1108,6 +1107,9 @@ If you are using Vue, this may be because you are using the runtime-only build o
     );
 
     this.model.mode = mode;
+
+    // Update the toolbar
+    window.mathVirtualKeyboard.update(makeProxy(this));
   }
 
   hasFocus(): boolean {
@@ -1185,10 +1187,7 @@ If you are using Vue, this may be because you are using the runtime-only build o
 
   getPromptValue(id: string, format?: OutputFormat): string {
     const prompt = this.getPrompt(id);
-    if (!prompt) {
-      console.error(`MathLive {{SDK_VERSION}}: unknown prompt ${id}`);
-      return '';
-    }
+    if (!prompt) return '';
 
     const first = this.model.offsetOf(prompt.firstChild);
     const last = this.model.offsetOf(prompt.lastChild);
