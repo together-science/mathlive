@@ -15,7 +15,7 @@ import type {
   VirtualKeyboardMessageAction,
 } from '../public/virtual-keyboard';
 import type { OriginValidator } from '../public/options';
-import type { MathfieldElement } from '../public/mathfield-element';
+import { MathfieldElement } from '../public/mathfield-element';
 
 import { isTouchCapable } from '../ui/utils/capabilities';
 import { isArray } from '../common/types';
@@ -867,10 +867,7 @@ function focusedMathfield(): MathfieldElement | null {
   let target: Node | null = deepActiveElement() as Node | null;
   let mf: MathfieldElement | null = null;
   while (target) {
-    if (
-      'host' in target &&
-      (target.host as HTMLElement)?.tagName?.toLowerCase() === 'math-field'
-    ) {
+    if ('host' in target && target.host instanceof MathfieldElement) {
       mf = target.host as MathfieldElement;
       break;
     }
