@@ -1834,7 +1834,12 @@ import 'https://unpkg.com/@cortex-js/compute-engine?module';
 
     if (evt.type === 'pointerdown') this.onPointerDown();
     if (evt.type === 'focus') this._mathfield?.focus();
-    if (evt.type === 'blur') this._mathfield?.blur();
+    if (evt.type === 'blur') {
+      const newFocus = (evt as FocusEvent).relatedTarget as HTMLElement;
+      const keyboard = document.querySelector('.ML__keyboard') as HTMLElement;
+      if (!newFocus || !keyboard.contains(newFocus) || keyboard === newFocus)
+        this._mathfield?.blur();
+    }
   }
 
   /**

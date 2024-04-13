@@ -303,6 +303,8 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
 
     document.addEventListener('focusout', (evt) => {
       const target = evt.target as MathfieldElement;
+      if (!(target instanceof MathfieldElement)) return;
+
       if (target.mathVirtualKeyboardPolicy !== 'manual') {
         // If after a short delay the active element is no longer
         // a mathfield (or there is no active element), hide the virtual keyboard
@@ -326,6 +328,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
   dispatchEvent(event: Event): boolean {
     if (!this.listeners[event.type] || this.listeners[event.type].size === 0)
       return true;
+
     this.listeners[event.type].forEach((x) => {
       if (typeof x === 'function') x(event);
       else x?.handleEvent(event);
@@ -467,6 +470,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
           : `${keyboardHeight}px`;
       }
       window.addEventListener('mouseup', this);
+      window.addEventListener('click', this);
       window.addEventListener('blur', this);
       window.addEventListener('keydown', this, { capture: true });
       window.addEventListener('keyup', this, { capture: true });
@@ -570,6 +574,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
       | (PointerEvent & { type: 'contextmenu' | 'mouseup' })
       | (KeyboardEvent & { type: 'keydown' | 'keyup' })
       | (FocusEvent & { type: 'blur' })
+      | (MouseEvent & { type: 'click' })
   ): void {
     if (isVirtualKeyboardMessage(evt)) {
       if (!validateOrigin(evt.origin, this.originValidator)) {
@@ -597,11 +602,14 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
     switch (evt.type) {
       case 'mouseup':
       case 'blur':
+      case 'click':
         // Safari on iOS will aggressively attempt to select when there is a long
         // press. Restore the userSelect on mouse up
         document.body.style.userSelect = '';
 
         this.shiftPressCount = 0;
+        evt.preventDefault();
+        evt.stopImmediatePropagation();
         break;
 
       case 'contextmenu':

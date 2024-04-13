@@ -255,14 +255,16 @@ export function delegateKeyboardEvents(
 
       // If the relatedTarget (the element that is gaining the focus)
       // is in the virtual keyboard, ingnore the blur event
-
       const keyboard = document.querySelector('.ML__keyboard');
       if (
         event.relatedTarget &&
-        keyboard?.contains(event.relatedTarget as HTMLElement)
+        (keyboard?.contains(event.relatedTarget as HTMLElement) ||
+          keyboard === event.relatedTarget)
       ) {
-        event.preventDefault();
-        event.stopPropagation();
+        setTimeout(() => {
+          keyboardSink.focus({ preventScroll: true });
+        });
+        event.stopImmediatePropagation();
         return;
       }
 
@@ -271,9 +273,6 @@ export function delegateKeyboardEvents(
       blurInProgress = true;
       keydownEvent = null;
       keypressEvent = null;
-      console.log(
-        'mf keyboard sink blur: ' + (event.relatedTarget as any).outerHTML
-      );
       delegate.onBlur();
       blurInProgress = false;
     },
