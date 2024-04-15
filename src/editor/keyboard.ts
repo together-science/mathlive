@@ -257,8 +257,9 @@ export function delegateKeyboardEvents(
       // is in the virtual keyboard, ingnore the blur event
       const keyboard = document.querySelector('.ML__keyboard');
       if (
+        keyboard &&
         event.relatedTarget &&
-        (keyboard?.contains(event.relatedTarget as HTMLElement) ||
+        (keyboard.contains(event.relatedTarget as HTMLElement) ||
           keyboard === event.relatedTarget)
       ) {
         setTimeout(() => {
