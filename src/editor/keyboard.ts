@@ -91,7 +91,7 @@ export function delegateKeyboardEvents(
 
   const controller = new AbortController();
   const signal = controller.signal;
-  keyboardSink.style.right = `-1000px`;
+  // keyboardSink.style.right = `-1000px`;
 
   keyboardSink.addEventListener(
     'keydown',
