@@ -91,7 +91,6 @@ export function delegateKeyboardEvents(
 
   const controller = new AbortController();
   const signal = controller.signal;
-  // keyboardSink.style.right = `-1000px`;
 
   keyboardSink.addEventListener(
     'keydown',
@@ -324,7 +323,7 @@ export function delegateKeyboardEvents(
     setValue: (value: string): void => {
       keyboardSink.textContent = value;
       // Move sink offscreen (Safari will display a visible selection otherwise)
-      keyboardSink.style.right = `-1000px`;
+      keyboardSink.style.left = `-1000px`;
       // Select the elements in the sink (Safari will not enable copy/paste if there isn't a selection)
       window.getSelection()?.selectAllChildren(keyboardSink);
     },
