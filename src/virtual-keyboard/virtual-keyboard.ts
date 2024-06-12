@@ -811,16 +811,29 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
     el.classList.toggle('is-math-mode', mf.mode === 'math');
     el.classList.toggle('is-text-mode', mf.mode === 'text');
 
-    el.classList.toggle('can-undo', mf.canUndo);
-    el.classList.toggle('can-redo', mf.canRedo);
+    el.classList.toggle('can-undo', false /* mf.canUndo */);
+    el.classList.toggle('can-redo', false /* mf.canRedo */);
     el.classList.toggle('can-copy', !mf.selectionIsCollapsed);
     el.classList.toggle('can-copy', !mf.selectionIsCollapsed);
     el.classList.toggle('can-paste', true);
 
     const toolbars = el.querySelectorAll('.ML__edit-toolbar');
     if (!toolbars) return;
-    for (const toolbar of toolbars)
-      toolbar.innerHTML = makeEditToolbar(this, mf);
+    for (const toolbar of toolbars) {
+      // delete all old dynamic children
+      [...toolbar.children].forEach((c) => {
+        if (!c.classList.contains('static')) c.remove();
+      });
+      // make new dynamic children
+      const div = document.createElement('div');
+      div.innerHTML = makeEditToolbar(this, mf);
+      // find first static child
+      const firstStatic = toolbar.querySelector('.static');
+      // insert all new dynamic children into toolbar
+      [...div.children].forEach((c) => {
+        toolbar.insertBefore(c, firstStatic);
+      });
+    }
   }
 
   update(mf: MathfieldProxy): void {

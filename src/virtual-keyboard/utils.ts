@@ -319,7 +319,8 @@ export function makeEditToolbar(
   const availableActions: string[] = [];
 
   if (mathfield.selectionIsCollapsed)
-    availableActions.push('undo', 'redo', 'pasteFromClipboard');
+    availableActions.push('pasteFromClipboard');
+  // gm removed: 'undo', 'redo', now static
   else {
     availableActions.push(
       'cutToClipboard',
@@ -575,8 +576,20 @@ function makeLayout(
       markup.push(`<div class='MLK__toolbar' role='toolbar'>`);
       markup.push(makeLayoutsToolbar(keyboard, index));
       // If there are no keycap with editing commands, add an edit toolbar
-      if (layout.displayEditToolbar)
-        markup.push(`<div class="ML__edit-toolbar right"></div>`);
+      if (layout.displayEditToolbar) {
+        markup.push(`<div class="ML__edit-toolbar right">
+          <div class='action ts-undo static'
+            data-command='"undo"'
+            data-tooltip='${l10n('tooltip.undo')}'>
+            <svg><use xlink:href='#svg-undo' /></svg>
+          </div>
+          <div class='action ts-redo static'
+            data-command='"redo"'
+            data-tooltip='${l10n('tooltip.redo')}'>
+            <svg><use xlink:href='#svg-redo' /></svg>
+          </div>
+        </div>`);
+      }
       markup.push(`</div>`);
     }
     // A layer can contain 'shortcuts' (i.e. <row> tags) that need to

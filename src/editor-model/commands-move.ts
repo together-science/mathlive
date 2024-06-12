@@ -429,6 +429,7 @@ function leapTarget(
  */
 register(
   {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     moveToOpposite: (model: _Model): boolean => {
       const OPPOSITE_RELATIONS = {
         superscript: 'subscript',
