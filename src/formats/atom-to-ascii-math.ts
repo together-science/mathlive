@@ -226,7 +226,8 @@ export function atomToAsciiMath(atom: Atom | Atom[] | undefined): string {
           result += ')';
         } else {
           // No bar line, i.e. \choose, etc...
-          result += '(' + atomToAsciiMath(genfracAtom.above) + '),';
+          result += '(' + atomToAsciiMath(genfracAtom.above) + ')';
+          result += genfracAtom.command === '\\choose' ? ' ch ' : ',';
           result += '(' + atomToAsciiMath(genfracAtom.below) + ')';
         }
 
