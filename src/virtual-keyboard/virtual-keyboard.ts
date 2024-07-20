@@ -715,6 +715,14 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
     payload: any,
     target?: MessageEventSource | null
   ): void {
+    if (payload.command) {
+      this.dispatchEvent(
+        new CustomEvent('math-virtual-keyboard-command', {
+          detail: payload.command,
+        })
+      );
+      if (payload.command[0].startsWith('ts-')) return;
+    }
     if (!target) target = this.connectedMathfieldWindow;
     if (
       this.targetOrigin === null ||
@@ -743,13 +751,6 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
         { targetOrigin: this.targetOrigin }
       );
     } else {
-      if (payload.command) {
-        this.dispatchEvent(
-          new CustomEvent('math-virtual-keyboard-command', {
-            detail: payload.command,
-          })
-        );
-      }
       if (
         action === 'execute-command' &&
         Array.isArray(payload.command) &&
