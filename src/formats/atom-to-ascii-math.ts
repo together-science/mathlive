@@ -156,13 +156,13 @@ const FENCES = {
 function joinAsciiMath(xs: string[]): string {
   let result = '';
   for (const x of xs) {
-    const last = result[result.length - 1];
-    if (
-      last !== undefined &&
-      ((/\d$/.test(last) && /^\d/.test(x)) ||
-        (/[a-zA-Z]$/.test(last) && /^[a-zA-Z]/.test(x)))
-    )
-      result += ' ';
+    // const last = result[result.length - 1];
+    // if (
+    //   last !== undefined &&
+    //   ((/\d$/.test(last) && /^\d/.test(x)) ||
+    //     (/[a-zA-Z]$/.test(last) && /^[a-zA-Z]/.test(x)))
+    // )
+    //   result += ' ';
 
     result += x;
   }
