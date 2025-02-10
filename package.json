@@ -1,6 +1,6 @@
 {
   "name": "mathlive",
-  "version": "0.101.0",
+  "version": "0.104.0",
   "description": "A web component for math input",
   "license": "MIT",
   "funding": {
@@ -37,14 +37,17 @@
         "require": "./dist/mathlive.min.js"
       }
     },
-    "./ssr": "./dist/mathlive-ssr.min.mjs",
+    "./ssr": {
+      "types": "./dist/types/mathlive-ssr.d.ts",
+      "import": "./dist/mathlive-ssr.min.mjs"
+    },
     "./vue": "./dist/vue-mathlive.mjs",
     "./fonts.css": "./dist/mathlive-fonts.css",
     "./static.css": "./dist/mathlive-static.css",
     "./fonts/*": "./dist/fonts/*",
     "./sounds/*": "./dist/sounds/*",
-    "./fonts/": "./dist/fonts/*",
-    "./sounds/": "./dist/sounds/*"
+    "./fonts/": "./dist/fonts/",
+    "./sounds/": "./dist/sounds/"
   },
   "repository": {
     "type": "git",
@@ -123,12 +126,12 @@
     "not dead"
   ],
   "engines": {
-    "npm": ">=8.5.0",
-    "node": ">=16.14.2"
+    "npm": ">=10.5.0",
+    "node": ">=21.0.0"
   },
   "prettier": "@cortex-js/prettier-config",
   "dependencies": {
-    "@cortex-js/compute-engine": "0.24.1"
+    "@cortex-js/compute-engine": "0.27.0"
   },
   "devDependencies": {
     "@arnog/esbuild-plugin-less": "^1.1.0",

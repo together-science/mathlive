@@ -1,12 +1,14 @@
 import type { ContentChangeType } from '../public/options';
-import type { Range } from '../public/mathfield';
 
 import { LeftRightAtom } from '../atoms/leftright';
-import { Atom } from '../core/atom';
+import { Atom, isCellBranch } from '../core/atom';
 import { _Model } from './model-private';
 import { range } from './selection-utils';
 import { MathfieldElement } from 'public/mathfield-element';
 import type { Branch } from 'core/types';
+import type { Range } from 'public/core-types';
+import { ArrayAtom } from 'atoms/array';
+
 // import {
 //     arrayFirstCellByRow,
 //     arrayColRow,
@@ -76,12 +78,15 @@ import type { Branch } from 'core/types';
 // }
 
 /**
- * Handle special cases when deleting an atom as per the table below:
+ * Handle special cases when deleting an atom with a collapsed selection as
+ * per the list below:
  * - deleting an empty numerator: demote fraction
  * - forward-deleting a square root: demote it
  * - delete last atom inside a square root: delete the square root
  * - delete last atom in a subsup: delete the subsup
  * - etc...
+ *
+ * See `deleteRange()` for when the selection is not collapsed.
  *
  * Note that `onDelete` may be called twice: once on the atom being deleted
  * directly (in this case `branch` is `undefined`) and a second time
@@ -90,10 +95,10 @@ import type { Branch } from 'core/types';
  *
  *
  * @param branch: if deleting inside an atom, the branch being deleted
- * (always the first or last atom of the branch). If undefined, the atom
+ * (always the last atom of the branch). If `undefined`, the atom
  * itself is about to be deleted.
  *
- * @return true if handled
+ * @return `true` if handled
  */
 function onDelete(
   model: _Model,
@@ -101,7 +106,52 @@ function onDelete(
   atom: Atom,
   branch?: Branch
 ): boolean {
+  console.log('onDelete', atom, branch);
   const parent = atom.parent;
+
+  //
+  //  multiline environment
+  // (`\displaylines`, `multline`, `split`, `gather`, etc...)
+  //
+  // The branch could be not a cell, for example when deleting an empty surd
+  // inside a cell, the br
+  if (
+    isCellBranch(branch) &&
+    parent &&
+    parent instanceof ArrayAtom &&
+    parent.isMultiline
+  ) {
+    // Delete the line if it's empty (and not the last line).
+    // The branch indicates the cell we're in
+    if (parent.rows.length > 1) {
+      const [row, col] = branch;
+      if (parent.rows[row].length === 1) {
+        // We're the last column in a row
+
+        // Capture the content of the current cell
+        // @fixme: there could be more than one column...
+        const content = parent.getCell(row, col)!;
+
+        parent.removeRow(row);
+
+        // If going backward, move to the end of the previous line
+        if (direction === 'backward') {
+          const prevLine = parent.getCell(row - 1, 0)!;
+          model.position = model.offsetOf(prevLine[prevLine.length - 1]);
+          // Add content from the deleted cell to the end of the previous line
+          parent.setCell(row - 1, 0, [...prevLine, ...content]);
+        } else {
+          // If going forward, move to the beginning of the next line
+          const nextLine = parent.getCell(row, 0)!;
+          model.position = model.offsetOf(nextLine[0]);
+          // Add content from the deleted cell to the beginning of the next line
+          parent.setCell(row, 0, [...content, ...nextLine]);
+        }
+
+        return true;
+      }
+    }
+  }
 
   //
   // 'leftright': \left\right
@@ -456,6 +506,53 @@ export function deleteRange(
 ): boolean {
   const result = model.getAtoms(range);
   if (result.length > 0 && result[0].parent) {
+    //
+    //  multiline environment (`\displaylines`, `multline`, `split`, `gather`, etc...)
+    //
+    let parent: Atom | undefined = result[0];
+    while (parent && !(parent instanceof ArrayAtom)) parent = parent.parent;
+
+    let endArray: Atom | undefined = result[result.length - 1];
+    while (endArray && !(endArray instanceof ArrayAtom))
+      endArray = endArray.parent;
+    if (parent && parent instanceof ArrayAtom) {
+      const parentArray = parent;
+      if (parentArray && endArray === parentArray && parentArray.isMultiline) {
+        // Calculate how many rows the selection spans
+        const [startOffset, endOffset] = [
+          Math.min(model.position, model.anchor),
+          Math.max(model.position, model.anchor),
+        ];
+        const [startRow, startColumn] = model.at(startOffset).parentBranch! as [
+          number,
+          number,
+        ];
+        const [endRow, endColumn] = model.at(endOffset).parentBranch! as [
+          number,
+          number,
+        ];
+        const rowSpan = endRow - startRow + 1;
+
+        if (rowSpan === 2) {
+          // // If the selection spans two rows, delete the entire row
+          // parentArray.removeRow(startRow);
+          // model.position = model.offsetOf(parentArray.getCell(startRow, 0)!);
+          // return true;
+        }
+
+        if (rowSpan > 2) {
+          // More than two span: delete the selection, then rows in the middle
+          model.extractAtoms([startOffset, endOffset]);
+          for (let i = startRow + 1; i < endRow; i++) parentArray.removeRow(i);
+          model.position = startOffset;
+
+          return true;
+        }
+      }
+    }
+    //
+    // Regular case (not multiline)
+    //
     let firstChild = result[0].parent!.firstChild;
     if (firstChild.type === 'first') firstChild = firstChild.rightSibling;
     const lastChild = result[result.length - 1].parent!.lastChild;
@@ -504,3 +601,18 @@ export function deleteRange(
     () => model.deleteAtoms(range)
   );
 }
+
+// function isCellEmpty(cell: [number, number]): boolean {}
+
+// function atCellEdge(
+//   cell: [number, number],
+//   direction: 'forward' | 'backward'
+// ): boolean {}
+
+// function isRowEmpty(row: number): boolean {}
+
+// /** Return position of cell edge */
+// function cellEdge(
+//   cell: [number, number],
+//   direction: 'forward' | 'backward'
+// ): number {}

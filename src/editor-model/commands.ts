@@ -1,10 +1,10 @@
 import type { _Model } from './model-private';
-import { Atom } from '../core/atom-class';
+import { Atom, isCellBranch } from '../core/atom-class';
 import { ArrayAtom } from '../atoms/array';
 import { LatexAtom } from '../atoms/latex';
 import { TextAtom } from '../atoms/text';
 import { LETTER_AND_DIGITS } from '../latex-commands/definitions-utils';
-import type { Offset, Selection } from '../public/mathfield';
+import type { Offset, Selection } from '../public/core-types';
 import { getCommandSuggestionRange } from '../editor-mathfield/mode-editor-latex';
 import { PromptAtom } from '../atoms/prompt';
 import { getLocalDOMRect } from 'editor-mathfield/utils';
@@ -509,7 +509,7 @@ function moveUpward(model: _Model, options?: { extend: boolean }): boolean {
     if (atom.parentBranch[0] < 1) return handleDeadEnd();
 
     const rowAbove = atom.parentBranch[0] - 1;
-    const aboveCell = arrayAtom.array[rowAbove][atom.parentBranch[1]]!;
+    const aboveCell = arrayAtom.getCell(rowAbove, atom.parentBranch[1])!;
 
     // Check if the cell has any editable regions
     const cellHasPrompt = aboveCell.some(
@@ -571,18 +571,18 @@ function moveDownward(model: _Model, options?: { extend: boolean }): boolean {
   while (
     atom &&
     atom.parentBranch !== 'above' &&
-    !(Array.isArray(atom.parentBranch) && atom.parent instanceof ArrayAtom)
+    !(isCellBranch(atom.parentBranch) && atom.parent instanceof ArrayAtom)
   )
     atom = atom.parent!;
 
   // handle navigating through matrices and such
-  if (Array.isArray(atom?.parentBranch) && atom.parent instanceof ArrayAtom) {
+  if (isCellBranch(atom?.parentBranch) && atom.parent instanceof ArrayAtom) {
     const arrayAtom = atom.parent;
-    if (atom.parentBranch[0] + 1 > arrayAtom.array.length - 1)
+    if (atom.parentBranch[0] + 1 > arrayAtom.rows.length - 1)
       return handleDeadEnd();
 
     const rowBelow = atom.parentBranch[0] + 1;
-    const belowCell = arrayAtom.array[rowBelow][atom.parentBranch[1]]!;
+    const belowCell = arrayAtom.getCell(rowBelow, atom.parentBranch[1])!;
 
     // Check if the cell has any editable regions
     const cellHasPrompt = belowCell.some(

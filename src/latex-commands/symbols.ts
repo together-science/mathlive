@@ -56,9 +56,6 @@ defineSymbols([
   ['\\ell', 0x2113],
 
   ['\\hbar', 0x210f],
-  ['\\Q', 0x0051, 'mord', 'double-struck'], // NOTE: Check if standard LaTeX
-  ['\\C', 0x0043, 'mord', 'double-struck'], // NOTE: Check if standard LaTeX
-  ['\\P', 0x0050, 'mord', 'double-struck'], // NOTE: Check if standard LaTeX
 
   ['\\pounds', 0x00a3],
   ['\\euro', 0x20ac], // NOTE: not TeX built-in, but textcomp package
@@ -118,6 +115,8 @@ defineSymbols(
 );
 
 // St Mary's Road symbols
+// https://mirrors.mit.edu/CTAN/macros/latex/contrib/stmaryrd/stmaryrd.pdf
+// https://mirrors.rit.edu/CTAN/fonts/stmaryrd/stmaryrd.pdf
 defineSymbols([
   ['\\mapsfrom', 0x21a4, 'mrel'],
   ['\\Mapsfrom', 0x2906, 'mrel'],
@@ -203,6 +202,7 @@ defineSymbols([
   // defineSymbol( '\\longequal', 0xF7D9,  'mrel',  MAIN],   // NOTE: Not TeX
 ]);
 
+// AMS relational symbols
 defineSymbols(
   [
     // 'ams' arrows
@@ -441,7 +441,7 @@ defineSymbols(
   'mbin'
 );
 
-// 'ams' Binary Operators
+// AMS  Binary Operators
 defineSymbols(
   [
     ['\\lhd', 0x22b2],
@@ -540,6 +540,17 @@ defineSymbols([
 
   // 'ams' Greek
   ['\\digamma', 0x03dd, 'mord', 'ams'],
+  ['\\varkappa', 0x03f0, 'mord', 'ams'],
+
+  // See https://en.wikipedia.org/wiki/Koppa_(letter) for propert Unicode glyph
+  // In this caseL the "archaic" variant is used
+  ['\\coppa', 0x03d9, 'mord', 'ams'],
+  ['\\koppa', 0x03d9, 'mord', 'ams'],
+  ['\\Coppa', 0x03d8, 'mord', 'ams'],
+  ['\\Koppa', 0x03d8, 'mord', 'ams'],
+
+  ['\\sampi', 0x03e1, 'mord', 'ams'],
+  ['\\Sampi', 0x03e0, 'mord', 'ams'],
 
   ['\\emptyset', 0x2205],
 ]);
@@ -577,7 +588,7 @@ defineSymbols(
     ['\\succ', 0x227b],
     ['\\succeq', 0x2ab0],
 
-    ['\\perp', 0x22a5],
+    ['\\perp', 0x27c2], // Unicode U+27C2 is the perpendicular symbol
 
     ['\\propto', 0x221d],
     ['\\Colon', 0x2237],

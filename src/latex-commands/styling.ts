@@ -50,7 +50,7 @@ defineFunction('mathtip', '{:auto}{:math}', {
   serialize: (atom: TooltipAtom, options) =>
     options.skipStyles
       ? atom.bodyToLatex(options)
-      : `\\texttip{${atom.bodyToLatex(options)}}{${Atom.serialize(
+      : `\\mathtip{${atom.bodyToLatex(options)}}{${Atom.serialize(
           [atom.tooltip],
           {
             ...options,
@@ -458,6 +458,25 @@ defineFunction('mathrm', '{:math*}', {
   applyStyle: (style) => ({ ...style, variant: 'normal', variantStyle: 'up' }),
 });
 
+//
+// Alternate implementation: instead of a style, we create a new atom
+//
+// defineFunction('mathrm', '{:math}', {
+//   applyMode: 'math',
+//   createAtom: (options) =>
+//     new Atom({
+//       ...options,
+//       type: 'mord',
+//       skipBoundary: true,
+//       body: argAtoms(options.args![0]).map((x) => {
+//         x.applyStyle({ variant: 'normal', variantStyle: 'up' });
+//         return x;
+//       }),
+//       mode: 'math',
+//     }),
+//   serialize: (atom: GroupAtom, options) => atom.bodyToLatex(options),
+// });
+
 defineFunction('mathsf', '{:math*}', {
   applyMode: 'math',
   applyStyle: (style) => ({
@@ -636,7 +655,9 @@ defineFunction('href', '{url:string}{content:auto}', {
   render: (atom, context) => {
     const box = atom.createBox(context);
     const href = (atom.args![0] as string) ?? '';
+
     if (href) box.htmlData = `href=${href}`;
+
     return box;
   },
 });
@@ -850,6 +871,7 @@ defineFunction('mathop', '{:auto}', {
           ? atom.attachLimits(context, { base })
           : atom.attachSupsub(context, { base });
     }
+    if (atom.caret) base.caret = atom.caret;
     return new Box(atom.bind(context, base), {
       type: 'op',
       isSelected: atom.isSelected,

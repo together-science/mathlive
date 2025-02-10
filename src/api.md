@@ -1,7 +1,187 @@
 
 <a name="readmemd"></a>
 
-## Commands
+## Conversion
+
+<a id="convertasciimathtolatex" name="convertasciimathtolatex"></a>
+
+<MemberCard>
+
+### convertAsciiMathToLatex()
+
+```ts
+function convertAsciiMathToLatex(ascii): string
+```
+
+Convert an AsciiMath string to a LaTeX string.
+
+```js
+convertAsciiMathToLatex("1/2");
+// -> "\\frac{1}{2}"
+```
+
+• **ascii**: `string`
+
+`string`
+
+</MemberCard>
+
+<a id="convertlatextoasciimath" name="convertlatextoasciimath"></a>
+
+<MemberCard>
+
+### convertLatexToAsciiMath()
+
+```ts
+function convertLatexToAsciiMath(latex, parseMode): string
+```
+
+Convert a LaTeX string to a string of AsciiMath.
+
+```js
+convertLatexToAsciiMath("\\frac{1}{2}");
+// -> "1/2"
+```
+
+• **latex**: `string`
+
+• **parseMode**: `ParseMode`= `'math'`
+
+`string`
+
+</MemberCard>
+
+<a id="convertlatextomarkup" name="convertlatextomarkup"></a>
+
+<MemberCard>
+
+### convertLatexToMarkup()
+
+```ts
+function convertLatexToMarkup(text, options?): string
+```
+
+Convert a LaTeX string to a string of HTML markup.
+
+:::info[Note]
+
+This function does not interact with the DOM. It does not load fonts or
+inject stylesheets in the document. It can safely be used on the server side.
+:::
+
+To get the output of this function to correctly display
+in a document, use the mathlive static style sheet by adding the following
+to the `<head>` of the document:
+
+```html
+<link
+ rel="stylesheet"
+ href="https://unpkg.com/mathlive/dist/mathlive-static.css"
+/>
+```
+
+• **text**: `string`
+
+A string of valid LaTeX. It does not have to start
+with a mode token such as `$$` or `\(`.
+
+• **options?**: `Partial`\<[`LayoutOptions`](#layoutoptions)\>
+
+`string`
+
+#### Keywords
+
+convert, latex, markup
+
+</MemberCard>
+
+<a id="convertlatextomathml" name="convertlatextomathml"></a>
+
+<MemberCard>
+
+### convertLatexToMathMl()
+
+```ts
+function convertLatexToMathMl(latex, options): string
+```
+
+Convert a LaTeX string to a string of MathML markup.
+
+• **latex**: `string`
+
+A string of valid LaTeX. It does not have to start
+with a mode token such as a `$$` or `\(`.
+
+• **options**= `{}`
+
+• **options.generateID?**: `boolean`
+
+If true, add an `"extid"` attribute
+to the MathML nodes with a value matching the `atomID`. This can be used
+to map items on the screen with their MathML representation or vice-versa.
+
+`string`
+
+</MemberCard>
+
+<a id="convertlatextospeakabletext" name="convertlatextospeakabletext"></a>
+
+<MemberCard>
+
+### convertLatexToSpeakableText()
+
+```ts
+function convertLatexToSpeakableText(latex): string
+```
+
+Convert a LaTeX string to a textual representation ready to be spoken
+
+• **latex**: `string`
+
+A string of valid LaTeX. It does not have to start
+with a mode token such as a `$$` or `\(`.
+
+`string`
+
+The spoken representation of the input LaTeX.
+
+#### Example
+
+```ts
+console.log(convertLatexToSpeakableText('\\frac{1}{2}'));
+// 'half'
+```
+
+#### Keywords
+
+convert, latex, speech, speakable, text, speakable text
+
+</MemberCard>
+
+<a id="convertmathjsontolatex" name="convertmathjsontolatex"></a>
+
+<MemberCard>
+
+### convertMathJsonToLatex()
+
+```ts
+function convertMathJsonToLatex(json): string
+```
+
+Convert a MathJSON expression to a LaTeX string.
+
+```js
+convertMathJsonToLatex(["Add", 1, 2]);
+// -> "1 + 2"
+```
+
+• **json**: [`Expression`](#expression-1)
+
+`string`
+
+</MemberCard>
+
+## Editing Commands
 
 <a id="commands" name="commands"></a>
 
@@ -15,7 +195,22 @@ mf.executeCommand('selectAll');
 mf.executeCommand('copyToClipboard');
 ```
 
-Commands return true if they resulted in a dirty state.
+Some commands require an argument, for example to insert a character:
+
+```ts
+mf.executeCommand('insert("x")' });
+```
+
+The argument can be specified in parentheses after the command name, or
+ using an array:
+
+```ts
+mf.executeCommand(['switchMode', 'latex']);
+// Same as mf.executeCommand('switchMode("latex")');
+```
+
+Commands (and `executeCommand()`) return true if they resulted in a dirty
+state.
 
 #### Command
 
@@ -488,8 +683,10 @@ performWithFeedback: (mathfield, command) => boolean;
 ```
 
 Perform a command and include interactive feedback such as sound and
-haptic feedback. This is useful to simulate user interaction,
-for example for commands from the virtual keyboard
+haptic feedback.
+
+This is useful to simulate user interaction, for example for commands
+from the virtual keyboard
 
 • **mathfield**: `Mathfield`
 
@@ -1339,186 +1536,6 @@ toggleVirtualKeyboard: () => boolean;
 type Selector: Keys<Commands>;
 ```
 
-## Conversion
-
-<a id="convertasciimathtolatex" name="convertasciimathtolatex"></a>
-
-<MemberCard>
-
-### convertAsciiMathToLatex()
-
-```ts
-function convertAsciiMathToLatex(ascii): string
-```
-
-Convert an AsciiMath string to a LaTeX string.
-
-```js
-convertAsciiMathToLatex("1/2");
-// -> "\\frac{1}{2}"
-```
-
-• **ascii**: `string`
-
-`string`
-
-</MemberCard>
-
-<a id="convertlatextoasciimath" name="convertlatextoasciimath"></a>
-
-<MemberCard>
-
-### convertLatexToAsciiMath()
-
-```ts
-function convertLatexToAsciiMath(latex, parseMode): string
-```
-
-Convert a LaTeX string to a string of AsciiMath.
-
-```js
-convertLatexToAsciiMath("\\frac{1}{2}");
-// -> "1/2"
-```
-
-• **latex**: `string`
-
-• **parseMode**: `ParseMode`= `'math'`
-
-`string`
-
-</MemberCard>
-
-<a id="convertlatextomarkup" name="convertlatextomarkup"></a>
-
-<MemberCard>
-
-### convertLatexToMarkup()
-
-```ts
-function convertLatexToMarkup(text, options?): string
-```
-
-Convert a LaTeX string to a string of HTML markup.
-
-:::info[Note]
-
-This function does not interact with the DOM. It does not load fonts or
-inject stylesheets in the document. It can safely be used on the server side.
-:::
-
-To get the output of this function to correctly display
-in a document, use the mathlive static style sheet by adding the following
-to the `<head>` of the document:
-
-```html
-<link
- rel="stylesheet"
- href="https://unpkg.com/mathlive/dist/mathlive-static.css"
-/>
-```
-
-• **text**: `string`
-
-A string of valid LaTeX. It does not have to start
-with a mode token such as `$$` or `\(`.
-
-• **options?**: `Partial`\<[`LayoutOptions`](#layoutoptions)\>
-
-`string`
-
-#### Keywords
-
-convert, latex, markup
-
-</MemberCard>
-
-<a id="convertlatextomathml" name="convertlatextomathml"></a>
-
-<MemberCard>
-
-### convertLatexToMathMl()
-
-```ts
-function convertLatexToMathMl(latex, options): string
-```
-
-Convert a LaTeX string to a string of MathML markup.
-
-• **latex**: `string`
-
-A string of valid LaTeX. It does not have to start
-with a mode token such as a `$$` or `\(`.
-
-• **options**= `{}`
-
-• **options.generateID?**: `boolean`
-
-If true, add an `"extid"` attribute
-to the MathML nodes with a value matching the `atomID`. This can be used
-to map items on the screen with their MathML representation or vice-versa.
-
-`string`
-
-</MemberCard>
-
-<a id="convertlatextospeakabletext" name="convertlatextospeakabletext"></a>
-
-<MemberCard>
-
-### convertLatexToSpeakableText()
-
-```ts
-function convertLatexToSpeakableText(latex): string
-```
-
-Convert a LaTeX string to a textual representation ready to be spoken
-
-• **latex**: `string`
-
-A string of valid LaTeX. It does not have to start
-with a mode token such as a `$$` or `\(`.
-
-`string`
-
-The spoken representation of the input LaTeX.
-
-#### Example
-
-```ts
-console.log(convertLatexToSpeakableText('\\frac{1}{2}'));
-// 'half'
-```
-
-#### Keywords
-
-convert, latex, speech, speakable, text, speakable text
-
-</MemberCard>
-
-<a id="convertmathjsontolatex" name="convertmathjsontolatex"></a>
-
-<MemberCard>
-
-### convertMathJsonToLatex()
-
-```ts
-function convertMathJsonToLatex(json): string
-```
-
-Convert a MathJSON expression to a LaTeX string.
-
-```js
-convertMathJsonToLatex(["Add", 1, 2]);
-// -> "1 + 2"
-```
-
-• **json**: [`Expression`](#expression-1)
-
-`string`
-
-</MemberCard>
-
 ## Macros
 
 <a id="macrodefinition" name="macrodefinition"></a>
@@ -1531,7 +1548,7 @@ type MacroDefinition: object;
 
 **See Also**
 * [`MacroDictionary`](#macrodictionary)
-* mathfield/guides/macros/|Macros Guide
+* //mathfield/guides/macros/
 
 #### Type declaration
 
@@ -1690,21 +1707,6 @@ should proceed.
 onExport: (from, latex, range) => string;
 ```
 
-This hook is invoked when the user has requested to export the content
-of the mathfield, for example when pressing ctrl/command+C.
-
-This hook should return as a string what should be exported.
-
-The `range` argument indicates which portion of the mathfield should be
-exported. It is not always equal to the current selection, but it can
-be used to export a format other than LaTeX.
-
-By default this is:
-
-```js
- return `\\begin{equation*}${latex}\\end{equation*}`;
-```
-
 • **from**: `Mathfield`
 
 • **latex**: `string`
@@ -1724,14 +1726,6 @@ By default this is:
 ```ts
 onInlineShortcut: (sender, symbol) => string;
 ```
-
-A hook invoked when a string of characters that could be
-interpreted as shortcut has been typed.
-
-If not a special shortcut, return the empty string `""`.
-
-Use this handler to detect multi character symbols, and return them wrapped appropriately,
-for example `\mathrm{${symbol}}`.
 
 • **sender**: `Mathfield`
 
@@ -1762,11 +1756,6 @@ onInsertStyle: InsertStyleHook;
 ```ts
 onScrollIntoView: (sender) => void;
 ```
-
-A hook invoked when a scrolling the mathfield into view is necessary.
-
-Use when scrolling the page would not solve the problem, e.g.
-when the mathfield is in another div that has scrollable content.
 
 • **sender**: `Mathfield`
 
@@ -1863,8 +1852,6 @@ type EditingOptions: object;
 contentPlaceholder: string;
 ```
 
-A LaTeX string displayed inside the mathfield when there is no content.
-
 </MemberCard>
 
 <a id="environmentpopoverpolicy-1" name="environmentpopoverpolicy-1"></a>
@@ -1876,11 +1863,6 @@ A LaTeX string displayed inside the mathfield when there is no content.
 ```ts
 environmentPopoverPolicy: "auto" | "on" | "off";
 ```
-
-If `"auto"` a popover with commands to edit an environment (matrix)
-is displayed when the virtual keyboard is displayed.
-
-**Default**: `"auto"`
 
 </MemberCard>
 
@@ -1917,17 +1899,6 @@ such as symbol.
 mathModeSpace: string;
 ```
 
-The LaTeX string to insert when the spacebar is pressed (on the physical or
-virtual keyboard).
-
-Use `"\;"` for a thick space, `"\:"` for a medium space, `"\,"` for a
-thin space.
-
-Do not use `" "` (a regular space), as whitespace is skipped by LaTeX
-so this will do nothing.
-
-**Default**: `""` (empty string)
-
 </MemberCard>
 
 <a id="mathvirtualkeyboardpolicy-1" name="mathvirtualkeyboardpolicy-1"></a>
@@ -1952,10 +1923,6 @@ mathVirtualKeyboardPolicy: "auto" | "manual" | "sandboxed";
 placeholderSymbol: string;
 ```
 
-The symbol used to represent a placeholder in an expression.
-
-**Default**: `▢` `U+25A2 WHITE SQUARE WITH ROUNDED CORNERS`
-
 </MemberCard>
 
 <a id="popoverpolicy-1" name="popoverpolicy-1"></a>
@@ -1967,11 +1934,6 @@ The symbol used to represent a placeholder in an expression.
 ```ts
 popoverPolicy: "auto" | "off";
 ```
-
-If `"auto"` a popover with suggestions may be displayed when a LaTeX
-command is input.
-
-**Default**: `"auto"`
 
 </MemberCard>
 
@@ -2002,11 +1964,6 @@ be modified programatically.
 removeExtraneousParentheses: boolean;
 ```
 
-If `true`, extra parentheses around a numerator or denominator are
-removed automatically.
-
-**Default**: `true`
-
 </MemberCard>
 
 <a id="scriptdepth-1" name="scriptdepth-1"></a>
@@ -2018,20 +1975,6 @@ removed automatically.
 ```ts
 scriptDepth: number | [number, number];
 ```
-
-This option controls how many levels of subscript/superscript can be entered. For
-example, if `scriptDepth` is "1", there can be one level of superscript or
-subscript. Attempting to enter a superscript while inside a superscript will
-be rejected. Setting a value of 0 will prevent entry of any superscript or
-subscript (but not limits for sum, integrals, etc...)
-
-This can make it easier to enter equations that fit what's expected for the
-domain where the mathfield is used.
-
-To control the depth of superscript and subscript independently, provide an
-array: the first element indicate the maximum depth for subscript and the
-second element the depth of superscript. Thus, a value of `[0, 1]` would
-suppress the entry of subscripts, and allow one level of superscripts.
 
 </MemberCard>
 
@@ -2045,12 +1988,6 @@ suppress the entry of subscripts, and allow one level of superscripts.
 smartFence: boolean;
 ```
 
-When `true` and an open fence is entered via `typedText()` it will
-generate a contextually appropriate markup, for example using
-`\left...\right` if applicable.
-
-When `false`, the literal value of the character will be inserted instead.
-
 </MemberCard>
 
 <a id="smartmode-1" name="smartmode-1"></a>
@@ -2063,39 +2000,6 @@ When `false`, the literal value of the character will be inserted instead.
 smartMode: boolean;
 ```
 
-When `true`, during text input the field will switch automatically between
-'math' and 'text' mode depending on what is typed and the context of the
-formula. If necessary, what was previously typed will be 'fixed' to
-account for the new info.
-
-For example, when typing "if x >0":
-
-| Type  | Interpretation |
-|---:|:---|
-| `i` | math mode, imaginary unit |
-| `if` | text mode, english word "if" |
-| `if x` | all in text mode, maybe the next word is xylophone? |
-| `if x >` | "if" stays in text mode, but now "x >" is in math mode |
-| `if x > 0` | "if" in text mode, "x > 0" in math mode |
-
-**Default**: `false`
-
-Manually switching mode (by typing `alt/option+=`) will temporarily turn
-off smart mode.
-
-**Examples**
-
-- `slope = rise/run`
-- `If x > 0, then f(x) = sin(x)`
-- `x^2 + sin (x) when x > 0`
-- `When x&lt;0, x^{2n+1}&lt;0`
-- `Graph x^2 -x+3 =0 for 0&lt;=x&lt;=5`
-- `Divide by x-3 and then add x^2-1 to both sides`
-- `Given g(x) = 4x – 3, when does g(x)=0?`
-- `Let D be the set {(x,y)|0&lt;=x&lt;=1 and 0&lt;=y&lt;=x}`
-- `\int\_{the unit square} f(x,y) dx dy`
-- `For all n in NN`
-
 </MemberCard>
 
 <a id="smartsuperscript-1" name="smartsuperscript-1"></a>
@@ -2107,16 +2011,6 @@ off smart mode.
 ```ts
 smartSuperscript: boolean;
 ```
-
-When `true` and a digit is entered in an empty superscript, the cursor
-leaps automatically out of the superscript. This makes entry of common
-polynomials easier and faster. If entering other characters (for example
-"n+1") the navigation out of the superscript must be done manually (by
-using the cursor keys or the spacebar to leap to the next insertion
-point).
-
-When `false`, the navigation out of the superscript must always be done
-manually.
 
 </MemberCard>
 
@@ -2198,27 +2092,6 @@ type InlineShortcutsOptions: object;
 inlineShortcutTimeout: number;
 ```
 
-Maximum time, in milliseconds, between consecutive characters for them to be
-considered part of the same shortcut sequence.
-
-A value of 0 is the same as infinity: any consecutive character will be
-candidate for an inline shortcut, regardless of the interval between this
-character and the previous one.
-
-A value of 750 will indicate that the maximum interval between two
-characters to be considered part of the same inline shortcut sequence is
-3/4 of a second.
-
-This is useful to enter "+-" as a sequence of two characters, while also
-supporting the "±" shortcut with the same sequence.
-
-The first result can be entered by pausing slightly between the first and
-second character if this option is set to a value of 250 or so.
-
-Note that some operations, such as clicking to change the selection, or
-losing the focus on the mathfield, will automatically timeout the
-shortcuts.
-
 </MemberCard>
 
 <a id="inlineshortcuts-1" name="inlineshortcuts-1"></a>
@@ -2230,9 +2103,6 @@ shortcuts.
 ```ts
 inlineShortcuts: InlineShortcutDefinitions;
 ```
-
-The keys of this object literal indicate the sequence of characters
-that will trigger an inline shortcut.
 
 </MemberCard>
 
@@ -2507,25 +2377,6 @@ backgroundColorMap: (name) => string | undefined;
 colorMap: (name) => string | undefined;
 ```
 
-Map a color name as used in commands such as `\textcolor{}{}` or
-`\colorbox{}{}` to a CSS color value.
-
-Use this option to override the standard mapping of colors such as "yellow"
-or "red".
-
-If the name is not one you expected, return `undefined` and the default
-color mapping will be applied.
-
-If a `backgroundColorMap()` function is not provided, the `colorMap()`
-function will be used instead.
-
-If `colorMap()` is not provided, default color mappings are applied.
-
-The following color names have been optimized for a legible foreground
-and background values, and are recommended:
-- `red`, `orange`, `yellow`, `lime`, `green`, `teal`, `blue`, `indigo`,
-`purple`, `magenta`, `black`, `dark-grey`, `grey`, `light-grey`, `white`
-
 • **name**: `string`
 
 `string` \| `undefined`
@@ -2541,11 +2392,6 @@ and background values, and are recommended:
 ```ts
 defaultMode: "inline-math" | "math" | "text";
 ```
-
-The mode of the element when it is empty:
-- `"math"`: equivalent to `\displaystyle` (display math mode)
-- `"inline-math"`: equivalent to `\inlinestyle` (inline math mode)
-- `"text"`: text mode
 
 </MemberCard>
 
@@ -2564,33 +2410,6 @@ letterShapeStyle:
   | "upright";
 ```
 
-Control the letter shape style:
-
- | `letterShapeStyle` | xyz | ABC | αβɣ | ΓΔΘ |
- | ------------------ | --- | --- | --- | --- |
- | `iso`              | it  | it  | it  | it  |
- | `tex`              | it  | it  | it  | up  |
- | `french`           | it  | up  | up  | up  |
- | `upright`          | up  | up  | up  | up  |
-
- (it) = italic (up) = upright
-
- * The default letter shape style is `auto`, which indicates that `french`
- * should be used if the locale is "french", and `tex` otherwise.
- *
- * **Historical Note**
- *
- * Where do the "french" rules come from? The
- * TeX standard font, Computer Modern, is based on Monotype 155M, itself
- * based on the Porson greek font which was one of the most widely used
- * Greek fonts in english-speaking countries. This font had upright
- * capitals, but slanted lowercase. In France, the traditional font for
- * greek was Didot, which has both upright capitals and lowercase.
- *
- * As for roman uppercase, they are recommended by "Lexique des règles
- * typographiques en usage à l’Imprimerie Nationale". It should be noted
- * that this convention is not universally followed.
-
 </MemberCard>
 
 <a id="macros-1" name="macros-1"></a>
@@ -2602,27 +2421,6 @@ Control the letter shape style:
 ```ts
 macros: MacroDictionary;
 ```
-
-A dictionary of LaTeX macros to be used to interpret and render the content.
-
-For example, to add a new macro to the default macro dictionary:
-
-```javascript
-mf.macros = {
-...mf.macros,
-smallfrac: '^{#1}\\!\\!/\\!_{#2}',
-};
-```
-
-Note that `...mf.macros` is used to keep the existing macros and add to
-them.
-Otherwise, all the macros are replaced with the new definition.
-
-The code above will support the following notation:
-
- ```tex
- \smallfrac{5}{16}
- ```
 
 </MemberCard>
 
@@ -2636,10 +2434,6 @@ The code above will support the following notation:
 maxMatrixCols: number;
 ```
 
-Sets the maximum number of columns for the matrix environment. The default is
-10 columns to match the behavior of the amsmath matrix environment.
-**Default**: `10`
-
 </MemberCard>
 
 <a id="minfontscale-1" name="minfontscale-1"></a>
@@ -2651,13 +2445,6 @@ Sets the maximum number of columns for the matrix environment. The default is
 ```ts
 minFontScale: number;
 ```
-
-Set the minimum relative font size for nested superscripts and fractions. The value
-should be a number between `0` and `1`. The size is in releative `em` units relative to the
-font size of the `math-field` element. Specifying a value of `0` allows the `math-field`
-to use its default sizing logic.
-
-**Default**: `0`
 
 </MemberCard>
 
@@ -2785,6 +2572,2683 @@ Note that this affects some keybindings, but not general text input.
 </MemberCard>
 
 ## Other
+
+<a id="mathfieldelement" name="mathfieldelement"></a>
+
+### MathfieldElement
+
+The `MathfieldElement` class represent a DOM element that displays
+math equations.
+
+It is a subclass of the standard
+[`HTMLElement`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement)
+class and as such inherits all of its properties and methods.
+
+It inherits many useful properties and methods from `HTMLElement` such
+as `style`, `tabIndex`, `addEventListener()`, `getAttribute()`,  etc...
+
+It is typically used to render a single equation.
+
+To render multiple equations, use multiple instances of `MathfieldElement`.
+
+The `MathfieldElement` class provides special properties and methods to
+control the display and behavior of `<math-field>` elements.
+
+You will usually instantiate a `MathfieldElement` using the
+`<math-field>` tag in HTML. However, if necessary you can also create
+it programmatically using `new MathfieldElement()`.
+
+```javascript
+// 1. Create a new MathfieldElement
+const mf = new MathfieldElement();
+
+// 2. Attach it to the DOM
+document.body.appendChild(mf);
+```
+
+// Modifying options after construction
+mf.smartFence = true;
+```
+
+#### MathfieldElement CSS Variables
+
+To customize the appearance of the mathfield, declare the following CSS
+variables (custom properties) in a ruleset that applies to the mathfield.
+
+```css
+math-field {
+ --hue: 10       // Set the highlight color and caret to a reddish hue
+}
+```
+
+Alternatively you can set these CSS variables programatically:
+
+```js
+document.body.style.setProperty("--hue", "10");
+```
+<div className='symbols-table' style={{"--first-col-width":"25ex"}}>
+
+| CSS Variable | Usage |
+|:---|:---|
+| `--hue` | Hue of the highlight color and the caret |
+| `--contains-highlight-background-color` | Backround property for items that contain the caret |
+| `--primary-color` | Primary accent color, used for example in the virtual keyboard |
+| `--text-font-family` | The font stack used in text mode |
+| `--smart-fence-opacity` | Opacity of a smart fence (default is 50%) |
+| `--smart-fence-color` | Color of a smart fence (default is current color) |
+
+</div>
+
+You can customize the appearance and zindex of the virtual keyboard panel
+with some CSS variables associated with a selector that applies to the
+virtual keyboard panel container.
+
+Read more about [customizing the virtual keyboard appearance](#custom-appearance)
+
+#### MathfieldElement CSS Parts
+
+To style the virtual keyboard toggle, use the `virtual-keyboard-toggle` CSS
+part. To use it, define a CSS rule with a `::part()` selector
+for example:
+
+```css
+math-field::part(virtual-keyboard-toggle) {
+ color: red;
+}
+```
+
+#### MathfieldElement Attributes
+
+An attribute is a key-value pair set as part of the tag:
+
+```html
+<math-field letter-shape-style="tex"></math-field>
+```
+
+The supported attributes are listed in the table below with their
+corresponding property.
+
+The property can also be changed directly on the `MathfieldElement` object:
+
+```javascript
+ getElementById('mf').value = "\\sin x";
+ getElementById('mf').letterShapeStyle = "text";
+```
+
+The values of attributes and properties are reflected, which means you can
+change one or the other, for example:
+
+```javascript
+getElementById('mf').setAttribute('letter-shape-style',  'french');
+console.log(getElementById('mf').letterShapeStyle);
+// Result: "french"
+getElementById('mf').letterShapeStyle ='tex;
+console.log(getElementById('mf').getAttribute('letter-shape-style');
+// Result: 'tex'
+```
+
+An exception is the `value` property, which is not reflected on the `value`
+attribute: for consistency with other DOM elements, the `value` attribute
+remains at its initial value.
+
+<div className='symbols-table' style={{"--first-col-width":"32ex"}}>
+
+| Attribute | Property |
+|:---|:---|
+| `disabled` | `mf.disabled` |
+| `default-mode` | `mf.defaultMode` |
+| `letter-shape-style` | `mf.letterShapeStyle` |
+| `min-font-scale` | `mf.minFontScale` |
+| `max-matrix-cols` | `mf.maxMatrixCols` |
+| `popover-policy` | `mf.popoverPolicy` |
+| `math-mode-space` | `mf.mathModeSpace` |
+| `read-only` | `mf.readOnly` |
+| `remove-extraneous-parentheses` | `mf.removeExtraneousParentheses` |
+| `smart-fence` | `mf.smartFence` |
+| `smart-mode` | `mf.smartMode` |
+| `smart-superscript` | `mf.smartSuperscript` |
+| `inline-shortcut-timeout` | `mf.inlineShortcutTimeout` |
+| `script-depth` | `mf.scriptDepth` |
+| `value` | `value` |
+| `math-virtual-keyboard-policy` | `mathVirtualKeyboardPolicy` |
+
+</div>
+
+See `MathfieldOptions` for more details about these options.
+
+In addition, the following [global attributes](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes)
+can also be used:
+- `class`
+- `data-*`
+- `hidden`
+- `id`
+- `item*`
+- `style`
+- `tabindex`
+
+#### MathfieldElement Events
+
+Listen to these events by using `addEventListener()`. For events with
+additional arguments, the arguments are available in `event.detail`.
+
+<div className='symbols-table' style={{"--first-col-width":"27ex"}}>
+
+| Event Name  | Description |
+|:---|:---|
+| `beforeinput` | The value of the mathfield is about to be modified.  |
+| `input` | The value of the mathfield has been modified. This happens on almost every keystroke in the mathfield. The `evt.data` property includes a copy of `evt.inputType`. See `InputEvent` |
+| `change` | The user has committed the value of the mathfield. This happens when the user presses **Return** or leaves the mathfield. |
+| `selection-change` | The selection (or caret position) in the mathfield has changed |
+| `mode-change` | The mode (`math`, `text`) of the mathfield has changed |
+| `undo-state-change` |  The state of the undo stack has changed. The `evt.detail.type` indicate if a snapshot was taken or an undo performed. |
+| `read-aloud-status-change` | The status of a read aloud operation has changed |
+| `before-virtual-keyboard-toggle` | The visibility of the virtual keyboard panel is about to change. The `evt.detail.visible` property indicate if the keyboard will be visible or not. Listen for this event on `window.mathVirtualKeyboard` |
+| `virtual-keyboard-toggle` | The visibility of the virtual keyboard panel has changed. Listen for this event on `window.mathVirtualKeyboard` |
+| `geometrychange` | The geometry of the virtual keyboard has changed. The `evt.detail.boundingRect` property is the new bounding rectangle of the virtual keyboard. Listen for this event on `window.mathVirtualKeyboard` |
+| `blur` | The mathfield is losing focus |
+| `focus` | The mathfield is gaining focus |
+| `move-out` | The user has pressed an **arrow** key or the **tab** key, but there is nowhere to go. This is an opportunity to change the focus to another element if desired. <br/> `detail: \{direction: 'forward' | 'backward' | 'upward' | 'downward'\}` **cancellable**|
+| `keypress` | The user pressed a physical keyboard key |
+| `mount` | The element has been attached to the DOM |
+| `unmount` | The element is about to be removed from the DOM |
+
+</div>
+
+@category Web Component
+@keywords zindex, events, attribute, attributes, property, properties, parts, variables, css, mathfield, mathfieldelement
+
+#### Extends
+
+- `HTMLElement`
+
+#### Implements
+
+- `Mathfield`
+
+#### Accessing and changing the content
+
+<a id="errors" name="errors"></a>
+
+<MemberCard>
+
+##### MathfieldElement.errors
+
+```ts
+get errors(): readonly LatexSyntaxError[]
+```
+
+Return an array of LaTeX syntax errors, if any.
+
+readonly [`LatexSyntaxError`](#latexsyntaxerrort)[]
+
+</MemberCard>
+
+<a id="expression" name="expression"></a>
+
+<MemberCard>
+
+##### MathfieldElement.expression
+
+```ts
+get expression(): any
+```
+
+If the Compute Engine library is available, return a boxed MathJSON expression representing the value of the mathfield.
+
+To load the Compute Engine library, use:
+```js
+import 'https://unpkg.com/@cortex-js/compute-engine?module';
+```
+
+```ts
+set expression(mathJson): void
+```
+
+• **mathJson**: `any`
+
+`any`
+
+</MemberCard>
+
+<a id="value" name="value"></a>
+
+<MemberCard>
+
+##### MathfieldElement.value
+
+```ts
+get value(): string
+```
+
+The content of the mathfield as a LaTeX expression.
+```js
+document.querySelector('mf').value = '\\frac{1}{\\pi}'
+```
+
+```ts
+set value(value): void
+```
+
+• **value**: `string`
+
+`string`
+
+</MemberCard>
+
+<a id="applystyle" name="applystyle"></a>
+
+<MemberCard>
+
+##### MathfieldElement.applyStyle()
+
+```ts
+applyStyle(style, options?): void
+```
+
+Update the style (color, bold, italic, etc...) of the selection or sets
+the style to be applied to future input.
+
+If there is no selection and no range is specified, the style will
+apply to the next character typed.
+
+If a range is specified, the style is applied to the range, otherwise,
+if there is a selection, the style is applied to the selection.
+
+If the operation is `"toggle"` and the range already has this style,
+remove it. If the range
+has the style partially applied (i.e. only some sections), remove it from
+those sections, and apply it to the entire range.
+
+If the operation is `"set"`, the style is applied to the range,
+whether it already has the style or not.
+
+The default operation is `"set"`.
+
+• **style**: `Readonly`\<[`Style`](#style-1)\>
+
+• **options?**: [`Range`](#range-1) \| `object`
+
+`void`
+
+</MemberCard>
+
+<a id="getvalue" name="getvalue"></a>
+
+<MemberCard>
+
+##### MathfieldElement.getValue()
+
+###### getValue(format)
+
+```ts
+getValue(format?): string
+```
+
+Return a textual representation of the content of the mathfield.
+
+• **format?**: [`OutputFormat`](#outputformat)
+
+The format of the result. If using `math-json`
+the Compute Engine library must be loaded, for example with:
+
+```js
+import "https://unpkg.com/@cortex-js/compute-engine?module";
+```
+
+**Default:** `"latex"`
+
+`string`
+
+###### getValue(start, end, format)
+
+```ts
+getValue(
+   start, 
+   end, 
+   format?): string
+```
+
+• **start**: `number`
+
+• **end**: `number`
+
+• **format?**: [`OutputFormat`](#outputformat)
+
+`string`
+
+###### getValue(range, format)
+
+```ts
+getValue(range, format?): string
+```
+
+• **range**: [`Range`](#range-1)
+
+• **format?**: [`OutputFormat`](#outputformat)
+
+`string`
+
+###### getValue(selection, format)
+
+```ts
+getValue(selection, format?): string
+```
+
+• **selection**: [`Selection`](#selection-1)
+
+• **format?**: [`OutputFormat`](#outputformat)
+
+`string`
+
+</MemberCard>
+
+<a id="insert" name="insert"></a>
+
+<MemberCard>
+
+##### MathfieldElement.insert()
+
+```ts
+insert(s, options?): boolean
+```
+
+Insert a block of text at the current insertion point.
+
+This method can be called explicitly or invoked as a selector with
+`executeCommand("insert")`.
+
+After the insertion, the selection will be set according to the
+`options.selectionMode`.
+
+• **s**: `string`
+
+• **options?**: [`InsertOptions`](#insertoptions)
+
+`boolean`
+
+</MemberCard>
+
+<a id="querystyle" name="querystyle"></a>
+
+<MemberCard>
+
+##### MathfieldElement.queryStyle()
+
+```ts
+queryStyle(style): "some" | "all" | "none"
+```
+
+If there is a selection, return if all the atoms in the selection,
+some of them or none of them match the `style` argument.
+
+If there is no selection, return 'all' if the current implicit style
+(determined by a combination of the style of the previous atom and
+the current style) matches the `style` argument, 'none' if it does not.
+
+• **style**: `Readonly`\<[`Style`](#style-1)\>
+
+`"some"` \| `"all"` \| `"none"`
+
+</MemberCard>
+
+<a id="setvalue" name="setvalue"></a>
+
+<MemberCard>
+
+##### MathfieldElement.setValue()
+
+```ts
+setValue(value?, options?): void
+```
+
+Set the content of the mathfield to the text interpreted as a
+LaTeX expression.
+
+• **value?**: `string`
+
+• **options?**: [`InsertOptions`](#insertoptions)
+
+`void`
+
+</MemberCard>
+
+#### Commands
+Execute a [`command`](#commands) defined by a selector.
+```javascript
+mfe.executeCommand('add-column-after');
+mfe.executeCommand(['switch-mode', 'math']);
+```
+
+<a id="executecommand" name="executecommand"></a>
+
+<MemberCard>
+
+##### MathfieldElement.executeCommand()
+
+###### executeCommand(selector)
+
+```ts
+executeCommand(selector): boolean
+```
+
+• **selector**: [`Selector`](#selector)
+
+A selector, or an array whose first element
+is a selector, and whose subsequent elements are arguments to the selector.
+
+Selectors can be passed either in camelCase or kebab-case.
+
+```javascript
+// Both calls do the same thing
+mfe.executeCommand('selectAll');
+mfe.executeCommand('select-all');
+```
+
+`boolean`
+
+###### executeCommand(selector, args)
+
+```ts
+executeCommand(selector, ...args): boolean
+```
+
+• **selector**: [`Selector`](#selector)
+
+• ...**args**: `unknown`[]
+
+`boolean`
+
+###### executeCommand(selector)
+
+```ts
+executeCommand(selector): boolean
+```
+
+• **selector**: [[`Selector`](#selector), `...unknown[]`]
+
+`boolean`
+
+</MemberCard>
+
+#### Customization
+
+<a id="backgroundcolormap" name="backgroundcolormap"></a>
+
+<MemberCard>
+
+##### MathfieldElement.backgroundColorMap
+
+```ts
+get backgroundColorMap(): (name) => string
+```
+
+```ts
+set backgroundColorMap(value): void
+```
+
+• **value**
+
+`Function`
+
+• **name**: `string`
+
+`string`
+
+</MemberCard>
+
+<a id="keybindings" name="keybindings"></a>
+
+<MemberCard>
+
+##### MathfieldElement.keybindings
+
+```ts
+get keybindings(): readonly Keybinding[]
+```
+
+```ts
+set keybindings(value): void
+```
+
+• **value**: readonly [`Keybinding`](#keybinding)[]
+
+readonly [`Keybinding`](#keybinding)[]
+
+</MemberCard>
+
+<a id="mathvirtualkeyboardpolicy" name="mathvirtualkeyboardpolicy"></a>
+
+<MemberCard>
+
+##### MathfieldElement.mathVirtualKeyboardPolicy
+
+```ts
+get mathVirtualKeyboardPolicy(): VirtualKeyboardPolicy
+```
+
+```ts
+set mathVirtualKeyboardPolicy(value): void
+```
+
+• **value**: [`VirtualKeyboardPolicy`](#virtualkeyboardpolicy)
+
+[`VirtualKeyboardPolicy`](#virtualkeyboardpolicy)
+
+</MemberCard>
+
+<a id="menuitems" name="menuitems"></a>
+
+<MemberCard>
+
+##### MathfieldElement.menuItems
+
+```ts
+get menuItems(): readonly MenuItem[]
+```
+
+```ts
+set menuItems(menuItems): void
+```
+
+• **menuItems**: readonly `MenuItem`[]
+
+readonly `MenuItem`[]
+
+</MemberCard>
+
+<a id="registers" name="registers"></a>
+
+<MemberCard>
+
+##### MathfieldElement.registers
+
+```ts
+get registers(): Registers
+```
+
+TeX registers represent "variables" and "constants".
+
+Changing the values of some registers can modify the layout
+of math expressions.
+
+The following registers might be of interest:
+
+- `thinmuskip`: space between items of math lists
+- `medmuskip`: space between binary operations
+- `thickmuskip`: space between relational operators
+- `nulldelimiterspace`: minimum space to leave blank in delimiter constructions, for example around a fraction
+- `delimitershortfall`: maximum space to overlap adjacent elements when a delimiter is too short
+- `jot`: space between lines in an array, or between rows in a multiline construct
+- `arraycolsep`: space between columns in an array
+- `arraystretch`: factor by which to stretch the height of each row in an array
+
+To modify a register, use:
+
+```javascript
+mf.registers.arraystretch = 1.5;
+mf.registers.thinmuskip = { dimension: 2, unit: "mu" };
+mf.registers.medmuskip = "3mu";
+```
+
+```ts
+set registers(value): void
+```
+
+• **value**: [`Registers`](#registers-2)
+
+[`Registers`](#registers-2)
+
+</MemberCard>
+
+#### Customization
+
+When `true` and an open fence is entered via `typedText()` it will
+generate a contextually appropriate markup, for example using
+`\left...\right` if applicable.
+
+When `false`, the literal value of the character will be inserted instead.
+
+<a id="smartfence" name="smartfence"></a>
+
+<MemberCard>
+
+##### MathfieldElement.smartFence
+
+```ts
+get smartFence(): boolean
+```
+
+```ts
+set smartFence(value): void
+```
+
+• **value**: `boolean`
+
+`boolean`
+
+</MemberCard>
+
+#### Customization
+A LaTeX string displayed inside the mathfield when there is no content.
+
+<a id="placeholder" name="placeholder"></a>
+
+<MemberCard>
+
+##### MathfieldElement.placeholder
+
+```ts
+get placeholder(): string
+```
+
+```ts
+set placeholder(value): void
+```
+
+• **value**: `string`
+
+`string`
+
+</MemberCard>
+
+#### Customization
+A dictionary of LaTeX macros to be used to interpret and render the content.
+
+For example, to add a new macro to the default macro dictionary:
+
+```javascript
+mf.macros = {
+...mf.macros,
+smallfrac: '^{#1}\\!\\!/\\!_{#2}',
+};
+```
+
+Note that `...mf.macros` is used to keep the existing macros and add to
+them.
+Otherwise, all the macros are replaced with the new definition.
+
+The code above will support the following notation:
+
+ ```tex
+ \smallfrac{5}{16}
+ ```
+
+<a id="macros" name="macros"></a>
+
+<MemberCard>
+
+##### MathfieldElement.macros
+
+```ts
+get macros(): Readonly<MacroDictionary>
+```
+
+```ts
+set macros(value): void
+```
+
+• **value**: [`MacroDictionary`](#macrodictionary)
+
+`Readonly`\<[`MacroDictionary`](#macrodictionary)\>
+
+</MemberCard>
+
+#### Customization
+If `"auto"` a popover with commands to edit an environment (matrix)
+is displayed when the virtual keyboard is displayed.
+
+**Default**: `"auto"`
+
+<a id="environmentpopoverpolicy" name="environmentpopoverpolicy"></a>
+
+<MemberCard>
+
+##### MathfieldElement.environmentPopoverPolicy
+
+```ts
+get environmentPopoverPolicy(): "auto" | "off" | "on"
+```
+
+```ts
+set environmentPopoverPolicy(value): void
+```
+
+• **value**: `"auto"` \| `"off"` \| `"on"`
+
+`"auto"` \| `"off"` \| `"on"`
+
+</MemberCard>
+
+#### Customization
+If `"auto"` a popover with suggestions may be displayed when a LaTeX
+command is input.
+
+**Default**: `"auto"`
+
+<a id="popoverpolicy" name="popoverpolicy"></a>
+
+<MemberCard>
+
+##### MathfieldElement.popoverPolicy
+
+```ts
+get popoverPolicy(): "auto" | "off"
+```
+
+```ts
+set popoverPolicy(value): void
+```
+
+• **value**: `"auto"` \| `"off"`
+
+`"auto"` \| `"off"`
+
+</MemberCard>
+
+#### Customization
+If `true`, extra parentheses around a numerator or denominator are
+removed automatically.
+
+**Default**: `true`
+
+<a id="removeextraneousparentheses" name="removeextraneousparentheses"></a>
+
+<MemberCard>
+
+##### MathfieldElement.removeExtraneousParentheses
+
+```ts
+get removeExtraneousParentheses(): boolean
+```
+
+```ts
+set removeExtraneousParentheses(value): void
+```
+
+• **value**: `boolean`
+
+`boolean`
+
+</MemberCard>
+
+#### Customization
+Map a color name as used in commands such as `\textcolor{}{}` or
+`\colorbox{}{}` to a CSS color value.
+
+Use this option to override the standard mapping of colors such as "yellow"
+or "red".
+
+If the name is not one you expected, return `undefined` and the default
+color mapping will be applied.
+
+If a `backgroundColorMap()` function is not provided, the `colorMap()`
+function will be used instead.
+
+If `colorMap()` is not provided, default color mappings are applied.
+
+The following color names have been optimized for a legible foreground
+and background values, and are recommended:
+- `red`, `orange`, `yellow`, `lime`, `green`, `teal`, `blue`, `indigo`,
+`purple`, `magenta`, `black`, `dark-grey`, `grey`, `light-grey`, `white`
+
+<a id="colormap" name="colormap"></a>
+
+<MemberCard>
+
+##### MathfieldElement.colorMap
+
+```ts
+get colorMap(): (name) => string
+```
+
+```ts
+set colorMap(value): void
+```
+
+• **value**
+
+`Function`
+
+• **name**: `string`
+
+`string`
+
+</MemberCard>
+
+#### Customization
+Maximum time, in milliseconds, between consecutive characters for them to be
+considered part of the same shortcut sequence.
+
+A value of 0 is the same as infinity: any consecutive character will be
+candidate for an inline shortcut, regardless of the interval between this
+character and the previous one.
+
+A value of 750 will indicate that the maximum interval between two
+characters to be considered part of the same inline shortcut sequence is
+3/4 of a second.
+
+This is useful to enter "+-" as a sequence of two characters, while also
+supporting the "±" shortcut with the same sequence.
+
+The first result can be entered by pausing slightly between the first and
+second character if this option is set to a value of 250 or so.
+
+Note that some operations, such as clicking to change the selection, or
+losing the focus on the mathfield, will automatically timeout the
+shortcuts.
+
+<a id="inlineshortcuttimeout" name="inlineshortcuttimeout"></a>
+
+<MemberCard>
+
+##### MathfieldElement.inlineShortcutTimeout
+
+```ts
+get inlineShortcutTimeout(): number
+```
+
+```ts
+set inlineShortcutTimeout(value): void
+```
+
+• **value**: `number`
+
+`number`
+
+</MemberCard>
+
+#### Customization
+Set the minimum relative font size for nested superscripts and fractions. The value
+should be a number between `0` and `1`. The size is in releative `em` units relative to the
+font size of the `math-field` element. Specifying a value of `0` allows the `math-field`
+to use its default sizing logic.
+
+**Default**: `0`
+
+<a id="minfontscale" name="minfontscale"></a>
+
+<MemberCard>
+
+##### MathfieldElement.minFontScale
+
+```ts
+get minFontScale(): number
+```
+
+```ts
+set minFontScale(value): void
+```
+
+• **value**: `number`
+
+`number`
+
+</MemberCard>
+
+#### Customization
+Sets the maximum number of columns for the matrix environment. The default is
+10 columns to match the behavior of the amsmath matrix environment.
+**Default**: `10`
+
+<a id="maxmatrixcols" name="maxmatrixcols"></a>
+
+<MemberCard>
+
+##### MathfieldElement.maxMatrixCols
+
+```ts
+get maxMatrixCols(): number
+```
+
+```ts
+set maxMatrixCols(value): void
+```
+
+• **value**: `number`
+
+`number`
+
+</MemberCard>
+
+#### Customization
+The LaTeX string to insert when the spacebar is pressed (on the physical or
+virtual keyboard).
+
+Use `"\;"` for a thick space, `"\:"` for a medium space, `"\,"` for a
+thin space.
+
+Do not use `" "` (a regular space), as whitespace is skipped by LaTeX
+so this will do nothing.
+
+**Default**: `""` (empty string)
+
+<a id="mathmodespace" name="mathmodespace"></a>
+
+<MemberCard>
+
+##### MathfieldElement.mathModeSpace
+
+```ts
+get mathModeSpace(): string
+```
+
+```ts
+set mathModeSpace(value): void
+```
+
+• **value**: `string`
+
+`string`
+
+</MemberCard>
+
+#### Customization
+The keys of this object literal indicate the sequence of characters
+that will trigger an inline shortcut.
+
+<a id="inlineshortcuts" name="inlineshortcuts"></a>
+
+<MemberCard>
+
+##### MathfieldElement.inlineShortcuts
+
+```ts
+get inlineShortcuts(): Readonly<InlineShortcutDefinitions>
+```
+
+```ts
+set inlineShortcuts(value): void
+```
+
+• **value**: [`InlineShortcutDefinitions`](#inlineshortcutdefinitions)
+
+`Readonly`\<[`InlineShortcutDefinitions`](#inlineshortcutdefinitions)\>
+
+</MemberCard>
+
+#### Customization
+The mode of the element when it is empty:
+- `"math"`: equivalent to `\displaystyle` (display math mode)
+- `"inline-math"`: equivalent to `\inlinestyle` (inline math mode)
+- `"text"`: text mode
+
+<a id="defaultmode" name="defaultmode"></a>
+
+<MemberCard>
+
+##### MathfieldElement.defaultMode
+
+```ts
+get defaultMode(): "text" | "math" | "inline-math"
+```
+
+```ts
+set defaultMode(value): void
+```
+
+• **value**: `"text"` \| `"math"` \| `"inline-math"`
+
+`"text"` \| `"math"` \| `"inline-math"`
+
+</MemberCard>
+
+#### Customization
+The symbol used to represent a placeholder in an expression.
+
+**Default**: `▢` `U+25A2 WHITE SQUARE WITH ROUNDED CORNERS`
+
+<a id="placeholdersymbol" name="placeholdersymbol"></a>
+
+<MemberCard>
+
+##### MathfieldElement.placeholderSymbol
+
+```ts
+get placeholderSymbol(): string
+```
+
+```ts
+set placeholderSymbol(value): void
+```
+
+• **value**: `string`
+
+`string`
+
+</MemberCard>
+
+#### Customization
+This option controls how many levels of subscript/superscript can be entered. For
+example, if `scriptDepth` is "1", there can be one level of superscript or
+subscript. Attempting to enter a superscript while inside a superscript will
+be rejected. Setting a value of 0 will prevent entry of any superscript or
+subscript (but not limits for sum, integrals, etc...)
+
+This can make it easier to enter equations that fit what's expected for the
+domain where the mathfield is used.
+
+To control the depth of superscript and subscript independently, provide an
+array: the first element indicate the maximum depth for subscript and the
+second element the depth of superscript. Thus, a value of `[0, 1]` would
+suppress the entry of subscripts, and allow one level of superscripts.
+
+<a id="scriptdepth" name="scriptdepth"></a>
+
+<MemberCard>
+
+##### MathfieldElement.scriptDepth
+
+```ts
+get scriptDepth(): number | [number, number]
+```
+
+```ts
+set scriptDepth(value): void
+```
+
+• **value**: `number` \| [`number`, `number`]
+
+`number` \| [`number`, `number`]
+
+</MemberCard>
+
+#### Customization
+When `true` and a digit is entered in an empty superscript, the cursor
+leaps automatically out of the superscript. This makes entry of common
+polynomials easier and faster. If entering other characters (for example
+"n+1") the navigation out of the superscript must be done manually (by
+using the cursor keys or the spacebar to leap to the next insertion
+point).
+
+When `false`, the navigation out of the superscript must always be done
+manually.
+
+<a id="smartsuperscript" name="smartsuperscript"></a>
+
+<MemberCard>
+
+##### MathfieldElement.smartSuperscript
+
+```ts
+get smartSuperscript(): boolean
+```
+
+```ts
+set smartSuperscript(value): void
+```
+
+• **value**: `boolean`
+
+`boolean`
+
+</MemberCard>
+
+#### Customization
+When `true`, during text input the field will switch automatically between
+'math' and 'text' mode depending on what is typed and the context of the
+formula. If necessary, what was previously typed will be 'fixed' to
+account for the new info.
+
+For example, when typing "if x >0":
+
+| Type  | Interpretation |
+|---:|:---|
+| `i` | math mode, imaginary unit |
+| `if` | text mode, english word "if" |
+| `if x` | all in text mode, maybe the next word is xylophone? |
+| `if x >` | "if" stays in text mode, but now "x >" is in math mode |
+| `if x > 0` | "if" in text mode, "x > 0" in math mode |
+
+**Default**: `false`
+
+Manually switching mode (by typing `alt/option+=`) will temporarily turn
+off smart mode.
+
+**Examples**
+
+- `slope = rise/run`
+- `If x > 0, then f(x) = sin(x)`
+- `x^2 + sin (x) when x > 0`
+- `When x&lt;0, x^{2n+1}&lt;0`
+- `Graph x^2 -x+3 =0 for 0&lt;=x&lt;=5`
+- `Divide by x-3 and then add x^2-1 to both sides`
+- `Given g(x) = 4x – 3, when does g(x)=0?`
+- `Let D be the set {(x,y)|0&lt;=x&lt;=1 and 0&lt;=y&lt;=x}`
+- `\int\_{the unit square} f(x,y) dx dy`
+- `For all n in NN`
+
+<a id="smartmode" name="smartmode"></a>
+
+<MemberCard>
+
+##### MathfieldElement.smartMode
+
+```ts
+get smartMode(): boolean
+```
+
+```ts
+set smartMode(value): void
+```
+
+• **value**: `boolean`
+
+`boolean`
+
+</MemberCard>
+
+#### Customization 
+Control the letter shape style:
+
+| `letterShapeStyle` | xyz | ABC | αβɣ | ΓΔΘ |
+| ------------------ | --- | --- | --- | --- |
+| `iso`              | it  | it  | it  | it  |
+| `tex`              | it  | it  | it  | up  |
+| `french`           | it  | up  | up  | up  |
+| `upright`          | up  | up  | up  | up  |
+
+(it) = italic (up) = upright
+
+The default letter shape style is `auto`, which indicates that `french`
+should be used if the locale is "french", and `tex` otherwise.
+
+**Historical Note**
+
+Where do the "french" rules come from? The
+TeX standard font, Computer Modern, is based on Monotype 155M, itself
+based on the Porson greek font which was one of the most widely used
+Greek fonts in english-speaking countries. This font had upright
+capitals, but slanted lowercase. In France, the traditional font for
+greek was Didot, which has both upright capitals and lowercase.
+
+As for roman uppercase, they are recommended by "Lexique des règles
+typographiques en usage à l’Imprimerie Nationale". It should be noted
+that this convention is not universally followed.
+
+<a id="lettershapestyle" name="lettershapestyle"></a>
+
+<MemberCard>
+
+##### MathfieldElement.letterShapeStyle
+
+```ts
+get letterShapeStyle(): 
+  | "auto"
+  | "tex"
+  | "iso"
+  | "french"
+  | "upright"
+```
+
+```ts
+set letterShapeStyle(value): void
+```
+
+• **value**: 
+  \| `"auto"`
+  \| `"tex"`
+  \| `"iso"`
+  \| `"french"`
+  \| `"upright"`
+
+  \| `"auto"`
+  \| `"tex"`
+  \| `"iso"`
+  \| `"french"`
+  \| `"upright"`
+
+</MemberCard>
+
+#### Focus
+
+<a id="blur" name="blur"></a>
+
+<MemberCard>
+
+##### MathfieldElement.blur()
+
+```ts
+blur(): void
+```
+
+Remove the focus from the mathfield (will no longer respond to keyboard
+input).
+
+`void`
+
+</MemberCard>
+
+<a id="focus" name="focus"></a>
+
+<MemberCard>
+
+##### MathfieldElement.focus()
+
+```ts
+focus(): void
+```
+
+Sets the focus to the mathfield (will respond to keyboard input).
+
+`void`
+
+</MemberCard>
+
+<a id="hasfocus" name="hasfocus"></a>
+
+<MemberCard>
+
+##### MathfieldElement.hasFocus()
+
+```ts
+hasFocus(): boolean
+```
+
+Return true if the mathfield is currently focused (responds to keyboard
+input).
+
+`boolean`
+
+</MemberCard>
+
+#### Hooks
+
+<a id="oninsertstyle" name="oninsertstyle"></a>
+
+<MemberCard>
+
+##### MathfieldElement.onInsertStyle
+
+```ts
+get onInsertStyle(): InsertStyleHook
+```
+
+```ts
+set onInsertStyle(value): void
+```
+
+• **value**: [`InsertStyleHook`](#insertstylehook)
+
+[`InsertStyleHook`](#insertstylehook)
+
+</MemberCard>
+
+#### Hooks
+A hook invoked when a string of characters that could be
+interpreted as shortcut has been typed.
+
+If not a special shortcut, return the empty string `""`.
+
+Use this handler to detect multi character symbols, and return them wrapped appropriately,
+for example `\mathrm{${symbol}}`.
+
+<a id="oninlineshortcut" name="oninlineshortcut"></a>
+
+<MemberCard>
+
+##### MathfieldElement.onInlineShortcut
+
+```ts
+get onInlineShortcut(): (sender, symbol) => string
+```
+
+```ts
+set onInlineShortcut(value): void
+```
+
+• **value**
+
+`Function`
+
+• **sender**: `Mathfield`
+
+• **symbol**: `string`
+
+`string`
+
+</MemberCard>
+
+#### Hooks
+A hook invoked when scrolling the mathfield into view is necessary.
+
+Use when scrolling the page would not solve the problem, e.g.
+when the mathfield is in another div that has scrollable content.
+
+<a id="onscrollintoview" name="onscrollintoview"></a>
+
+<MemberCard>
+
+##### MathfieldElement.onScrollIntoView
+
+```ts
+get onScrollIntoView(): (sender) => void
+```
+
+```ts
+set onScrollIntoView(value): void
+```
+
+• **value**
+
+`Function`
+
+• **sender**: `Mathfield`
+
+`void`
+
+</MemberCard>
+
+#### Hooks
+This hook is invoked when the user has requested to export the content
+of the mathfield, for example when pressing ctrl/command+C.
+
+This hook should return as a string what should be exported.
+
+The `range` argument indicates which portion of the mathfield should be
+exported. It is not always equal to the current selection, but it can
+be used to export a format other than LaTeX.
+
+By default this is:
+
+```js
+ return `\\begin{equation*}${latex}\\end{equation*}`;
+```
+
+<a id="onexport" name="onexport"></a>
+
+<MemberCard>
+
+##### MathfieldElement.onExport
+
+```ts
+get onExport(): (from, latex, range) => string
+```
+
+```ts
+set onExport(value): void
+```
+
+• **value**
+
+`Function`
+
+• **from**: `Mathfield`
+
+• **latex**: `string`
+
+• **range**: [`Range`](#range-1)
+
+`string`
+
+</MemberCard>
+
+#### Localization
+
+<a id="decimalseparator" name="decimalseparator"></a>
+
+<MemberCard>
+
+##### MathfieldElement.decimalSeparator
+
+```ts
+get static decimalSeparator(): "," | "."
+```
+
+The symbol used to separate the integer part from the fractional part of a
+number.
+
+When `","` is used, the corresponding LaTeX string is `{,}`, in order
+to ensure proper spacing (otherwise an extra gap is displayed after the
+comma).
+
+This affects:
+- what happens when the `,` key is pressed (if `decimalSeparator` is
+`","`, the `{,}` LaTeX string is inserted when following some digits)
+- the label and behavior of the "." key in the default virtual keyboard
+
+**Default**: `"."`
+
+```ts
+set static decimalSeparator(value): void
+```
+
+• **value**: `","` \| `"."`
+
+`","` \| `"."`
+
+</MemberCard>
+
+<a id="fractionnavigationorder" name="fractionnavigationorder"></a>
+
+<MemberCard>
+
+##### MathfieldElement.fractionNavigationOrder
+
+```ts
+get static fractionNavigationOrder(): "denominator-numerator" | "numerator-denominator"
+```
+
+When using the keyboard to navigate a fraction, the order in which the
+numerator and navigator are traversed:
+- "numerator-denominator": first the elements in the numerator, then
+  the elements in the denominator.
+- "denominator-numerator": first the elements in the denominator, then
+  the elements in the numerator. In some East-Asian cultures, fractions
+  are read and written denominator first ("fēnzhī"). With this option
+  the keyboard navigation follows this convention.
+
+**Default**: `"numerator-denominator"`
+
+```ts
+set static fractionNavigationOrder(s): void
+```
+
+• **s**: `"denominator-numerator"` \| `"numerator-denominator"`
+
+`"denominator-numerator"` \| `"numerator-denominator"`
+
+</MemberCard>
+
+<a id="locale" name="locale"></a>
+
+<MemberCard>
+
+##### MathfieldElement.locale
+
+```ts
+get static locale(): string
+```
+
+The locale (language + region) to use for string localization.
+
+If none is provided, the locale of the browser is used.
+
+```ts
+set static locale(value): void
+```
+
+• **value**: `string`
+
+`string`
+
+</MemberCard>
+
+<a id="strings" name="strings"></a>
+
+<MemberCard>
+
+##### MathfieldElement.strings
+
+```ts
+get static strings(): Readonly<Record<string, Record<string, string>>>
+```
+
+An object whose keys are a locale string, and whose values are an object of
+string identifier to localized string.
+
+**Example**
+
+```js example
+mf.strings = {
+  "fr-CA": {
+      "tooltip.undo": "Annuler",
+      "tooltip.redo": "Refaire",
+  }
+}
+```
+
+If the locale is already supported, this will override the existing
+strings. If the locale is not supported, it will be added.
+
+```ts
+set static strings(value): void
+```
+
+• **value**: `Record`\<`string`, `Record`\<`string`, `string`\>\>
+
+`Readonly`\<`Record`\<`string`, `Record`\<`string`, `string`\>\>\>
+
+</MemberCard>
+
+#### Other
+
+<a id="constructors" name="constructors"></a>
+
+<MemberCard>
+
+##### new MathfieldElement()
+
+##### new MathfieldElement()
+
+```ts
+new MathfieldElement(options?): MathfieldElement
+```
+
+To create programmatically a new mathfield use:
+
+```javascript
+let mfe = new MathfieldElement();
+
+// Set initial value and options
+mfe.value = "\\frac{\\sin(x)}{\\cos(x)}";
+
+// Options can be set either as an attribute (for simple options)...
+mfe.setAttribute("letter-shape-style", "french");
+
+// ... or using properties
+mfe.letterShapeStyle = "french";
+
+// Attach the element to the DOM
+document.body.appendChild(mfe);
+```
+
+• **options?**: `Partial`\<[`MathfieldOptions`](#mathfieldoptions)\>
+
+[`MathfieldElement`](#mathfieldelement)
+
+</MemberCard>
+
+<a id="createhtml" name="createhtml"></a>
+
+<MemberCard>
+
+##### MathfieldElement.createHTML()
+
+```ts
+static createHTML: (html) => any;
+```
+
+Support for [Trusted Type](https://www.w3.org/TR/trusted-types/).
+
+This optional function will be called before a string of HTML is
+injected in the DOM, allowing that string to be sanitized
+according to a policy defined by the host.
+
+• **html**: `string`
+
+`any`
+
+</MemberCard>
+
+<a id="readaloudhook" name="readaloudhook"></a>
+
+<MemberCard>
+
+##### MathfieldElement.readAloudHook()
+
+```ts
+static readAloudHook: (element, text) => void = defaultReadAloudHook;
+```
+
+• **element**: `HTMLElement`
+
+• **text**: `string`
+
+`void`
+
+</MemberCard>
+
+<a id="restorefocuswhendocumentfocused" name="restorefocuswhendocumentfocused"></a>
+
+<MemberCard>
+
+##### MathfieldElement.restoreFocusWhenDocumentFocused
+
+```ts
+static restoreFocusWhenDocumentFocused: boolean = true;
+```
+
+When switching from a tab to one that contains a mathfield that was
+previously focused, restore the focus to the mathfield.
+
+This is behavior consistent with `<textarea>`, however it can be
+disabled if it is not desired.
+
+</MemberCard>
+
+<a id="speakhook" name="speakhook"></a>
+
+<MemberCard>
+
+##### MathfieldElement.speakHook()
+
+```ts
+static speakHook: (text) => void = defaultSpeakHook;
+```
+
+• **text**: `string`
+
+`void`
+
+</MemberCard>
+
+<a id="version" name="version"></a>
+
+<MemberCard>
+
+##### MathfieldElement.version
+
+```ts
+static version: string = '0.104.0';
+```
+
+</MemberCard>
+
+<a id="disabled" name="disabled"></a>
+
+<MemberCard>
+
+##### MathfieldElement.disabled
+
+```ts
+get disabled(): boolean
+```
+
+```ts
+set disabled(value): void
+```
+
+• **value**: `boolean`
+
+`boolean`
+
+</MemberCard>
+
+<a id="form" name="form"></a>
+
+<MemberCard>
+
+##### MathfieldElement.form
+
+```ts
+get form(): HTMLFormElement
+```
+
+`HTMLFormElement`
+
+</MemberCard>
+
+<a id="isselectioneditable" name="isselectioneditable"></a>
+
+<MemberCard>
+
+##### MathfieldElement.isSelectionEditable
+
+```ts
+get isSelectionEditable(): boolean
+```
+
+`boolean`
+
+</MemberCard>
+
+<a id="mode" name="mode"></a>
+
+<MemberCard>
+
+##### MathfieldElement.mode
+
+```ts
+get mode(): ParseMode
+```
+
+```ts
+set mode(value): void
+```
+
+• **value**: `ParseMode`
+
+`ParseMode`
+
+</MemberCard>
+
+<a id="name" name="name"></a>
+
+<MemberCard>
+
+##### MathfieldElement.name
+
+```ts
+get name(): string
+```
+
+`string`
+
+</MemberCard>
+
+<a id="readonly" name="readonly"></a>
+
+<MemberCard>
+
+##### MathfieldElement.readOnly
+
+```ts
+get readOnly(): boolean
+```
+
+```ts
+set readOnly(value): void
+```
+
+• **value**: `boolean`
+
+`boolean`
+
+</MemberCard>
+
+<a id="readonly-1" name="readonly-1"></a>
+
+<MemberCard>
+
+##### MathfieldElement.readonly
+
+```ts
+get readonly(): boolean
+```
+
+```ts
+set readonly(value): void
+```
+
+• **value**: `boolean`
+
+`boolean`
+
+</MemberCard>
+
+<a id="type" name="type"></a>
+
+<MemberCard>
+
+##### MathfieldElement.type
+
+```ts
+get type(): string
+```
+
+`string`
+
+</MemberCard>
+
+<a id="computeengine" name="computeengine"></a>
+
+<MemberCard>
+
+##### MathfieldElement.computeEngine
+
+```ts
+get static computeEngine(): ComputeEngine
+```
+
+A custom compute engine instance. If none is provided, a default one is
+used. If `null` is specified, no compute engine is used.
+
+```ts
+set static computeEngine(value): void
+```
+
+• **value**: `ComputeEngine`
+
+`ComputeEngine`
+
+</MemberCard>
+
+<a id="fontsdirectory" name="fontsdirectory"></a>
+
+<MemberCard>
+
+##### MathfieldElement.fontsDirectory
+
+```ts
+get static fontsDirectory(): string
+```
+
+A URL fragment pointing to the directory containing the fonts
+necessary to render a formula.
+
+These fonts are available in the `/dist/fonts` directory of the SDK.
+
+Customize this value to reflect where you have copied these fonts,
+or to use the CDN version.
+
+The default value is `"./fonts"`. Use `null` to prevent
+any fonts from being loaded.
+
+Changing this setting after the mathfield has been created will have
+no effect.
+
+```javascript
+{
+     // Use the CDN version
+     fontsDirectory: ''
+}
+```
+
+```javascript
+{
+     // Use a directory called "fonts", located next to the
+     // `mathlive.js` (or `mathlive.mjs`) file.
+     fontsDirectory: './fonts'
+}
+```
+
+```javascript
+{
+     // Use a directory located at the root of your website
+     fontsDirectory: 'https://example.com/fonts'
+}
+```
+
+```ts
+set static fontsDirectory(value): void
+```
+
+• **value**: `string`
+
+`string`
+
+</MemberCard>
+
+<a id="formassociated" name="formassociated"></a>
+
+<MemberCard>
+
+##### MathfieldElement.formAssociated
+
+```ts
+get static formAssociated(): boolean
+```
+
+`boolean`
+
+</MemberCard>
+
+<a id="isfunction" name="isfunction"></a>
+
+<MemberCard>
+
+##### MathfieldElement.isFunction
+
+```ts
+get static isFunction(): (command) => boolean
+```
+
+```ts
+set static isFunction(value): void
+```
+
+• **value**
+
+`Function`
+
+• **command**: `string`
+
+`boolean`
+
+</MemberCard>
+
+<a id="plonksound" name="plonksound"></a>
+
+<MemberCard>
+
+##### MathfieldElement.plonkSound
+
+```ts
+get static plonkSound(): string
+```
+
+Sound played to provide feedback when a command has no effect, for example
+when pressing the spacebar at the root level.
+
+The property is either:
+- a string, the name of an audio file in the `soundsDirectory` directory
+- null to turn off the sound
+
+```ts
+set static plonkSound(value): void
+```
+
+• **value**: `string`
+
+`string`
+
+</MemberCard>
+
+<a id="speechengine" name="speechengine"></a>
+
+<MemberCard>
+
+##### MathfieldElement.speechEngine
+
+```ts
+get static speechEngine(): "amazon" | "local"
+```
+
+Indicates which speech engine to use for speech output.
+
+Use `local` to use the OS-specific TTS engine.
+
+Use `amazon` for Amazon Text-to-Speech cloud API. You must include the
+AWS API library and configure it with your API key before use.
+
+**See**
+mathfield/guides/speech/ | Guide: Speech
+
+```ts
+set static speechEngine(value): void
+```
+
+• **value**: `"amazon"` \| `"local"`
+
+`"amazon"` \| `"local"`
+
+</MemberCard>
+
+<a id="speechenginerate" name="speechenginerate"></a>
+
+<MemberCard>
+
+##### MathfieldElement.speechEngineRate
+
+```ts
+get static speechEngineRate(): string
+```
+
+Sets the speed of the selected voice.
+
+One of `x-slow`, `slow`, `medium`, `fast`, `x-fast` or a value as a
+percentage.
+
+Range is `20%` to `200%` For example `200%` to indicate a speaking rate
+twice the default rate.
+
+```ts
+set static speechEngineRate(value): void
+```
+
+• **value**: `string`
+
+`string`
+
+</MemberCard>
+
+<a id="speechenginevoice" name="speechenginevoice"></a>
+
+<MemberCard>
+
+##### MathfieldElement.speechEngineVoice
+
+```ts
+get static speechEngineVoice(): string
+```
+
+Indicates the voice to use with the speech engine.
+
+This is dependent on the speech engine. For Amazon Polly, see here:
+https://docs.aws.amazon.com/polly/latest/dg/voicelist.html
+
+```ts
+set static speechEngineVoice(value): void
+```
+
+• **value**: `string`
+
+`string`
+
+</MemberCard>
+
+<a id="texttospeechmarkup" name="texttospeechmarkup"></a>
+
+<MemberCard>
+
+##### MathfieldElement.textToSpeechMarkup
+
+```ts
+get static textToSpeechMarkup(): "" | "ssml" | "ssml_step" | "mac"
+```
+
+The markup syntax to use for the output of conversion to spoken text.
+
+Possible values are `ssml` for the SSML markup or `mac` for the macOS
+markup, i.e. `&#91;&#91;ltr&#93;&#93;`.
+
+```ts
+set static textToSpeechMarkup(value): void
+```
+
+• **value**: `""` \| `"ssml"` \| `"ssml_step"` \| `"mac"`
+
+`""` \| `"ssml"` \| `"ssml_step"` \| `"mac"`
+
+</MemberCard>
+
+<a id="texttospeechrules" name="texttospeechrules"></a>
+
+<MemberCard>
+
+##### MathfieldElement.textToSpeechRules
+
+```ts
+get static textToSpeechRules(): "sre" | "mathlive"
+```
+
+Specify which set of text to speech rules to use.
+
+A value of `mathlive` indicates that the simple rules built into MathLive
+should be used.
+
+A value of `sre` indicates that the Speech Rule Engine from Volker Sorge
+should be used.
+
+**(Caution)** SRE is not included or loaded by MathLive. For this option to
+work SRE should be loaded separately.
+
+**See**
+mathfield/guides/speech/ | Guide: Speech
+
+```ts
+set static textToSpeechRules(value): void
+```
+
+• **value**: `"sre"` \| `"mathlive"`
+
+`"sre"` \| `"mathlive"`
+
+</MemberCard>
+
+<a id="texttospeechrulesoptions" name="texttospeechrulesoptions"></a>
+
+<MemberCard>
+
+##### MathfieldElement.textToSpeechRulesOptions
+
+```ts
+get static textToSpeechRulesOptions(): Readonly<Record<string, string>>
+```
+
+A set of key/value pairs that can be used to configure the speech rule
+engine.
+
+Which options are available depends on the speech rule engine in use.
+There are no options available with MathLive's built-in engine. The
+options for the SRE engine are documented
+[here](https://github.com/zorkow/speech-rule-engine)
+
+```ts
+set static textToSpeechRulesOptions(value): void
+```
+
+• **value**: `Record`\<`string`, `string`\>
+
+`Readonly`\<`Record`\<`string`, `string`\>\>
+
+</MemberCard>
+
+<a id="getelementinfo" name="getelementinfo"></a>
+
+<MemberCard>
+
+##### MathfieldElement.getElementInfo()
+
+```ts
+getElementInfo(offset): ElementInfo
+```
+
+• **offset**: `number`
+
+[`ElementInfo`](#elementinfo)
+
+</MemberCard>
+
+<a id="getpromptstate" name="getpromptstate"></a>
+
+<MemberCard>
+
+##### MathfieldElement.getPromptState()
+
+```ts
+getPromptState(id): ["correct" | "incorrect", boolean]
+```
+
+• **id**: `string`
+
+[`"correct"` \| `"incorrect"`, `boolean`]
+
+</MemberCard>
+
+<a id="showmenu" name="showmenu"></a>
+
+<MemberCard>
+
+##### MathfieldElement.showMenu()
+
+```ts
+showMenu(_): boolean
+```
+
+• **\_**
+
+• **\_.location**
+
+• **\_.location.x**: `number`
+
+• **\_.location.y**: `number`
+
+• **\_.modifiers**: `KeyboardModifiers`
+
+`boolean`
+
+</MemberCard>
+
+<a id="loadsound" name="loadsound"></a>
+
+<MemberCard>
+
+##### MathfieldElement.loadSound()
+
+```ts
+static loadSound(sound): Promise<void>
+```
+
+• **sound**: 
+  \| `"keypress"`
+  \| `"plonk"`
+  \| `"delete"`
+  \| `"spacebar"`
+  \| `"return"`
+
+`Promise`\<`void`\>
+
+</MemberCard>
+
+<a id="openurl" name="openurl"></a>
+
+<MemberCard>
+
+##### MathfieldElement.openUrl()
+
+```ts
+static openUrl(href): void
+```
+
+• **href**: `string`
+
+`void`
+
+</MemberCard>
+
+<a id="playsound" name="playsound"></a>
+
+<MemberCard>
+
+##### MathfieldElement.playSound()
+
+```ts
+static playSound(name): Promise<void>
+```
+
+• **name**: 
+  \| `"keypress"`
+  \| `"plonk"`
+  \| `"delete"`
+  \| `"spacebar"`
+  \| `"return"`
+
+`Promise`\<`void`\>
+
+</MemberCard>
+
+#### Prompts
+
+<a id="getpromptrange" name="getpromptrange"></a>
+
+<MemberCard>
+
+##### MathfieldElement.getPromptRange()
+
+```ts
+getPromptRange(id): Range
+```
+
+Return the selection range for the specified prompt.
+
+This can be used for example to select the content of the prompt.
+
+```js
+mf.selection = mf.getPromptRange('my-prompt-id');
+```
+
+• **id**: `string`
+
+[`Range`](#range-1)
+
+</MemberCard>
+
+<a id="getpromptvalue" name="getpromptvalue"></a>
+
+<MemberCard>
+
+##### MathfieldElement.getPromptValue()
+
+```ts
+getPromptValue(placeholderId, format?): string
+```
+
+Return the content of the `\placeholder{}` command with the `placeholderId`
+
+• **placeholderId**: `string`
+
+• **format?**: [`OutputFormat`](#outputformat)
+
+`string`
+
+</MemberCard>
+
+<a id="getprompts" name="getprompts"></a>
+
+<MemberCard>
+
+##### MathfieldElement.getPrompts()
+
+```ts
+getPrompts(filter?): string[]
+```
+
+Return the id of the prompts matching the filter.
+
+• **filter?**
+
+• **filter.correctness?**: `"undefined"` \| `"correct"` \| `"incorrect"`
+
+• **filter.id?**: `string`
+
+• **filter.locked?**: `boolean`
+
+`string`[]
+
+</MemberCard>
+
+<a id="setpromptstate" name="setpromptstate"></a>
+
+<MemberCard>
+
+##### MathfieldElement.setPromptState()
+
+```ts
+setPromptState(
+   id, 
+   state, 
+   locked?): void
+```
+
+• **id**: `string`
+
+• **state**: `"undefined"` \| `"correct"` \| `"incorrect"`
+
+• **locked?**: `boolean`
+
+`void`
+
+</MemberCard>
+
+<a id="setpromptvalue" name="setpromptvalue"></a>
+
+<MemberCard>
+
+##### MathfieldElement.setPromptValue()
+
+```ts
+setPromptValue(
+   id, 
+   content, 
+   insertOptions): void
+```
+
+• **id**: `string`
+
+• **content**: `string`
+
+• **insertOptions**: `Omit`\<[`InsertOptions`](#insertoptions), `"insertionMode"`\>
+
+`void`
+
+</MemberCard>
+
+#### Selection
+
+<a id="lastoffset" name="lastoffset"></a>
+
+<MemberCard>
+
+##### MathfieldElement.lastOffset
+
+```ts
+get lastOffset(): number
+```
+
+The last valid offset.
+
+`number`
+
+</MemberCard>
+
+<a id="position" name="position"></a>
+
+<MemberCard>
+
+##### MathfieldElement.position
+
+```ts
+get position(): number
+```
+
+The position of the caret/insertion point, from 0 to `lastOffset`.
+
+```ts
+set position(offset): void
+```
+
+• **offset**: `number`
+
+`number`
+
+</MemberCard>
+
+<a id="selection" name="selection"></a>
+
+<MemberCard>
+
+##### MathfieldElement.selection
+
+```ts
+get selection(): Readonly<Selection>
+```
+
+An array of ranges representing the selection.
+
+It is guaranteed there will be at least one element. If a discontinuous
+selection is present, the result will include more than one element.
+
+```ts
+set selection(sel): void
+```
+
+• **sel**: `number` \| [`Selection`](#selection-1)
+
+`Readonly`\<[`Selection`](#selection-1)\>
+
+</MemberCard>
+
+<a id="selectioniscollapsed" name="selectioniscollapsed"></a>
+
+<MemberCard>
+
+##### MathfieldElement.selectionIsCollapsed
+
+```ts
+get selectionIsCollapsed(): boolean
+```
+
+`boolean`
+
+</MemberCard>
+
+<a id="getoffsetfrompoint" name="getoffsetfrompoint"></a>
+
+<MemberCard>
+
+##### MathfieldElement.getOffsetFromPoint()
+
+```ts
+getOffsetFromPoint(
+   x, 
+   y, 
+   options?): number
+```
+
+The offset closest to the location `(x, y)` in viewport coordinate.
+
+**`bias`**:  if `0`, the vertical midline is considered to the left or
+right sibling. If `-1`, the left sibling is favored, if `+1`, the right
+sibling is favored.
+
+• **x**: `number`
+
+• **y**: `number`
+
+• **options?**
+
+• **options.bias?**: `-1` \| `0` \| `1`
+
+`number`
+
+</MemberCard>
+
+<a id="select" name="select"></a>
+
+<MemberCard>
+
+##### MathfieldElement.select()
+
+```ts
+select(): void
+```
+
+Select the content of the mathfield.
+
+`void`
+
+</MemberCard>
+
+#### Undo
+
+<a id="canredo" name="canredo"></a>
+
+<MemberCard>
+
+##### MathfieldElement.canRedo()
+
+```ts
+canRedo(): boolean
+```
+
+Return whether there are redoable items
+
+`boolean`
+
+</MemberCard>
+
+<a id="canundo" name="canundo"></a>
+
+<MemberCard>
+
+##### MathfieldElement.canUndo()
+
+```ts
+canUndo(): boolean
+```
+
+Return whether there are undoable items
+
+`boolean`
+
+</MemberCard>
+
+<a id="resetundo" name="resetundo"></a>
+
+<MemberCard>
+
+##### MathfieldElement.resetUndo()
+
+```ts
+resetUndo(): void
+```
+
+Reset the undo stack
+
+`void`
+
+</MemberCard>
+
+#### Virtual Keyboard
+
+<a id="keypressvibration" name="keypressvibration"></a>
+
+<MemberCard>
+
+##### MathfieldElement.keypressVibration
+
+```ts
+static keypressVibration: boolean = true;
+```
+
+When a key on the virtual keyboard is pressed, produce a short haptic
+feedback, if the device supports it.
+
+</MemberCard>
+
+<a id="mathvirtualkeyboardpolicy" name="mathvirtualkeyboardpolicy"></a>
+
+<MemberCard>
+
+##### MathfieldElement.mathVirtualKeyboardPolicy
+
+```ts
+get mathVirtualKeyboardPolicy(): VirtualKeyboardPolicy
+```
+
+```ts
+set mathVirtualKeyboardPolicy(value): void
+```
+
+• **value**: [`VirtualKeyboardPolicy`](#virtualkeyboardpolicy)
+
+[`VirtualKeyboardPolicy`](#virtualkeyboardpolicy)
+
+</MemberCard>
+
+<a id="virtualkeyboardtargetorigin" name="virtualkeyboardtargetorigin"></a>
+
+<MemberCard>
+
+##### MathfieldElement.virtualKeyboardTargetOrigin
+
+```ts
+get virtualKeyboardTargetOrigin(): string
+```
+
+```ts
+set virtualKeyboardTargetOrigin(value): void
+```
+
+• **value**: `string`
+
+`string`
+
+</MemberCard>
+
+<a id="keypresssound" name="keypresssound"></a>
+
+<MemberCard>
+
+##### MathfieldElement.keypressSound
+
+```ts
+get static keypressSound(): Readonly<object>
+```
+
+When a key on the virtual keyboard is pressed, produce a short audio
+feedback.
+
+If the property is set to a `string`, the same sound is played in all
+cases. Otherwise, a distinct sound is played:
+
+-   `delete` a sound played when the delete key is pressed
+-   `return` ... when the return/tab key is pressed
+-   `spacebar` ... when the spacebar is pressed
+-   `default` ... when any other key is pressed. This property is required,
+    the others are optional. If they are missing, this sound is played as
+    well.
+
+The value of the properties should be either a string, the name of an
+audio file in the `soundsDirectory` directory or `null` to suppress the sound.
+
+```ts
+set static keypressSound(value): void
+```
+
+• **value**: `string` \| `object`
+
+`Readonly`\<`object`\>
+
+<MemberCard>
+
+###### keypressSound.default
+
+```ts
+default: string;
+```
+
+</MemberCard>
+
+<MemberCard>
+
+###### keypressSound.delete
+
+```ts
+delete: string;
+```
+
+</MemberCard>
+
+<MemberCard>
+
+###### keypressSound.return
+
+```ts
+return: string;
+```
+
+</MemberCard>
+
+<MemberCard>
+
+###### keypressSound.spacebar
+
+```ts
+spacebar: string;
+```
+
+</MemberCard>
+
+</MemberCard>
+
+<a id="soundsdirectory" name="soundsdirectory"></a>
+
+<MemberCard>
+
+##### MathfieldElement.soundsDirectory
+
+```ts
+get static soundsDirectory(): string
+```
+
+A URL fragment pointing to the directory containing the optional
+sounds used to provide feedback while typing.
+
+Some default sounds are available in the `/dist/sounds` directory of the SDK.
+
+Use `null` to prevent any sound from being loaded.
+
+```ts
+set static soundsDirectory(value): void
+```
+
+• **value**: `string`
+
+`string`
+
+</MemberCard>
 
 <a id="style-1" name="style-1"></a>
 
@@ -3007,7 +5471,7 @@ The depth in the expression tree. 0 for top-level elements
 optional id: string;
 ```
 
-id associated with this element or its ancestor, set with `\htmlId` or 
+id associated with this element or its ancestor, set with `\htmlId` or
 `\cssId`
 
 </MemberCard>
@@ -3464,8 +5928,8 @@ When specifying a range, a negative offset can be used to indicate an
 offset from the last valid offset, i.e. -1 is the last valid offset, -2
 is one offset before that, etc...
 
-A normalized range will always be such that start <= end, start >= 0,
-end >= 0,  start < lastOffset, end < lastOffset. All the methods return
+A normalized range will always be such that start \<= end, start \>= 0,
+end \>= 0,  start \< lastOffset, end \< lastOffset. All the methods return
 a normalized range.
 
 **See Also**
@@ -3607,7 +6071,7 @@ typically just uppercase and lowercase letters, and digits 0-9 in some cases.
 const version: object;
 ```
 
-Current version: `0.101.0`
+Current version: `0.104.0`
 
 The version string of the SDK using the [semver](https://semver.org/) convention:
 
@@ -3626,7 +6090,7 @@ The version string of the SDK using the [semver](https://semver.org/) convention
 ##### version.mathlive
 
 ```ts
-mathlive: string = '0.101.0';
+mathlive: string = '0.104.0';
 ```
 
 </MemberCard>
@@ -4742,6 +7206,20 @@ Variant of the keycap when the shift key is pressed
 
 </MemberCard>
 
+<a id="stickyvariantpanel" name="stickyvariantpanel"></a>
+
+<MemberCard>
+
+##### VirtualKeyboardKeycap.stickyVariantPanel
+
+```ts
+stickyVariantPanel: boolean;
+```
+
+Open variants panel without long press and does not close automatically
+
+</MemberCard>
+
 <a id="tooltip" name="tooltip"></a>
 
 <MemberCard>
@@ -5283,2389 +7761,6 @@ context.
 
 ## Web Component
 
-<a id="mathfieldelement" name="mathfieldelement"></a>
-
-### MathfieldElement
-
-The `MathfieldElement` class represent a DOM element that displays
-math equations.
-
-It is a subclass of the standard
-[`HTMLElement`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement)
-class and as such inherits all of its properties and methods.
-
-It inherits many useful properties and methods from `HTMLElement` such
-as `style`, `tabIndex`, `addEventListener()`, `getAttribute()`,  etc...
-
-It is typically used to render a single equation.
-
-To render multiple equations, use multiple instances of `MathfieldElement`.
-
-The `MathfieldElement` class provides special properties and methods to
-control the display and behavior of `<math-field>` elements.
-
-You will usually instantiate a `MathfieldElement` using the
-`<math-field>` tag in HTML. However, if necessary you can also create
-it programmatically using `new MathfieldElement()`.
-
-```javascript
-// 1. Create a new MathfieldElement
-const mf = new MathfieldElement();
-
-// 2. Attach it to the DOM
-document.body.appendChild(mf);
-```
-
-The `MathfieldElement` constructor has an optional argument of
-`MathfieldOptions` to configure the element. The options can also
-be modified later:
-
-```javascript
-// Setting options during construction
-const mf = new MathfieldElement({ smartFence: false });
-
-// Modifying options after construction
-mf.smartFence = true;
-```
-
-#### MathfieldElement CSS Variables
-
-To customize the appearance of the mathfield, declare the following CSS
-variables (custom properties) in a ruleset that applies to the mathfield.
-
-```css
-math-field {
- --hue: 10       // Set the highlight color and caret to a reddish hue
-}
-```
-
-Alternatively you can set these CSS variables programatically:
-
-```js
-document.body.style.setProperty("--hue", "10");
-```
-<div className='symbols-table' style={{"--first-col-width":"25ex"}}>
-
-| CSS Variable | Usage |
-|:---|:---|
-| `--hue` | Hue of the highlight color and the caret |
-| `--contains-highlight-background-color` | Backround property for items that contain the caret |
-| `--primary-color` | Primary accent color, used for example in the virtual keyboard |
-| `--text-font-family` | The font stack used in text mode |
-| `--smart-fence-opacity` | Opacity of a smart fence (default is 50%) |
-| `--smart-fence-color` | Color of a smart fence (default is current color) |
-
-</div>
-
-You can customize the appearance and zindex of the virtual keyboard panel
-with some CSS variables associated with a selector that applies to the
-virtual keyboard panel container.
-
-Read more about [customizing the virtual keyboard appearance](#custom-appearance)
-
-#### MathfieldElement CSS Parts
-
-To style the virtual keyboard toggle, use the `virtual-keyboard-toggle` CSS
-part. To use it, define a CSS rule with a `::part()` selector
-for example:
-
-```css
-math-field::part(virtual-keyboard-toggle) {
- color: red;
-}
-```
-
-#### MathfieldElement Attributes
-
-An attribute is a key-value pair set as part of the tag:
-
-```html
-<math-field letter-shape-style="tex"></math-field>
-```
-
-The supported attributes are listed in the table below with their
-corresponding property.
-
-The property can also be changed directly on the `MathfieldElement` object:
-
-```javascript
- getElementById('mf').value = "\\sin x";
- getElementById('mf').letterShapeStyle = "text";
-```
-
-The values of attributes and properties are reflected, which means you can
-change one or the other, for example:
-
-```javascript
-getElementById('mf').setAttribute('letter-shape-style',  'french');
-console.log(getElementById('mf').letterShapeStyle);
-// Result: "french"
-getElementById('mf').letterShapeStyle ='tex;
-console.log(getElementById('mf').getAttribute('letter-shape-style');
-// Result: 'tex'
-```
-
-An exception is the `value` property, which is not reflected on the `value`
-attribute: for consistency with other DOM elements, the `value` attribute
-remains at its initial value.
-
-<div className='symbols-table' style={{"--first-col-width":"32ex"}}>
-
-| Attribute | Property |
-|:---|:---|
-| `disabled` | `mf.disabled` |
-| `default-mode` | `mf.defaultMode` |
-| `letter-shape-style` | `mf.letterShapeStyle` |
-| `min-font-scale` | `mf.minFontScale` |
-| `max-matrix-cols` | `mf.maxMatrixCols` |
-| `popover-policy` | `mf.popoverPolicy` |
-| `math-mode-space` | `mf.mathModeSpace` |
-| `read-only` | `mf.readOnly` |
-| `remove-extraneous-parentheses` | `mf.removeExtraneousParentheses` |
-| `smart-fence` | `mf.smartFence` |
-| `smart-mode` | `mf.smartMode` |
-| `smart-superscript` | `mf.smartSuperscript` |
-| `inline-shortcut-timeout` | `mf.inlineShortcutTimeout` |
-| `script-depth` | `mf.scriptDepth` |
-| `value` | `value` |
-| `math-virtual-keyboard-policy` | `mathVirtualKeyboardPolicy` |
-
-</div>
-
-See `MathfieldOptions` for more details about these options.
-
-In addition, the following [global attributes](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes)
-can also be used:
-- `class`
-- `data-*`
-- `hidden`
-- `id`
-- `item*`
-- `style`
-- `tabindex`
-
-#### MathfieldElement Events
-
-Listen to these events by using `addEventListener()`. For events with
-additional arguments, the arguments are available in `event.detail`.
-
-<div className='symbols-table' style={{"--first-col-width":"27ex"}}>
-
-| Event Name  | Description |
-|:---|:---|
-| `beforeinput` | The value of the mathfield is about to be modified.  |
-| `input` | The value of the mathfield has been modified. This happens on almost every keystroke in the mathfield. The `evt.data` property includes a copy of `evt.inputType`. See `InputEvent` |
-| `change` | The user has committed the value of the mathfield. This happens when the user presses **Return** or leaves the mathfield. |
-| `selection-change` | The selection (or caret position) in the mathfield has changed |
-| `mode-change` | The mode (`math`, `text`) of the mathfield has changed |
-| `undo-state-change` |  The state of the undo stack has changed. The `evt.detail.type` indicate if a snapshot was taken or an undo performed. |
-| `read-aloud-status-change` | The status of a read aloud operation has changed |
-| `before-virtual-keyboard-toggle` | The visibility of the virtual keyboard panel is about to change. The `evt.detail.visible` property indicate if the keyboard will be visible or not. Listen for this event on `window.mathVirtualKeyboard` |
-| `virtual-keyboard-toggle` | The visibility of the virtual keyboard panel has changed. Listen for this event on `window.mathVirtualKeyboard` |
-| `geometrychange` | The geometry of the virtual keyboard has changed. The `evt.detail.boundingRect` property is the new bounding rectangle of the virtual keyboard. Listen for this event on `window.mathVirtualKeyboard` |
-| `blur` | The mathfield is losing focus |
-| `focus` | The mathfield is gaining focus |
-| `move-out` | The user has pressed an **arrow** key or the **tab** key, but there is nowhere to go. This is an opportunity to change the focus to another element if desired. <br\> `detail: \{direction: 'forward' | 'backward' | 'upward' | 'downward'\}` **cancellable**|
-| `keypress` | The user pressed a physical keyboard key |
-| `mount` | The element has been attached to the DOM |
-| `unmount` | The element is about to be removed from the DOM |
-
-</div>
-
-#### Keywords
-
-zindex, events, attribute, attributes, property, properties, parts, variables, css, mathfield, mathfieldelement
-
-#### Extends
-
-- `HTMLElement`
-
-#### Implements
-
-- `Mathfield`
-
-#### Accessing and changing the content
-
-<a id="errors" name="errors"></a>
-
-<MemberCard>
-
-##### MathfieldElement.errors
-
-```ts
-get errors(): readonly LatexSyntaxError[]
-```
-
-Return an array of LaTeX syntax errors, if any.
-
-readonly [`LatexSyntaxError`](#latexsyntaxerrort)[]
-
-</MemberCard>
-
-<a id="expression" name="expression"></a>
-
-<MemberCard>
-
-##### MathfieldElement.expression
-
-```ts
-get expression(): any
-```
-
-If the Compute Engine library is available, return a boxed MathJSON expression representing the value of the mathfield.
-
-To load the Compute Engine library, use:
-```js
-import 'https://unpkg.com/@cortex-js/compute-engine?module';
-```
-
-```ts
-set expression(mathJson): void
-```
-
-• **mathJson**: `any`
-
-`any`
-
-</MemberCard>
-
-<a id="value" name="value"></a>
-
-<MemberCard>
-
-##### MathfieldElement.value
-
-```ts
-get value(): string
-```
-
-The content of the mathfield as a LaTeX expression.
-```js
-document.querySelector('mf').value = '\\frac{1}{\\pi}'
-```
-
-```ts
-set value(value): void
-```
-
-• **value**: `string`
-
-`string`
-
-</MemberCard>
-
-<a id="applystyle" name="applystyle"></a>
-
-<MemberCard>
-
-##### MathfieldElement.applyStyle()
-
-```ts
-applyStyle(style, options?): void
-```
-
-• **style**: `Readonly`\<[`Style`](#style-1)\>
-
-• **options?**: [`Range`](#range-1) \| `object`
-
-`void`
-
-###### Inherit Doc
-
-</MemberCard>
-
-<a id="getvalue" name="getvalue"></a>
-
-<MemberCard>
-
-##### MathfieldElement.getValue()
-
-###### getValue(format)
-
-```ts
-getValue(format?): string
-```
-
-• **format?**: [`OutputFormat`](#outputformat)
-
-`string`
-
-###### getValue(start, end, format)
-
-```ts
-getValue(
-   start, 
-   end, 
-   format?): string
-```
-
-• **start**: `number`
-
-• **end**: `number`
-
-• **format?**: [`OutputFormat`](#outputformat)
-
-`string`
-
-###### getValue(range, format)
-
-```ts
-getValue(range, format?): string
-```
-
-• **range**: [`Range`](#range-1)
-
-• **format?**: [`OutputFormat`](#outputformat)
-
-`string`
-
-###### getValue(selection, format)
-
-```ts
-getValue(selection, format?): string
-```
-
-• **selection**: [`Selection`](#selection-1)
-
-• **format?**: [`OutputFormat`](#outputformat)
-
-`string`
-
-</MemberCard>
-
-<a id="insert" name="insert"></a>
-
-<MemberCard>
-
-##### MathfieldElement.insert()
-
-```ts
-insert(s, options?): boolean
-```
-
-• **s**: `string`
-
-• **options?**: [`InsertOptions`](#insertoptions)
-
-`boolean`
-
-###### Inherit Doc
-
-</MemberCard>
-
-<a id="querystyle" name="querystyle"></a>
-
-<MemberCard>
-
-##### MathfieldElement.queryStyle()
-
-```ts
-queryStyle(style): "some" | "all" | "none"
-```
-
-If there is a selection, return if all the atoms in the selection,
-some of them or none of them match the `style` argument.
-
-If there is no selection, return 'all' if the current implicit style
-(determined by a combination of the style of the previous atom and
-the current style) matches the `style` argument, 'none' if it does not.
-
-• **style**: `Readonly`\<[`Style`](#style-1)\>
-
-`"some"` \| `"all"` \| `"none"`
-
-</MemberCard>
-
-<a id="setvalue" name="setvalue"></a>
-
-<MemberCard>
-
-##### MathfieldElement.setValue()
-
-```ts
-setValue(value?, options?): void
-```
-
-• **value?**: `string`
-
-• **options?**: [`InsertOptions`](#insertoptions)
-
-`void`
-
-###### Inherit Doc
-
-</MemberCard>
-
-#### Customization
-
-<a id="defaultmode" name="defaultmode"></a>
-
-<MemberCard>
-
-##### MathfieldElement.defaultMode
-
-```ts
-get defaultMode(): "text" | "math" | "inline-math"
-```
-
-###### Inherit Doc
-
-```ts
-set defaultMode(value): void
-```
-
-• **value**: `"text"` \| `"math"` \| `"inline-math"`
-
-`"text"` \| `"math"` \| `"inline-math"`
-
-</MemberCard>
-
-<a id="macros" name="macros"></a>
-
-<MemberCard>
-
-##### MathfieldElement.macros
-
-```ts
-get macros(): Readonly<MacroDictionary>
-```
-
-###### Inherit Doc
-
-```ts
-set macros(value): void
-```
-
-• **value**: [`MacroDictionary`](#macrodictionary)
-
-`Readonly`\<[`MacroDictionary`](#macrodictionary)\>
-
-</MemberCard>
-
-<a id="menuitems" name="menuitems"></a>
-
-<MemberCard>
-
-##### MathfieldElement.menuItems
-
-```ts
-get menuItems(): readonly MenuItem[]
-```
-
-```ts
-set menuItems(menuItems): void
-```
-
-• **menuItems**: readonly `MenuItem`[]
-
-readonly `MenuItem`[]
-
-</MemberCard>
-
-<a id="registers" name="registers"></a>
-
-<MemberCard>
-
-##### MathfieldElement.registers
-
-```ts
-get registers(): Readonly<Registers>
-```
-
-TeX registers represent "variables" and "constants".
-
-Changing the values of some registers can modify the layout
-of math expressions.
-
-The following registers might be of interest:
-
-- `thinmuskip`: space between items of math lists
-- `medmuskip`: space between binary operations
-- `thickmuskip`: space between relational operators
-- `nulldelimiterspace`: minimum space to leave blank in delimiter constructions, for example around a fraction
-- `delimitershortfall`: maximum space to overlap adjacent elements when a delimiter is too short
-- `jot`: space between lines in an array, or between rows in a multiline construct
-- `arraycolsep`: space between columns in an array
-- `arraystretch`: factor by which to stretch the height of each row in an array
-
-To modify a register, use:
-
-```javascript
-mf.registers.arraystretch = 1.5;
-mf.registers.thinmuskip = { dimension: 2, unit: "mu" };
-mf.registers.medmuskip = "3mu";
-```
-
-```ts
-set registers(value): void
-```
-
-• **value**: [`Registers`](#registers-2)
-
-`Readonly`\<[`Registers`](#registers-2)\>
-
-</MemberCard>
-
-#### Customization
-{@inheritDoc EditingOptions.inlineShortcutTimeout}
-
-<a id="inlineshortcuttimeout" name="inlineshortcuttimeout"></a>
-
-<MemberCard>
-
-##### MathfieldElement.inlineShortcutTimeout
-
-```ts
-get inlineShortcutTimeout(): number
-```
-
-```ts
-set inlineShortcutTimeout(value): void
-```
-
-• **value**: `number`
-
-`number`
-
-</MemberCard>
-
-#### Focus
-
-<a id="blur" name="blur"></a>
-
-<MemberCard>
-
-##### MathfieldElement.blur()
-
-```ts
-blur(): void
-```
-
-Remove the focus from the mathfield (will no longer respond to keyboard
-input).
-
-`void`
-
-</MemberCard>
-
-<a id="focus" name="focus"></a>
-
-<MemberCard>
-
-##### MathfieldElement.focus()
-
-```ts
-focus(): void
-```
-
-Sets the focus to the mathfield (will respond to keyboard input).
-
-`void`
-
-</MemberCard>
-
-<a id="hasfocus" name="hasfocus"></a>
-
-<MemberCard>
-
-##### MathfieldElement.hasFocus()
-
-```ts
-hasFocus(): boolean
-```
-
-`boolean`
-
-###### Inherit Doc
-
-</MemberCard>
-
-#### Hooks
-
-<a id="onexport" name="onexport"></a>
-
-<MemberCard>
-
-##### MathfieldElement.onExport
-
-```ts
-get onExport(): (from, latex, range) => string
-```
-
-###### Inherit Doc
-
-```ts
-set onExport(value): void
-```
-
-• **value**
-
-`Function`
-
-• **from**: `Mathfield`
-
-• **latex**: `string`
-
-• **range**: [`Range`](#range-1)
-
-`string`
-
-</MemberCard>
-
-<a id="oninlineshortcut" name="oninlineshortcut"></a>
-
-<MemberCard>
-
-##### MathfieldElement.onInlineShortcut
-
-```ts
-get onInlineShortcut(): (sender, symbol) => string
-```
-
-###### Inherit Doc
-
-```ts
-set onInlineShortcut(value): void
-```
-
-• **value**
-
-`Function`
-
-• **sender**: `Mathfield`
-
-• **symbol**: `string`
-
-`string`
-
-</MemberCard>
-
-<a id="oninsertstyle" name="oninsertstyle"></a>
-
-<MemberCard>
-
-##### MathfieldElement.onInsertStyle
-
-```ts
-get onInsertStyle(): InsertStyleHook
-```
-
-###### Inherit Doc
-
-```ts
-set onInsertStyle(value): void
-```
-
-• **value**: [`InsertStyleHook`](#insertstylehook)
-
-[`InsertStyleHook`](#insertstylehook)
-
-</MemberCard>
-
-<a id="onscrollintoview" name="onscrollintoview"></a>
-
-<MemberCard>
-
-##### MathfieldElement.onScrollIntoView
-
-```ts
-get onScrollIntoView(): (sender) => void
-```
-
-###### Inherit Doc
-
-```ts
-set onScrollIntoView(value): void
-```
-
-• **value**
-
-`Function`
-
-• **sender**: `Mathfield`
-
-`void`
-
-</MemberCard>
-
-#### Localization
-
-<a id="fractionnavigationorder" name="fractionnavigationorder"></a>
-
-<MemberCard>
-
-##### MathfieldElement.fractionNavigationOrder
-
-```ts
-static fractionNavigationOrder: "numerator-denominator" | "denominator-numerator" = 'numerator-denominator';
-```
-
-When using the keyboard to navigate a fraction, the order in which the
-numerator and navigator are traversed:
-- "numerator-denominator": first the elements in the numerator, then
-  the elements in the denominator.
-- "denominator-numerator": first the elements in the denominator, then
-  the elements in the numerator. In some East-Asian cultures, fractions
-  are read and written denominator first ("fēnzhī"). With this option
-  the keyboard navigation follows this convention.
-
-**Default**: `"numerator-denominator"`
-
-</MemberCard>
-
-<a id="decimalseparator" name="decimalseparator"></a>
-
-<MemberCard>
-
-##### MathfieldElement.decimalSeparator
-
-```ts
-get static decimalSeparator(): "," | "."
-```
-
-The symbol used to separate the integer part from the fractional part of a
-number.
-
-When `","` is used, the corresponding LaTeX string is `{,}`, in order
-to ensure proper spacing (otherwise an extra gap is displayed after the
-comma).
-
-This affects:
-- what happens when the `,` key is pressed (if `decimalSeparator` is
-`","`, the `{,}` LaTeX string is inserted when following some digits)
-- the label and behavior of the "." key in the default virtual keyboard
-
-**Default**: `"."`
-
-```ts
-set static decimalSeparator(value): void
-```
-
-• **value**: `","` \| `"."`
-
-`","` \| `"."`
-
-</MemberCard>
-
-<a id="locale" name="locale"></a>
-
-<MemberCard>
-
-##### MathfieldElement.locale
-
-```ts
-get static locale(): string
-```
-
-The locale (language + region) to use for string localization.
-
-If none is provided, the locale of the browser is used.
-
-```ts
-set static locale(value): void
-```
-
-• **value**: `string`
-
-`string`
-
-</MemberCard>
-
-<a id="strings" name="strings"></a>
-
-<MemberCard>
-
-##### MathfieldElement.strings
-
-```ts
-get static strings(): Readonly<Record<string, Record<string, string>>>
-```
-
-An object whose keys are a locale string, and whose values are an object of
-string identifier to localized string.
-
-**Example**
-
-```js example
-mf.strings = {
-  "fr-CA": {
-      "tooltip.undo": "Annuler",
-      "tooltip.redo": "Refaire",
-  }
-}
-```
-
-If the locale is already supported, this will override the existing
-strings. If the locale is not supported, it will be added.
-
-```ts
-set static strings(value): void
-```
-
-• **value**: `Record`\<`string`, `Record`\<`string`, `string`\>\>
-
-`Readonly`\<`Record`\<`string`, `Record`\<`string`, `string`\>\>\>
-
-</MemberCard>
-
-#### Other
-
-<a id="constructors" name="constructors"></a>
-
-<MemberCard>
-
-##### new MathfieldElement()
-
-##### new MathfieldElement()
-
-```ts
-new MathfieldElement(options?): MathfieldElement
-```
-
-To create programmatically a new mathfield use:
-
-```javascript
-let mfe = new MathfieldElement();
-
-// Set initial value and options
-mfe.value = "\\frac{\\sin(x)}{\\cos(x)}";
-
-// Options can be set either as an attribute (for simple options)...
-mfe.setAttribute("letter-shape-style", "french");
-
-// ... or using properties
-mfe.letterShapeStyle = "french";
-
-// Attach the element to the DOM
-document.body.appendChild(mfe);
-```
-
-• **options?**: `Partial`\<[`MathfieldOptions`](#mathfieldoptions)\>
-
-[`MathfieldElement`](#mathfieldelement)
-
-</MemberCard>
-
-<a id="createhtml" name="createhtml"></a>
-
-<MemberCard>
-
-##### MathfieldElement.createHTML()
-
-```ts
-static createHTML: (html) => any;
-```
-
-Support for [Trusted Type](https://w3c.github.io/webappsec-trusted-types/dist/spec/).
-
-This optional function will be called before a string of HTML is
-injected in the DOM, allowing that string to be sanitized
-according to a policy defined by the host.
-
-• **html**: `string`
-
-`any`
-
-</MemberCard>
-
-<a id="readaloudhook" name="readaloudhook"></a>
-
-<MemberCard>
-
-##### MathfieldElement.readAloudHook()
-
-```ts
-static readAloudHook: (element, text) => void = defaultReadAloudHook;
-```
-
-• **element**: `HTMLElement`
-
-• **text**: `string`
-
-`void`
-
-</MemberCard>
-
-<a id="restorefocuswhendocumentfocused" name="restorefocuswhendocumentfocused"></a>
-
-<MemberCard>
-
-##### MathfieldElement.restoreFocusWhenDocumentFocused
-
-```ts
-static restoreFocusWhenDocumentFocused: boolean = true;
-```
-
-When switching from a tab to one that contains a mathfield that was
-previously focused, restore the focus to the mathfield.
-
-This is behavior consistent with `<textarea>`, however it can be
-disabled if it is not desired.
-
-</MemberCard>
-
-<a id="speakhook" name="speakhook"></a>
-
-<MemberCard>
-
-##### MathfieldElement.speakHook()
-
-```ts
-static speakHook: (text) => void = defaultSpeakHook;
-```
-
-• **text**: `string`
-
-`void`
-
-</MemberCard>
-
-<a id="version" name="version"></a>
-
-<MemberCard>
-
-##### MathfieldElement.version
-
-```ts
-static version: string = '0.101.0';
-```
-
-</MemberCard>
-
-<a id="backgroundcolormap" name="backgroundcolormap"></a>
-
-<MemberCard>
-
-##### MathfieldElement.backgroundColorMap
-
-```ts
-get backgroundColorMap(): (name) => string
-```
-
-{@inheritDoc LayoutOptions.backgroundColorMap}
-
-```ts
-set backgroundColorMap(value): void
-```
-
-• **value**
-
-`Function`
-
-• **name**: `string`
-
-`string`
-
-</MemberCard>
-
-<a id="colormap" name="colormap"></a>
-
-<MemberCard>
-
-##### MathfieldElement.colorMap
-
-```ts
-get colorMap(): (name) => string
-```
-
-{@inheritDoc LayoutOptions.colorMap}
-
-```ts
-set colorMap(value): void
-```
-
-• **value**
-
-`Function`
-
-• **name**: `string`
-
-`string`
-
-</MemberCard>
-
-<a id="disabled" name="disabled"></a>
-
-<MemberCard>
-
-##### MathfieldElement.disabled
-
-```ts
-get disabled(): boolean
-```
-
-```ts
-set disabled(value): void
-```
-
-• **value**: `boolean`
-
-`boolean`
-
-</MemberCard>
-
-<a id="environmentpopoverpolicy" name="environmentpopoverpolicy"></a>
-
-<MemberCard>
-
-##### MathfieldElement.environmentPopoverPolicy
-
-```ts
-get environmentPopoverPolicy(): "auto" | "off" | "on"
-```
-
-{@inheritDoc EditingOptions.environmentPopoverPolicy}
-
-```ts
-set environmentPopoverPolicy(value): void
-```
-
-• **value**: `"auto"` \| `"off"` \| `"on"`
-
-`"auto"` \| `"off"` \| `"on"`
-
-</MemberCard>
-
-<a id="form" name="form"></a>
-
-<MemberCard>
-
-##### MathfieldElement.form
-
-```ts
-get form(): HTMLFormElement
-```
-
-`HTMLFormElement`
-
-</MemberCard>
-
-<a id="inlineshortcuts" name="inlineshortcuts"></a>
-
-<MemberCard>
-
-##### MathfieldElement.inlineShortcuts
-
-```ts
-get inlineShortcuts(): Readonly<InlineShortcutDefinitions>
-```
-
-* {@inheritDoc EditingOptions.inlineShortcuts}
-
-```ts
-set inlineShortcuts(value): void
-```
-
-• **value**: [`InlineShortcutDefinitions`](#inlineshortcutdefinitions)
-
-`Readonly`\<[`InlineShortcutDefinitions`](#inlineshortcutdefinitions)\>
-
-</MemberCard>
-
-<a id="isselectioneditable" name="isselectioneditable"></a>
-
-<MemberCard>
-
-##### MathfieldElement.isSelectionEditable
-
-```ts
-get isSelectionEditable(): boolean
-```
-
-`boolean`
-
-</MemberCard>
-
-<a id="keybindings" name="keybindings"></a>
-
-<MemberCard>
-
-##### MathfieldElement.keybindings
-
-```ts
-get keybindings(): readonly Keybinding[]
-```
-
-* {@inheritDoc EditingOptions.keybindings}
-
-```ts
-set keybindings(value): void
-```
-
-• **value**: readonly [`Keybinding`](#keybinding)[]
-
-readonly [`Keybinding`](#keybinding)[]
-
-</MemberCard>
-
-<a id="lettershapestyle" name="lettershapestyle"></a>
-
-<MemberCard>
-
-##### MathfieldElement.letterShapeStyle
-
-```ts
-get letterShapeStyle(): 
-  | "auto"
-  | "french"
-  | "tex"
-  | "iso"
-  | "upright"
-```
-
-{@inheritDoc LayoutOptions.letterShapeStyle}
-
-```ts
-set letterShapeStyle(value): void
-```
-
-• **value**: 
-  \| `"auto"`
-  \| `"french"`
-  \| `"tex"`
-  \| `"iso"`
-  \| `"upright"`
-
-  \| `"auto"`
-  \| `"french"`
-  \| `"tex"`
-  \| `"iso"`
-  \| `"upright"`
-
-</MemberCard>
-
-<a id="mathmodespace" name="mathmodespace"></a>
-
-<MemberCard>
-
-##### MathfieldElement.mathModeSpace
-
-```ts
-get mathModeSpace(): string
-```
-
-{@inheritDoc EditingOptions.mathModeSpace}
-
-```ts
-set mathModeSpace(value): void
-```
-
-• **value**: `string`
-
-`string`
-
-</MemberCard>
-
-<a id="mathvirtualkeyboardpolicy" name="mathvirtualkeyboardpolicy"></a>
-
-<MemberCard>
-
-##### MathfieldElement.mathVirtualKeyboardPolicy
-
-```ts
-get mathVirtualKeyboardPolicy(): VirtualKeyboardPolicy
-```
-
-* {@inheritDoc EditingOptions.mathVirtualKeyboardPolicy}
-
-```ts
-set mathVirtualKeyboardPolicy(value): void
-```
-
-• **value**: [`VirtualKeyboardPolicy`](#virtualkeyboardpolicy)
-
-[`VirtualKeyboardPolicy`](#virtualkeyboardpolicy)
-
-</MemberCard>
-
-<a id="maxmatrixcols" name="maxmatrixcols"></a>
-
-<MemberCard>
-
-##### MathfieldElement.maxMatrixCols
-
-```ts
-get maxMatrixCols(): number
-```
-
-{@inheritDoc LayoutOptions.maxMatrixCols}
-
-```ts
-set maxMatrixCols(value): void
-```
-
-• **value**: `number`
-
-`number`
-
-</MemberCard>
-
-<a id="minfontscale" name="minfontscale"></a>
-
-<MemberCard>
-
-##### MathfieldElement.minFontScale
-
-```ts
-get minFontScale(): number
-```
-
-{@inheritDoc LayoutOptions.minFontScale}
-
-```ts
-set minFontScale(value): void
-```
-
-• **value**: `number`
-
-`number`
-
-</MemberCard>
-
-<a id="mode" name="mode"></a>
-
-<MemberCard>
-
-##### MathfieldElement.mode
-
-```ts
-get mode(): ParseMode
-```
-
-```ts
-set mode(value): void
-```
-
-• **value**: `ParseMode`
-
-`ParseMode`
-
-</MemberCard>
-
-<a id="name" name="name"></a>
-
-<MemberCard>
-
-##### MathfieldElement.name
-
-```ts
-get name(): string
-```
-
-`string`
-
-</MemberCard>
-
-<a id="placeholdersymbol" name="placeholdersymbol"></a>
-
-<MemberCard>
-
-##### MathfieldElement.placeholderSymbol
-
-```ts
-get placeholderSymbol(): string
-```
-
-{@inheritDoc EditingOptions.placeholderSymbol}
-
-```ts
-set placeholderSymbol(value): void
-```
-
-• **value**: `string`
-
-`string`
-
-</MemberCard>
-
-<a id="popoverpolicy" name="popoverpolicy"></a>
-
-<MemberCard>
-
-##### MathfieldElement.popoverPolicy
-
-```ts
-get popoverPolicy(): "auto" | "off"
-```
-
-{@inheritDoc EditingOptions.popoverPolicy}
-
-```ts
-set popoverPolicy(value): void
-```
-
-• **value**: `"auto"` \| `"off"`
-
-`"auto"` \| `"off"`
-
-</MemberCard>
-
-<a id="readonly" name="readonly"></a>
-
-<MemberCard>
-
-##### MathfieldElement.readOnly
-
-```ts
-get readOnly(): boolean
-```
-
-```ts
-set readOnly(value): void
-```
-
-• **value**: `boolean`
-
-`boolean`
-
-</MemberCard>
-
-<a id="readonly-1" name="readonly-1"></a>
-
-<MemberCard>
-
-##### MathfieldElement.readonly
-
-```ts
-get readonly(): boolean
-```
-
-```ts
-set readonly(value): void
-```
-
-• **value**: `boolean`
-
-`boolean`
-
-</MemberCard>
-
-<a id="removeextraneousparentheses" name="removeextraneousparentheses"></a>
-
-<MemberCard>
-
-##### MathfieldElement.removeExtraneousParentheses
-
-```ts
-get removeExtraneousParentheses(): boolean
-```
-
-{@inheritDoc EditingOptions.removeExtraneousParentheses}
-
-```ts
-set removeExtraneousParentheses(value): void
-```
-
-• **value**: `boolean`
-
-`boolean`
-
-</MemberCard>
-
-<a id="scriptdepth" name="scriptdepth"></a>
-
-<MemberCard>
-
-##### MathfieldElement.scriptDepth
-
-```ts
-get scriptDepth(): number | [number, number]
-```
-
-{@inheritDoc EditingOptions.scriptDepth}
-
-```ts
-set scriptDepth(value): void
-```
-
-• **value**: `number` \| [`number`, `number`]
-
-`number` \| [`number`, `number`]
-
-</MemberCard>
-
-<a id="smartfence" name="smartfence"></a>
-
-<MemberCard>
-
-##### MathfieldElement.smartFence
-
-```ts
-get smartFence(): boolean
-```
-
-{@inheritDoc EditingOptions.smartFence}
-
-```ts
-set smartFence(value): void
-```
-
-• **value**: `boolean`
-
-`boolean`
-
-</MemberCard>
-
-<a id="smartmode" name="smartmode"></a>
-
-<MemberCard>
-
-##### MathfieldElement.smartMode
-
-```ts
-get smartMode(): boolean
-```
-
-{@inheritDoc EditingOptions.smartMode}
-
-```ts
-set smartMode(value): void
-```
-
-• **value**: `boolean`
-
-`boolean`
-
-</MemberCard>
-
-<a id="smartsuperscript" name="smartsuperscript"></a>
-
-<MemberCard>
-
-##### MathfieldElement.smartSuperscript
-
-```ts
-get smartSuperscript(): boolean
-```
-
-{@inheritDoc EditingOptions.smartSuperscript}
-
-```ts
-set smartSuperscript(value): void
-```
-
-• **value**: `boolean`
-
-`boolean`
-
-</MemberCard>
-
-<a id="type" name="type"></a>
-
-<MemberCard>
-
-##### MathfieldElement.type
-
-```ts
-get type(): string
-```
-
-`string`
-
-</MemberCard>
-
-<a id="computeengine" name="computeengine"></a>
-
-<MemberCard>
-
-##### MathfieldElement.computeEngine
-
-```ts
-get static computeEngine(): ComputeEngine
-```
-
-A custom compute engine instance. If none is provided, a default one is
-used. If `null` is specified, no compute engine is used.
-
-```ts
-set static computeEngine(value): void
-```
-
-• **value**: `ComputeEngine`
-
-`ComputeEngine`
-
-</MemberCard>
-
-<a id="fontsdirectory" name="fontsdirectory"></a>
-
-<MemberCard>
-
-##### MathfieldElement.fontsDirectory
-
-```ts
-get static fontsDirectory(): string
-```
-
-A URL fragment pointing to the directory containing the fonts
-necessary to render a formula.
-
-These fonts are available in the `/dist/fonts` directory of the SDK.
-
-Customize this value to reflect where you have copied these fonts,
-or to use the CDN version.
-
-The default value is `"./fonts"`. Use `null` to prevent
-any fonts from being loaded.
-
-Changing this setting after the mathfield has been created will have
-no effect.
-
-```javascript
-{
-     // Use the CDN version
-     fontsDirectory: ''
-}
-```
-
-```javascript
-{
-     // Use a directory called "fonts", located next to the
-     // `mathlive.js` (or `mathlive.mjs`) file.
-     fontsDirectory: './fonts'
-}
-```
-
-```javascript
-{
-     // Use a directory located at the root of your website
-     fontsDirectory: 'https://example.com/fonts'
-}
-```
-
-```ts
-set static fontsDirectory(value): void
-```
-
-• **value**: `string`
-
-`string`
-
-</MemberCard>
-
-<a id="formassociated" name="formassociated"></a>
-
-<MemberCard>
-
-##### MathfieldElement.formAssociated
-
-```ts
-get static formAssociated(): boolean
-```
-
-`boolean`
-
-</MemberCard>
-
-<a id="isfunction" name="isfunction"></a>
-
-<MemberCard>
-
-##### MathfieldElement.isFunction
-
-```ts
-get static isFunction(): (command) => boolean
-```
-
-```ts
-set static isFunction(value): void
-```
-
-• **value**
-
-`Function`
-
-• **command**: `string`
-
-`boolean`
-
-</MemberCard>
-
-<a id="plonksound" name="plonksound"></a>
-
-<MemberCard>
-
-##### MathfieldElement.plonkSound
-
-```ts
-get static plonkSound(): string
-```
-
-Sound played to provide feedback when a command has no effect, for example
-when pressing the spacebar at the root level.
-
-The property is either:
-- a string, the name of an audio file in the `soundsDirectory` directory
-- null to turn off the sound
-
-```ts
-set static plonkSound(value): void
-```
-
-• **value**: `string`
-
-`string`
-
-</MemberCard>
-
-<a id="speechengine" name="speechengine"></a>
-
-<MemberCard>
-
-##### MathfieldElement.speechEngine
-
-```ts
-get static speechEngine(): "amazon" | "local"
-```
-
-Indicates which speech engine to use for speech output.
-
-Use `local` to use the OS-specific TTS engine.
-
-Use `amazon` for Amazon Text-to-Speech cloud API. You must include the
-AWS API library and configure it with your API key before use.
-
-**See**
-mathfield/guides/speech/ | Guide: Speech
-
-```ts
-set static speechEngine(value): void
-```
-
-• **value**: `"amazon"` \| `"local"`
-
-`"amazon"` \| `"local"`
-
-</MemberCard>
-
-<a id="speechenginerate" name="speechenginerate"></a>
-
-<MemberCard>
-
-##### MathfieldElement.speechEngineRate
-
-```ts
-get static speechEngineRate(): string
-```
-
-Sets the speed of the selected voice.
-
-One of `x-slow`, `slow`, `medium`, `fast`, `x-fast` or a value as a
-percentage.
-
-Range is `20%` to `200%` For example `200%` to indicate a speaking rate
-twice the default rate.
-
-```ts
-set static speechEngineRate(value): void
-```
-
-• **value**: `string`
-
-`string`
-
-</MemberCard>
-
-<a id="speechenginevoice" name="speechenginevoice"></a>
-
-<MemberCard>
-
-##### MathfieldElement.speechEngineVoice
-
-```ts
-get static speechEngineVoice(): string
-```
-
-Indicates the voice to use with the speech engine.
-
-This is dependent on the speech engine. For Amazon Polly, see here:
-https://docs.aws.amazon.com/polly/latest/dg/voicelist.html
-
-```ts
-set static speechEngineVoice(value): void
-```
-
-• **value**: `string`
-
-`string`
-
-</MemberCard>
-
-<a id="texttospeechmarkup" name="texttospeechmarkup"></a>
-
-<MemberCard>
-
-##### MathfieldElement.textToSpeechMarkup
-
-```ts
-get static textToSpeechMarkup(): "" | "ssml" | "ssml_step" | "mac"
-```
-
-The markup syntax to use for the output of conversion to spoken text.
-
-Possible values are `ssml` for the SSML markup or `mac` for the macOS
-markup, i.e. `&#91;&#91;ltr&#93;&#93;`.
-
-```ts
-set static textToSpeechMarkup(value): void
-```
-
-• **value**: `""` \| `"ssml"` \| `"ssml_step"` \| `"mac"`
-
-`""` \| `"ssml"` \| `"ssml_step"` \| `"mac"`
-
-</MemberCard>
-
-<a id="texttospeechrules" name="texttospeechrules"></a>
-
-<MemberCard>
-
-##### MathfieldElement.textToSpeechRules
-
-```ts
-get static textToSpeechRules(): "sre" | "mathlive"
-```
-
-Specify which set of text to speech rules to use.
-
-A value of `mathlive` indicates that the simple rules built into MathLive
-should be used.
-
-A value of `sre` indicates that the Speech Rule Engine from Volker Sorge
-should be used.
-
-**(Caution)** SRE is not included or loaded by MathLive. For this option to
-work SRE should be loaded separately.
-
-**See**
-mathfield/guides/speech/ | Guide: Speech
-
-```ts
-set static textToSpeechRules(value): void
-```
-
-• **value**: `"sre"` \| `"mathlive"`
-
-`"sre"` \| `"mathlive"`
-
-</MemberCard>
-
-<a id="texttospeechrulesoptions" name="texttospeechrulesoptions"></a>
-
-<MemberCard>
-
-##### MathfieldElement.textToSpeechRulesOptions
-
-```ts
-get static textToSpeechRulesOptions(): Readonly<Record<string, string>>
-```
-
-A set of key/value pairs that can be used to configure the speech rule
-engine.
-
-Which options are available depends on the speech rule engine in use.
-There are no options available with MathLive's built-in engine. The
-options for the SRE engine are documented
-[here](https://github.com/zorkow/speech-rule-engine)
-
-```ts
-set static textToSpeechRulesOptions(value): void
-```
-
-• **value**: `Record`\<`string`, `string`\>
-
-`Readonly`\<`Record`\<`string`, `string`\>\>
-
-</MemberCard>
-
-<a id="executecommand" name="executecommand"></a>
-
-<MemberCard>
-
-##### MathfieldElement.executeCommand()
-
-###### executeCommand(selector)
-
-```ts
-executeCommand(selector): boolean
-```
-
-• **selector**: [`Selector`](#selector)
-
-`boolean`
-
-###### Inherit Doc
-
-###### executeCommand(selector, args)
-
-```ts
-executeCommand(selector, ...args): boolean
-```
-
-• **selector**: [`Selector`](#selector)
-
-• ...**args**: `unknown`[]
-
-`boolean`
-
-###### executeCommand(selector)
-
-```ts
-executeCommand(selector): boolean
-```
-
-• **selector**: [[`Selector`](#selector), `...unknown[]`]
-
-`boolean`
-
-</MemberCard>
-
-<a id="getelementinfo" name="getelementinfo"></a>
-
-<MemberCard>
-
-##### MathfieldElement.getElementInfo()
-
-```ts
-getElementInfo(offset): ElementInfo
-```
-
-• **offset**: `number`
-
-[`ElementInfo`](#elementinfo)
-
-</MemberCard>
-
-<a id="getpromptstate" name="getpromptstate"></a>
-
-<MemberCard>
-
-##### MathfieldElement.getPromptState()
-
-```ts
-getPromptState(id): ["correct" | "incorrect", boolean]
-```
-
-• **id**: `string`
-
-[`"correct"` \| `"incorrect"`, `boolean`]
-
-</MemberCard>
-
-<a id="showmenu" name="showmenu"></a>
-
-<MemberCard>
-
-##### MathfieldElement.showMenu()
-
-```ts
-showMenu(_): boolean
-```
-
-• **\_**
-
-• **\_.location**
-
-• **\_.location.x**: `number`
-
-• **\_.location.y**: `number`
-
-• **\_.modifiers**: `KeyboardModifiers`
-
-`boolean`
-
-</MemberCard>
-
-<a id="loadsound" name="loadsound"></a>
-
-<MemberCard>
-
-##### MathfieldElement.loadSound()
-
-```ts
-static loadSound(sound): Promise<void>
-```
-
-• **sound**: 
-  \| `"keypress"`
-  \| `"plonk"`
-  \| `"delete"`
-  \| `"spacebar"`
-  \| `"return"`
-
-`Promise`\<`void`\>
-
-</MemberCard>
-
-<a id="openurl" name="openurl"></a>
-
-<MemberCard>
-
-##### MathfieldElement.openUrl()
-
-```ts
-static openUrl(href): void
-```
-
-• **href**: `string`
-
-`void`
-
-</MemberCard>
-
-<a id="playsound" name="playsound"></a>
-
-<MemberCard>
-
-##### MathfieldElement.playSound()
-
-```ts
-static playSound(name): Promise<void>
-```
-
-• **name**: 
-  \| `"keypress"`
-  \| `"plonk"`
-  \| `"delete"`
-  \| `"spacebar"`
-  \| `"return"`
-
-`Promise`\<`void`\>
-
-</MemberCard>
-
-#### Prompts
-
-<a id="getpromptrange" name="getpromptrange"></a>
-
-<MemberCard>
-
-##### MathfieldElement.getPromptRange()
-
-```ts
-getPromptRange(id): Range
-```
-
-Return the selection range for the specified prompt.
-
-This can be used for example to select the content of the prompt.
-
-```js
-mf.selection = mf.getPromptRange('my-prompt-id');
-```
-
-• **id**: `string`
-
-[`Range`](#range-1)
-
-</MemberCard>
-
-<a id="getpromptvalue" name="getpromptvalue"></a>
-
-<MemberCard>
-
-##### MathfieldElement.getPromptValue()
-
-```ts
-getPromptValue(placeholderId, format?): string
-```
-
-• **placeholderId**: `string`
-
-• **format?**: [`OutputFormat`](#outputformat)
-
-`string`
-
-###### Inherit Doc
-
-</MemberCard>
-
-<a id="getprompts" name="getprompts"></a>
-
-<MemberCard>
-
-##### MathfieldElement.getPrompts()
-
-```ts
-getPrompts(filter?): string[]
-```
-
-Return the id of the prompts matching the filter.
-
-• **filter?**
-
-• **filter.correctness?**: `"undefined"` \| `"correct"` \| `"incorrect"`
-
-• **filter.id?**: `string`
-
-• **filter.locked?**: `boolean`
-
-`string`[]
-
-</MemberCard>
-
-<a id="setpromptstate" name="setpromptstate"></a>
-
-<MemberCard>
-
-##### MathfieldElement.setPromptState()
-
-```ts
-setPromptState(
-   id, 
-   state, 
-   locked?): void
-```
-
-• **id**: `string`
-
-• **state**: `"undefined"` \| `"correct"` \| `"incorrect"`
-
-• **locked?**: `boolean`
-
-`void`
-
-</MemberCard>
-
-<a id="setpromptvalue" name="setpromptvalue"></a>
-
-<MemberCard>
-
-##### MathfieldElement.setPromptValue()
-
-```ts
-setPromptValue(
-   id, 
-   content, 
-   insertOptions): void
-```
-
-• **id**: `string`
-
-• **content**: `string`
-
-• **insertOptions**: `Omit`\<[`InsertOptions`](#insertoptions), `"insertionMode"`\>
-
-`void`
-
-</MemberCard>
-
-#### Selection
-
-<a id="lastoffset" name="lastoffset"></a>
-
-<MemberCard>
-
-##### MathfieldElement.lastOffset
-
-```ts
-get lastOffset(): number
-```
-
-The last valid offset.
-
-`number`
-
-</MemberCard>
-
-<a id="position" name="position"></a>
-
-<MemberCard>
-
-##### MathfieldElement.position
-
-```ts
-get position(): number
-```
-
-The position of the caret/insertion point, from 0 to `lastOffset`.
-
-```ts
-set position(offset): void
-```
-
-• **offset**: `number`
-
-`number`
-
-</MemberCard>
-
-<a id="selection" name="selection"></a>
-
-<MemberCard>
-
-##### MathfieldElement.selection
-
-```ts
-get selection(): Readonly<Selection>
-```
-
-An array of ranges representing the selection.
-
-It is guaranteed there will be at least one element. If a discontinuous
-selection is present, the result will include more than one element.
-
-```ts
-set selection(sel): void
-```
-
-• **sel**: `number` \| [`Selection`](#selection-1)
-
-`Readonly`\<[`Selection`](#selection-1)\>
-
-</MemberCard>
-
-<a id="selectioniscollapsed" name="selectioniscollapsed"></a>
-
-<MemberCard>
-
-##### MathfieldElement.selectionIsCollapsed
-
-```ts
-get selectionIsCollapsed(): boolean
-```
-
-`boolean`
-
-</MemberCard>
-
-<a id="getoffsetfrompoint" name="getoffsetfrompoint"></a>
-
-<MemberCard>
-
-##### MathfieldElement.getOffsetFromPoint()
-
-```ts
-getOffsetFromPoint(
-   x, 
-   y, 
-   options?): number
-```
-
-The offset closest to the location `(x, y)` in viewport coordinate.
-
-**`bias`**:  if `0`, the vertical midline is considered to the left or
-right sibling. If `-1`, the left sibling is favored, if `+1`, the right
-sibling is favored.
-
-• **x**: `number`
-
-• **y**: `number`
-
-• **options?**
-
-• **options.bias?**: `-1` \| `0` \| `1`
-
-`number`
-
-</MemberCard>
-
-<a id="select" name="select"></a>
-
-<MemberCard>
-
-##### MathfieldElement.select()
-
-```ts
-select(): void
-```
-
-Select the content of the mathfield.
-
-`void`
-
-</MemberCard>
-
-#### Undo
-
-<a id="canredo" name="canredo"></a>
-
-<MemberCard>
-
-##### MathfieldElement.canRedo()
-
-```ts
-canRedo(): boolean
-```
-
-Return whether there are redoable items
-
-`boolean`
-
-</MemberCard>
-
-<a id="canundo" name="canundo"></a>
-
-<MemberCard>
-
-##### MathfieldElement.canUndo()
-
-```ts
-canUndo(): boolean
-```
-
-Return whether there are undoable items
-
-`boolean`
-
-</MemberCard>
-
-<a id="resetundo" name="resetundo"></a>
-
-<MemberCard>
-
-##### MathfieldElement.resetUndo()
-
-```ts
-resetUndo(): void
-```
-
-Reset the undo stack
-
-`void`
-
-</MemberCard>
-
-#### Virtual Keyboard
-
-<a id="keypressvibration" name="keypressvibration"></a>
-
-<MemberCard>
-
-##### MathfieldElement.keypressVibration
-
-```ts
-static keypressVibration: boolean = true;
-```
-
-When a key on the virtual keyboard is pressed, produce a short haptic
-feedback, if the device supports it.
-
-</MemberCard>
-
-<a id="virtualkeyboardtargetorigin" name="virtualkeyboardtargetorigin"></a>
-
-<MemberCard>
-
-##### MathfieldElement.virtualKeyboardTargetOrigin
-
-```ts
-get virtualKeyboardTargetOrigin(): string
-```
-
-```ts
-set virtualKeyboardTargetOrigin(value): void
-```
-
-• **value**: `string`
-
-`string`
-
-</MemberCard>
-
-<a id="keypresssound" name="keypresssound"></a>
-
-<MemberCard>
-
-##### MathfieldElement.keypressSound
-
-```ts
-get static keypressSound(): Readonly<object>
-```
-
-When a key on the virtual keyboard is pressed, produce a short audio
-feedback.
-
-If the property is set to a `string`, the same sound is played in all
-cases. Otherwise, a distinct sound is played:
-
--   `delete` a sound played when the delete key is pressed
--   `return` ... when the return/tab key is pressed
--   `spacebar` ... when the spacebar is pressed
--   `default` ... when any other key is pressed. This property is required,
-    the others are optional. If they are missing, this sound is played as
-    well.
-
-The value of the properties should be either a string, the name of an
-audio file in the `soundsDirectory` directory or `null` to suppress the sound.
-
-```ts
-set static keypressSound(value): void
-```
-
-• **value**: `string` \| `object`
-
-`Readonly`\<`object`\>
-
-<MemberCard>
-
-###### keypressSound.default
-
-```ts
-default: string;
-```
-
-</MemberCard>
-
-<MemberCard>
-
-###### keypressSound.delete
-
-```ts
-delete: string;
-```
-
-</MemberCard>
-
-<MemberCard>
-
-###### keypressSound.return
-
-```ts
-return: string;
-```
-
-</MemberCard>
-
-<MemberCard>
-
-###### keypressSound.spacebar
-
-```ts
-spacebar: string;
-```
-
-</MemberCard>
-
-</MemberCard>
-
-<a id="soundsdirectory" name="soundsdirectory"></a>
-
-<MemberCard>
-
-##### MathfieldElement.soundsDirectory
-
-```ts
-get static soundsDirectory(): string
-```
-
-A URL fragment pointing to the directory containing the optional
-sounds used to provide feedback while typing.
-
-Some default sounds are available in the `/dist/sounds` directory of the SDK.
-
-Use `null` to prevent any sound from being loaded.
-
-```ts
-set static soundsDirectory(value): void
-```
-
-• **value**: `string`
-
-`string`
-
-</MemberCard>
-
 <a id="mathfieldelementattributes" name="mathfieldelementattributes"></a>
 
 ### MathfieldElementAttributes
@@ -7793,7 +7888,7 @@ min-font-scale: number;
 
 </MemberCard>
 
-<a id="placeholder" name="placeholder"></a>
+<a id="placeholder-1" name="placeholder-1"></a>
 
 <MemberCard>
 
@@ -7909,14 +8004,14 @@ off smart mode.
 **Examples**
 
 -   slope = rise/run
--   If x > 0, then f(x) = sin(x)
+-   If x &gt; 0, then f(x) = sin(x)
 -   x^2 + sin (x) when x > 0
--   When x&lt;0, x^{2n+1}&lt;0
+-   When x&lt;0, x^&#007b;2n+1&#007d;&lt;0
 -   Graph x^2 -x+3 =0 for 0&lt;=x&lt;=5
 -   Divide by x-3 and then add x^2-1 to both sides
 -   Given g(x) = 4x – 3, when does g(x)=0?
--   Let D be the set {(x,y)|0&lt;=x&lt;=1 and 0&lt;=y&lt;=x}
--   \int\_{the unit square} f(x,y) dx dy
+-   Let D be the set &#007b;(x,y)|0&lt;=x&lt;=1 and 0&lt;=y&lt;=x&#007d;
+-   \int\_&#007b;the unit square&#007d; f(x,y) dx dy
 -   For all n in NN
 
 </MemberCard>

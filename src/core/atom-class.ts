@@ -4,7 +4,7 @@ import { PT_PER_EM, X_HEIGHT } from './font-metrics';
 import { boxType, Box } from './box';
 import { makeLimitsStack, VBox } from './v-box';
 import { joinLatex, latexCommand } from './tokenizer';
-import { Mode, weightString } from './modes-utils';
+import { Mode } from './modes-utils';
 import { getDefinition } from '../latex-commands/definitions-utils';
 
 import { Context } from './context';
@@ -20,7 +20,6 @@ import type {
   Branch,
 } from './types';
 import type { Argument } from 'latex-commands/types';
-import { addBold } from 'editor-model/styling';
 
 /**
  * The order of these branches specify the default keyboard navigation order.
@@ -119,6 +118,10 @@ export class Atom<T extends (Argument | null)[] = (Argument | null)[]> {
   // parentheses) e.g. "f" or "\sin"
   isFunction: boolean;
 
+  // If `true`, the atom is the root of the tree. That's the case for
+  // some environment, such as `lines`, etc...
+  isRoot = false;
+
   // If true, when the caret reaches the first position in this element's body,
   // (moving right to left) it automatically moves to the outside of the
   // element.
@@ -157,6 +160,7 @@ export class Atom<T extends (Argument | null)[] = (Argument | null)[]> {
     this.command = options.command ?? this.value ?? '';
     this.mode = options.mode ?? 'math';
     if (options.isFunction) this.isFunction = true;
+    if (options.isRoot || this.type === 'root') this.isRoot = true;
     if (options.limits) this.subsupPlacement = options.limits;
     this.style = { ...(options.style ?? {}) };
     this.displayContainsHighlight = options.displayContainsHighlight ?? false;
@@ -361,7 +365,7 @@ export class Atom<T extends (Argument | null)[] = (Argument | null)[]> {
   }
 
   bodyToLatex(options: ToLatexOptions): string {
-    let defaultMode =
+    const defaultMode =
       options.defaultMode ?? (this.mode === 'math' ? 'math' : 'text');
 
     return Mode.serialize(this.body, { ...options, defaultMode });
@@ -531,9 +535,26 @@ export class Atom<T extends (Argument | null)[] = (Argument | null)[]> {
     this.setChildren(atoms, 'below');
   }
 
-  applyStyle(style: Style): void {
+  applyStyle(style: Style, options?: { unstyledOnly: boolean }): void {
     this.isDirty = true;
-    this.style = { ...this.style, ...style };
+
+    if (options?.unstyledOnly) {
+      if (style.color && !this.style.color) this.style.color = style.color;
+      if (style.backgroundColor && !this.style.backgroundColor)
+        this.style.backgroundColor = style.backgroundColor;
+      if (style.fontFamily && !this.style.fontFamily)
+        this.style.fontFamily = style.fontFamily;
+      if (style.fontShape && !this.style.fontShape)
+        this.style.fontShape = style.fontShape;
+      if (style.fontSeries && !this.style.fontSeries)
+        this.style.fontSeries = style.fontSeries;
+      if (style.fontSize && !this.style.fontSize)
+        this.style.fontSize = style.fontSize;
+      if (style.variant && !this.style.variant)
+        this.style.variant = style.variant;
+      if (style.variantStyle && !this.style.variantStyle)
+        this.style.variantStyle = style.variantStyle;
+    } else this.style = { ...this.style, ...style };
 
     if (this.style.fontFamily === 'none') delete this.style.fontFamily;
 
@@ -553,7 +574,7 @@ export class Atom<T extends (Argument | null)[] = (Argument | null)[]> {
 
     if (this.style.fontSize === 'auto') delete this.style.fontSize;
 
-    for (const child of this.children) child.applyStyle(style);
+    for (const child of this.children) child.applyStyle(style, options);
   }
 
   getInitialBaseElement(): Atom {
