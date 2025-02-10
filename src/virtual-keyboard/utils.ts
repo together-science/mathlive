@@ -323,8 +323,9 @@ export function makeEditToolbar(
 
   const availableActions: string[] = [];
 
+  availableActions.push('undo', 'redo');
   if (mathfield.selectionIsCollapsed)
-    availableActions.push('undo', 'redo', 'pasteFromClipboard');
+    availableActions.push('pasteFromClipboard');
   else {
     availableActions.push(
       'cutToClipboard',
@@ -334,12 +335,12 @@ export function makeEditToolbar(
   }
 
   const actionsMarkup = {
-    undo: `<div class='action ${mathfield.canUndo === false ? 'disabled' : ''}'
+    undo: `<div class='action'
           data-command='"undo"'
           data-tooltip='${l10n('tooltip.undo')}'>
           <svg><use xlink:href='#svg-undo' /></svg>
       </div>`,
-    redo: `<div class='action ${mathfield.canRedo === false ? 'disabled' : ''}'
+    redo: `<div class='action'
           data-command='"redo"'
           data-tooltip='${l10n('tooltip.redo')}'>
           <svg><use xlink:href='#svg-redo' /></svg>

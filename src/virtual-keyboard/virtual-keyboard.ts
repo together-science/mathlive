@@ -804,8 +804,8 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
     el.classList.toggle('is-math-mode', mf.mode === 'math');
     el.classList.toggle('is-text-mode', mf.mode === 'text');
 
-    el.classList.toggle('can-undo', mf.canUndo);
-    el.classList.toggle('can-redo', mf.canRedo);
+    el.classList.toggle('can-undo', true /*mf.canUndo*/);
+    el.classList.toggle('can-redo', true /*mf.canRedo*/);
     el.classList.toggle('can-copy', !mf.selectionIsCollapsed);
     el.classList.toggle('can-copy', !mf.selectionIsCollapsed);
     el.classList.toggle('can-paste', true);

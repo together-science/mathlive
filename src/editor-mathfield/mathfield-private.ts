@@ -1548,7 +1548,16 @@ If you are using Vue, this may be because you are using the runtime-only build o
   }
 
   undo(): void {
-    if (!this.undoManager.undo()) return;
+    if (!this.undoManager.undo()) {
+      this.host?.dispatchEvent(
+        new CustomEvent('undo-redo-stack-empty', {
+          bubbles: true,
+          composed: true,
+          detail: { type: 'undo' },
+        })
+      );
+      return;
+    }
     this.host?.dispatchEvent(
       new CustomEvent('undo-state-change', {
         bubbles: true,
@@ -1559,7 +1568,16 @@ If you are using Vue, this may be because you are using the runtime-only build o
   }
 
   redo(): void {
-    if (!this.undoManager.redo()) return;
+    if (!this.undoManager.redo()) {
+      this.host?.dispatchEvent(
+        new CustomEvent('undo-redo-stack-empty', {
+          bubbles: true,
+          composed: true,
+          detail: { type: 'redo' },
+        })
+      );
+      return;
+    }
     this.host?.dispatchEvent(
       new CustomEvent('undo-state-change', {
         bubbles: true,
