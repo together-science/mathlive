@@ -397,7 +397,7 @@ export class Box implements BoxInterface {
     //
     // 3. Markup for props
     //
-    let props = '';
+    let props: string[] = [];
 
     //
     // 3.1 Classes
@@ -415,6 +415,7 @@ export class Box implements BoxInterface {
     if (this.caret === 'latex') classes.push('ML__latex-caret');
 
     if (this.isSelected) classes.push('ML__selected');
+
     // Remove duplicate and empty classes
     const classList =
       classes.length === 1
@@ -423,25 +424,30 @@ export class Box implements BoxInterface {
             .filter((x, e, a) => x.length > 0 && a.indexOf(x) === e)
             .join(' ');
 
-    if (classList.length > 0) props += ` class="${classList}"`;
+    if (classList.length > 0)
+      props.push(`class=${sanitizeAttributeValue(`"${classList}"`)}`);
 
     //
     // 3.2 Id
     //
-    if (this.id) props += ` data-atom-id=${this.id}`;
+    if (this.id) props.push(` data-atom-id=${sanitizeAttributeValue(this.id)}`);
 
     // A (HTML5) CSS id may not contain a space
-    if (this.cssId) props += ` id="${this.cssId.replace(/ /g, '-')}" `;
+    if (this.cssId)
+      props.push(
+        ` id=${sanitizeAttributeValue(`"${this.cssId.replace(/ /g, '-')}"`)}`
+      );
 
     //
     // 3.3 Attributes
     //
     if (this.attributes) {
-      props +=
-        ' ' +
-        Object.keys(this.attributes)
-          .map((x) => `${x}="${this.attributes![x]}"`)
-          .join(' ');
+      props.concat(
+        Object.keys(this.attributes).map(
+          (x) =>
+            `${sanitizeAttributeName(x)}=${sanitizeAttributeValue(this.attributes![x])}`
+        )
+      );
     }
 
     if (this.htmlData) {
@@ -449,11 +455,20 @@ export class Box implements BoxInterface {
       for (const entry of entries) {
         const matched = entry.match(/([^=]+)=(.+$)/);
         if (matched) {
-          const key = matched[1].trim().replace(/ /g, '-');
-          if (key) props += ` data-${key}="${matched[2]}" `;
+          const key = sanitizeAttributeName(matched[1]);
+          if (key) {
+            if (key === 'href') {
+              // Validate the URL
+              const url = new URL(matched[2]);
+              if (url.protocol !== 'http:' && url.protocol !== 'https:')
+                throw new Error(`Invalid URL: ${matched[2]}`);
+              props.push(`href="${matched[2].replace(/"/g, '&quot;')}"`);
+            } else
+              props.push(`data-${key}=${sanitizeAttributeValue(matched[2])}`);
+          }
         } else {
-          const key = entry.trim().replace(/ /g, '-');
-          if (key) props += ` data-${key} `;
+          const key = sanitizeAttributeName(entry);
+          if (key) props.push(`data-${key} `);
         }
       }
     }
@@ -469,6 +484,7 @@ export class Box implements BoxInterface {
         cssProps.width = `${Math.ceil(this._width * 100) / 100}em`;
       // cssProps['height'] = `${Math.round(this.height * 100) / 100}em`;
     }
+
     const styles = Object.keys(cssProps).map((x) => `${x}:${cssProps[x]}`);
 
     if (
@@ -479,19 +495,17 @@ export class Box implements BoxInterface {
       styles.push(`font-size: ${Math.ceil(this.scale * 10000) / 100}%`);
 
     if (this.htmlStyle) {
-      const entries = this.htmlStyle.split(';');
-      let styleString = '';
-      for (const entry of entries) {
-        const matched = entry.match(/([^=]+):(.+$)/);
+      for (const entry of this.htmlStyle.split(';')) {
+        const matched = entry.match(/([^:]+):(.+$)/);
         if (matched) {
           const key = matched[1].trim().replace(/ /g, '-');
-          if (key) styleString += `${key}:${matched[2]};`;
+          if (key) styles.push(`${key}:${matched[2]}`);
         }
       }
-      if (styleString) props += ` style="${styleString}"`;
     }
 
-    if (styles.length > 0) props += ` style="${styles.join(';')}"`;
+    if (styles.length > 0)
+      props.push(`style=${sanitizeAttributeValue(styles.join(';'))}`);
 
     //
     // 4. Tag markup
@@ -499,7 +513,7 @@ export class Box implements BoxInterface {
 
     let result = '';
     if (props.length > 0 || svgMarkup.length > 0)
-      result = `<span${props}>${body}${svgMarkup}</span>`;
+      result = `<span ${props.join(' ')}>${body}${svgMarkup}</span>`;
     else result = body;
 
     //
@@ -735,4 +749,59 @@ function horizontalLayout(box: Box, fontName: FontName): void {
 
     box.maxFontSize = maxFontSize;
   }
+}
+
+function sanitizeAttributeName(attribute: string): string {
+  attribute = attribute.trim().replace(/ /g, '-');
+
+  /**
+   * https://w3c.github.io/html-reference/syntax.html#syntax-attributes
+   *
+   * > Attribute Names must consist of one or more characters
+   * other than the space characters, U+0000 NULL,
+   * '"', "'", ">", "/", "=", the control characters,
+   * and any characters that are not defined by Unicode.
+   */
+  if (attribute.length === 0) throw new Error(`Invalid empty attribute name`);
+
+  const invalidAttributeName = /[\x20\x09\x0a\x0c\x0d"'>/=\x00-\x1f]/;
+  if (invalidAttributeName.test(attribute))
+    throw new Error(`Invalid attribute name "${attribute}"`);
+
+  return attribute;
+}
+
+function sanitizeAttributeValue(value: string): string {
+  value = value.trim();
+
+  //
+  // Double-quoted value
+  //
+  if (value.startsWith('"') && value.endsWith('"')) {
+    // Must not contain any `"`
+    if (/"/.test(value.slice(1, -1)))
+      throw new Error(`Invalid attribute value: ${value}`);
+    return value;
+  }
+
+  //
+  // Single-quoted value
+  //
+  if (value.startsWith("'") && value.endsWith("'")) {
+    // Must not contain any `'`
+    if (/'/.test(value.slice(1, -1)))
+      throw new Error(`Invalid attribute value: ${value}`);
+    return value;
+  }
+
+  //
+  // Unquoted value
+  //
+
+  if (value.length === 0) throw new Error(`Invalid empty attribute value`);
+
+  // An unquoted value must not contain any literal space characters, `"`, `'`, `=`, `>`, `<` or backtick characters
+
+  // However, for extra safety, transform it into a quoted value and replace any quotes with &quot;
+  return `"${value.replace(/"/g, '&quot;')}"`;
 }

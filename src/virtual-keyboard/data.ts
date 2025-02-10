@@ -40,7 +40,15 @@ export const LAYOUTS: Partial<
         {
           latex: '\\exponentialE',
           shift: '\\ln',
-          variants: ['\\exp', '\\times 10^{#?}', '\\ln', '\\log_{10}', '\\log'],
+          variants: [
+            '\\exp',
+            '\\times 10^{#?}',
+            '\\ln',
+            '\\log_{10}',
+            '\\log',
+            '\\lg',
+            '\\operatorname{lb}',
+          ],
         },
         {
           latex: '\\imaginaryI',
@@ -391,7 +399,7 @@ export const LAYOUTS: Partial<
           variants: [
             { class: 'small', latex: '\\sinh' },
             { class: 'small', latex: '\\sin^{-1}' },
-            { class: 'small', latex: '\\arsinh' },
+            { class: 'small', latex: '\\operatorname{arsinh}' },
           ],
         },
         '\\ln',
@@ -400,8 +408,8 @@ export const LAYOUTS: Partial<
           insert: '\\mathrm{abs}\\left(#0\\right)',
         },
         {
-          latex: '\\rarr',
-          shift: '\\rArr',
+          latex: '\\rightarrow',
+          shift: '\\Rightarrow',
           variants: [
             { latex: '\\implies', aside: 'implies' },
 
@@ -453,7 +461,7 @@ export const LAYOUTS: Partial<
           variants: [
             { class: 'small', latex: '\\cosh' },
             { class: 'small', latex: '\\cos^{-1}' },
-            { class: 'small', latex: '\\arcosh' },
+            { class: 'small', latex: '\\operatorname{arcosh}' },
           ],
         },
         {
@@ -544,10 +552,10 @@ export const LAYOUTS: Partial<
           variants: [
             { class: 'small', latex: '\\tanh' },
             { class: 'small', latex: '\\tan^{-1}' },
-            { class: 'small', latex: '\\artanh' },
+            { class: 'small', latex: '\\operatorname{artanh}' },
             { class: 'small', latex: '\\arctan' },
-            { class: 'small', latex: '\\arctg' },
-            { class: 'small', latex: '\\tg' },
+            { class: 'small', latex: '\\operatorname{arctg}' },
+            { class: 'small', latex: '\\operatorname{tg}' },
           ],
         },
         {
@@ -709,16 +717,16 @@ export const LAYOUTS: Partial<
     layers: [
       {
         style: `
-          .minimalist-backdrop {
+          div.minimalist-backdrop {
             display: flex;
             justify-content: center;
           }          
-          .minimalist-container {
+          div.minimalist-container {
             --keycap-height: 40px;
             --keycap-max-width: 53px;
             --keycap-small-font-size: 12px;
             background: var(--keyboard-background);
-            padding: 20px;
+            padding: 20px 20px 0px 20px;
             border-top-left-radius: 8px;
             border-top-right-radius: 8px;
             border: 1px solid var(--keyboard-border);

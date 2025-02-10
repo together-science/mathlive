@@ -1,11 +1,9 @@
 import type {
-  Model,
-  Mathfield,
   Offset,
   Range,
   Selection,
   OutputFormat,
-} from '../public/mathfield';
+} from '../public/core-types';
 import type {
   ContentChangeOptions,
   ContentChangeType,
@@ -31,7 +29,7 @@ import {
   isSelection,
   range,
 } from './selection-utils';
-import type { ArrayAtom } from '../atoms/array';
+import { ArrayAtom } from '../atoms/array';
 import { LatexAtom } from '../atoms/latex';
 import { makeProxy } from 'virtual-keyboard/mathfield-proxy';
 import '../virtual-keyboard/global';
@@ -39,18 +37,19 @@ import type { ModelState, GetAtomOptions, AnnounceVerb } from './types';
 import type { BranchName, ToLatexOptions } from 'core/types';
 
 import { isValidMathfield } from '../editor-mathfield/utils';
+import { Mathfield, Model } from 'public/mathfield';
 
 /** @internal */
 export class _Model implements Model {
   readonly mathfield: _Mathfield;
+
+  root: Atom;
 
   // Note: in most cases, use mf.switchMode() instead.
   // Changing this directly will not dispatch the 'change-mode' event
   mode: ParseMode;
 
   silenceNotifications: boolean;
-
-  root: Atom;
 
   private _selection: Selection;
   private _anchor: Offset;
@@ -115,9 +114,6 @@ export class _Model implements Model {
     return this.root.children;
   }
 
-  /**
-   * The selection, accounting for the common ancestors
-   */
   get selection(): Selection {
     return this._selection;
   }
@@ -296,6 +292,20 @@ export class _Model implements Model {
     return [this.offsetOf(branch[0]), this.offsetOf(branch[branch.length - 1])];
   }
 
+  /** If offset is inside a cell, return the range (first and last offset) of the cell */
+  getCellRange(offset: Offset): Range | undefined {
+    const cellIndex = this.getParentCell(offset);
+
+    let atom: Atom | undefined = this.at(offset);
+    if (!atom) return undefined;
+
+    while (atom && atom.parent?.type !== 'array') atom = atom.parent;
+
+    if (!atom?.parent || atom.parent.type !== 'array') return undefined;
+
+    return [this.offsetOf(atom.firstSibling), this.offsetOf(atom.lastSibling)];
+  }
+
   /**
    * Return the atoms in a range.
    * getAtoms([3, 5]) -> atoms 4 and 5
@@ -306,18 +316,18 @@ export class _Model implements Model {
    * Note that an atom with children is included in the result only if
    * all its children are in range.
    */
-  getAtoms(arg: Selection, options?: GetAtomOptions): Readonly<Atom[]>;
-  getAtoms(arg: Range, options?: GetAtomOptions): Readonly<Atom[]>;
+  getAtoms(arg: Selection, options?: GetAtomOptions): ReadonlyArray<Atom>;
+  getAtoms(arg: Range, options?: GetAtomOptions): ReadonlyArray<Atom>;
   getAtoms(
     from: Offset,
     to?: Offset,
     options?: GetAtomOptions
-  ): Readonly<Atom[]>;
+  ): ReadonlyArray<Atom>;
   getAtoms(
     arg1: Selection | Range | Offset,
     arg2?: Offset | GetAtomOptions,
     arg3?: GetAtomOptions
-  ): Readonly<Atom[]> {
+  ): ReadonlyArray<Atom> {
     let options = arg3 ?? {};
     if (isSelection(arg1)) {
       options = (arg2 as GetAtomOptions) ?? {};
@@ -378,21 +388,6 @@ export class _Model implements Model {
     return result;
   }
 
-  /**
-   * Unlike `getAtoms()`, the argument here is an index
-   * Return all the atoms, in order, starting at startingIndex
-   * then looping back at the beginning
-   */
-  getAllAtoms(startingIndex = 0): Readonly<Atom[]> {
-    const result: Atom[] = [];
-    const last = this.lastOffset;
-    for (let i = startingIndex; i <= last; i++) result.push(this.atoms[i]);
-
-    for (let i = 0; i < startingIndex; i++) result.push(this.atoms[i]);
-
-    return result;
-  }
-
   findAtom(
     filter: (x: Atom) => boolean,
     startingIndex = 0,
@@ -432,16 +427,11 @@ export class _Model implements Model {
   extractAtoms(range: Range): Atom[] {
     let result = this.getAtoms(range) as Atom[];
     if (result.length === 1 && !result[0].parent) {
-      // We're trying to extract the root.
-      // Don't actually delete the root, delete all the children of the root.
-      if (result[0].type === 'root') {
-        result = [...result[0].body!];
+      // If we're trying to extract the root, don't actually delete the root,
+      // delete all the children of the root.
+      if (result[0].isRoot) {
+        result = [...(result[0].body ?? result[0].children)];
         result.shift();
-      } else {
-        // If the root is an array, replace with a plain root
-        result = (this.root as ArrayAtom).cells.flat();
-        this.root = new Atom({ type: 'root', body: [] });
-        return result;
       }
     }
     for (const child of result) child.parent!.removeChild(child);
@@ -569,6 +559,7 @@ export class _Model implements Model {
         skipPlaceholders: format === 'latex-without-placeholders',
         defaultMode: this.mathfield.options.defaultMode,
       };
+
       return joinLatex(
         ranges.map((range) => Atom.serialize(this.getAtoms(range), options))
       );
@@ -585,13 +576,13 @@ export class _Model implements Model {
 
   /**
    * Unlike `setSelection`, this method is intended to be used in response
-   * to a user action, and it performs various adjustments to result
-   * in a more intuitive selection.
+   * to a user action, and it performs various adjustments to result in a more
+   * intuitive selection.
+   *
    * For example:
-   * - when all the children of an atom are selected, the atom
-   * become selected.
-   * - this method will *not* change the anchor, but may result
-   * in a selection whose boundary is outside the anchor
+   * - when all the children of an atom are selected, the atom become selected.
+   * - this method will *not* change the anchor, but may result in a selection
+   *   whose boundary is outside the anchor
    */
   extendSelectionTo(anchor: Offset, position: Offset): boolean {
     if (!this.mathfield.contentEditable && this.mathfield.userSelect === 'none')
@@ -675,8 +666,8 @@ export class _Model implements Model {
       defaultAnnounceHook(this.mathfield, command, previousPosition, atoms);
   }
 
-  // Suppress notification while scope is executed,
-  // then notify of content change, and selection change (if actual change)
+  // Suppress notification while scope is executed, then notify of content
+  // change, and selection change (if actual change)
   deferNotifications(
     options: {
       content?: boolean;
@@ -784,8 +775,12 @@ export class _Model implements Model {
   }
 
   /** Return the cell (row, col) that the current selection is in */
-  get cell(): [number, number] | undefined {
-    let atom: Atom | undefined = this.at(this.position);
+  get parentCell(): [number, number] | undefined {
+    return this.getParentCell(this.position);
+  }
+
+  getParentCell(pos: Offset): [number, number] | undefined {
+    let atom: Atom | undefined = this.at(pos);
     if (!atom) return undefined;
 
     while (atom && atom.parent?.type !== 'array') atom = atom.parent;

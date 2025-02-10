@@ -5,15 +5,15 @@ import type {
   Keybinding,
   KeyboardLayoutName,
 } from '../public/options';
+import type { Mathfield } from '../public/mathfield';
 import type {
-  Mathfield,
   InsertOptions,
   OutputFormat,
   Offset,
   Range,
   Selection,
   ApplyStyleOptions,
-} from '../public/mathfield';
+} from '../public/core-types';
 
 import { canVibrate } from '../ui/utils/capabilities';
 
@@ -91,11 +91,7 @@ import {
   validateOrigin,
 } from './utils';
 
-import {
-  onPointerDown,
-  offsetFromPoint,
-  PointerTracker,
-} from './pointer-input';
+import { onPointerDown, PointerTracker } from './pointer-input';
 
 import { ModeEditor } from './mode-editor';
 import './mode-editor-math';
@@ -289,11 +285,10 @@ export class _Mathfield implements Mathfield, KeyboardDelegateInterface {
     const mode = effectiveMode(this.options);
 
     // Setup the model
-    const root = new Atom({
-      type: 'root',
-      mode,
-      body: parseLatex(elementText, { context: this.context }),
-    });
+    const body = parseLatex(elementText, { context: this.context });
+    let root: Atom;
+    if (body.length === 1 && body[0].isRoot) root = body[0];
+    else root = new Atom({ type: 'root', mode, body });
 
     this.model = new _Model(this, mode, root);
 
@@ -456,7 +451,7 @@ If you are using Vue, this may be because you are using the runtime-only build o
     // to adjust the UI (popover, etc...)
     window.addEventListener('resize', this, { signal });
     document.addEventListener('scroll', this, { signal });
-    this.resizeObserver = new ResizeObserver((entries) => {
+    this.resizeObserver = new ResizeObserver((_entries) => {
       if (this.resizeObserverStarted) {
         this.resizeObserverStarted = false;
         return;
@@ -1129,10 +1124,14 @@ If you are using Vue, this may be because you are using the runtime-only build o
     } else if (s === '&') addColumnAfter(this.model);
     else {
       if (this.model.selectionIsCollapsed) {
-        ModeEditor.insert(this.model, s, {
-          style: this.model.at(this.model.position).style,
-          ...options,
-        });
+        const style = { ...computeInsertStyle(this) };
+        // If we're inserting a non-alphanumeric character, reset the variant
+        if (!/^[a-zA-Z0-9]$/.test(s) && this.styleBias !== 'none') {
+          style.variant = 'normal';
+          style.variantStyle = undefined;
+        }
+
+        ModeEditor.insert(this.model, s, { style, ...options });
       } else ModeEditor.insert(this.model, s, options);
     }
 
@@ -1425,8 +1424,7 @@ If you are using Vue, this may be because you are using the runtime-only build o
     locked?: boolean;
     correctness?: 'correct' | 'incorrect' | 'undefined';
   }): string[] {
-    return this.model
-      .getAllAtoms()
+    return this.model.atoms
       .filter((a: PromptAtom) => {
         if (a.type !== 'prompt') return false;
         if (!filter) return true;
@@ -1600,11 +1598,11 @@ If you are using Vue, this may be because you are using the runtime-only build o
         // If we're at the start or the end of a LaTeX group,
         // move inside the group and don't switch mode.
         const sibling = model.at(pos + 1);
-        if (sibling?.type === 'first' && sibling.mode === 'latex') {
+        if (sibling?.type === 'first' && sibling.mode === 'latex')
           model.position = pos + 1;
-        } else if (latexGroup && sibling?.mode !== 'latex') {
+        else if (latexGroup && sibling?.mode !== 'latex')
           model.position = pos - 1;
-        } else {
+        else {
           // We may have moved from math to text, or text to math.
           this.switchMode(mode);
         }
@@ -1716,26 +1714,20 @@ If you are using Vue, this may be because you are using the runtime-only build o
       // don't do that for custom elements, so we do it ourselves. @futureweb
       //
 
-      // Wait for the window/document visibility to change
+      // Wait for the window focus to change
       // (the mathfield gets blurred before the window)
       const controller = new AbortController();
       const signal = controller.signal;
-      document.addEventListener(
-        'visibilitychange',
+      window.addEventListener(
+        'blur',
         () => {
-          if (document.visibilityState === 'hidden') {
-            document.addEventListener(
-              'visibilitychange',
-              () => {
-                if (
-                  isValidMathfield(this) &&
-                  document.visibilityState === 'visible'
-                )
-                  this.focus({ preventScroll: true });
-              },
-              { once: true, signal }
-            );
-          }
+          window.addEventListener(
+            'focus',
+            () => {
+              if (isValidMathfield(this)) this.focus({ preventScroll: true });
+            },
+            { once: true, signal }
+          );
         },
         { once: true, signal }
       );
@@ -1743,6 +1735,12 @@ If you are using Vue, this may be because you are using the runtime-only build o
       // If something else gets the focus (could be the mathfield too),
       // cancel the above
       document.addEventListener('focusin', () => controller.abort(), {
+        once: true,
+      });
+
+      // If user clicks anywhere, cancel the refocus (covers case where
+      // click doesn't cause an element to come into focus)
+      document.addEventListener('click', () => controller.abort(), {
         once: true,
       });
     }
@@ -1758,7 +1756,7 @@ If you are using Vue, this may be because you are using the runtime-only build o
 
   onCompositionStart(_composition: string): void {
     // Clear the selection if there is one
-    this.model.deleteAtoms(range(this.model.selection));
+    deleteRange(this.model, range(this.model.selection), 'insertText');
     const caretPoint = getCaretPoint(this.field!);
     if (!caretPoint) return;
     requestAnimationFrame(() => {

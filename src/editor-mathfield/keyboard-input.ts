@@ -213,6 +213,10 @@ export function onKeystroke(
           evt.preventDefault();
           evt.stopPropagation();
         } else {
+          // If we're in a multiline environment, insert a newline
+          if (model.parentEnvironment?.isMultiline)
+            mathfield.executeCommand('addRowAfter');
+
           // Dispatch an 'input' event matching the behavior of `<textarea>`
           model.contentDidChange({ inputType: 'insertLineBreak' });
         }
@@ -444,6 +448,8 @@ export function onKeystroke(
         // the substitution inserted a place holder. Reset the buffer.
         if (!model.selectionIsCollapsed) mathfield.flushInlineShortcutBuffer();
 
+        // requestUpdate(mathfield);
+
         return true; // Content changed
       }
     );
@@ -614,7 +620,7 @@ function insertMathModeChar(mathfield: _Mathfield, c: string): void {
     return;
   }
 
-  let style = { ...computeInsertStyle(mathfield) };
+  const style = { ...computeInsertStyle(mathfield) };
 
   // If we're inserting a non-alphanumeric character, reset the variant
   if (!/[a-zA-Z0-9]/.test(c) && mathfield.styleBias !== 'none') {
@@ -670,7 +676,7 @@ function insertMathModeChar(mathfield: _Mathfield, c: string): void {
   mathfield.snapshot(`insert-${model.at(model.position).type}`);
 }
 
-function getSelectionStyle(model: _Model): Readonly<Style> {
+export function getSelectionStyle(model: _Model): Readonly<Style> {
   // When the selection is collapsed, we inherit the style from the
   // preceding atom
   if (model.selectionIsCollapsed) return model.at(model.position)?.style ?? {};

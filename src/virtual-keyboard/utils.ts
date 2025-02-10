@@ -22,7 +22,7 @@ import {
   VirtualKeyboardOptions,
 } from '../public/virtual-keyboard';
 import { applyInterBoxSpacing } from '../core/inter-box-spacing';
-import { InsertOptions } from 'public/mathfield';
+import { InsertOptions } from 'public/core-types';
 
 function jsonToCssProps(json) {
   if (typeof json === 'string') return json;
@@ -1036,18 +1036,16 @@ export function normalizeKeycap(
     shortcut.tooltip === undefined ||
     shortcut.tooltip === null ||
     (shortcut.tooltip as any as boolean) === false
-  ) {
+  )
     delete shortcut.tooltip;
-  }
 
   // If any of the properties of the shortcut are undefined, remove them
   if (
     shortcut.tooltip === undefined ||
     shortcut.tooltip === null ||
     (shortcut.tooltip as any as boolean) === false
-  ) {
+  )
     delete shortcut.tooltip;
-  }
 
   if (
     shortcut.aside === undefined ||
@@ -1138,18 +1136,21 @@ function handlePointerDown(ev: PointerEvent) {
 
   if (keycap.variants) {
     if (pressAndHoldTimer) clearTimeout(pressAndHoldTimer);
-    pressAndHoldTimer = setTimeout(() => {
-      if (target!.classList.contains('is-pressed')) {
-        target!.classList.remove('is-pressed');
-        target!.classList.add('is-active');
-        if (ev.target && 'releasePointerCapture' in ev.target)
-          (ev.target as HTMLElement).releasePointerCapture(ev.pointerId);
-        showVariantsPanel(target!, () => {
-          controller.abort();
-          target?.classList.remove('is-active');
-        });
-      }
-    }, 300);
+    pressAndHoldTimer = setTimeout(
+      () => {
+        if (target!.classList.contains('is-pressed')) {
+          target!.classList.remove('is-pressed');
+          target!.classList.add('is-active');
+          if (ev.target && 'releasePointerCapture' in ev.target)
+            (ev.target as HTMLElement).releasePointerCapture(ev.pointerId);
+          showVariantsPanel(target!, () => {
+            controller.abort();
+            target?.classList.remove('is-active');
+          });
+        }
+      },
+      keycap.stickyVariantPanel ? 0 : 300
+    );
   }
 
   ev.preventDefault();

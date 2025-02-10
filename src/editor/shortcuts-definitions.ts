@@ -10,6 +10,7 @@ export const INLINE_SHORTCUTS: InlineShortcutDefinitions = {
   '$': '\\$',
 
   // Primes
+  // "'": '^{\\prime}', // Conflicts with text zone shortcut
   "''": '^{\\doubleprime}',
   "'''": '^{\\prime\\prime\\prime}',
   "''''": '^{\\prime\\prime\\prime\\prime}',
@@ -66,45 +67,60 @@ export const INLINE_SHORTCUTS: InlineShortcutDefinitions = {
   '∆': '\\differentialD', // @TODO: is \\diffD most common?
   '∂': '\\differentialD',
 
+  //
   // Functions
-  'arcsin': '\\arcsin',
-  'arccos': '\\arccos',
-  'arctan': '\\arctan',
-  'arcsec': '\\arcsec',
-  'arccsc': '\\arccsc',
+  //
+  // The standard LaTeX commands (i.e. in the amsmath package) are:
+  // https://mirror.math.princeton.edu/pub/CTAN/macros/latex/required/amsmath/amsldoc.pdf
 
-  'arsinh': '\\arsinh',
-  'arcosh': '\\arcosh',
-  'artanh': '\\artanh',
-  'arcsech': '\\arcsech',
-  'arccsch': '\\arccsch',
-  'arg': '\\arg',
-  'ch': '\\ch',
-  'cosec': '\\cosec',
-  'cosh': '\\cosh',
-  'cot': '\\cot',
-  'cotg': '\\cotg',
-  'coth': '\\coth',
-  'csc': '\\csc',
-  'ctg': '\\ctg',
-  'cth': '\\cth',
-  'sec': '\\sec',
-  'sinh': '\\sinh',
-  'sh': '\\sh',
-  'tanh': '\\tanh',
-  'tg': '\\tg',
-  'th': '\\th',
+  // \arccos, \arcsin, \arctan, \arg, \cos, \cosh, \cot, \coth, \csc, \deg, \det, \dim, \exp, \gcd, \hom, \inf, \injlim, \ker, \lg, \lim, \liminf, \limsup, \ln, \log, \max, \min, \Pr, \projlim, \sec, \sin, \sinh, \sup, \tan, \tanh
+  // \varinjlim, \varprojlim, \varlimsup, \varliminf
+
+  // Although we support rendering of non-standard commands (i.e. \arsinh)
+  // we avoid generating them when using the shortcuts.
 
   'sin': '\\sin',
   'cos': '\\cos',
   'tan': '\\tan',
 
+  'arccos': '\\arccos',
+  'arcsin': '\\arcsin',
+  'arctan': '\\arctan',
+  'arctg': '\\operatorname{arctg}',
+  'arcsec': '\\operatorname{arcsec}',
+  'arccsc': '\\operatorname{arccsc}',
+
+  'arsinh': '\\operatorname{arsinh}',
+  'arccosh': '\\operatorname{arccosh}',
+  'arcosh': '\\operatorname{arcosh}',
+  'artanh': '\\operatorname{artanh}',
+  'arctanh': '\\operatorname{arctanh}',
+  'arcsech': '\\operatorname{arcsech}',
+  'arccsch': '\\operatorname{arccsch}',
+  'ch': '\\operatorname{ch}',
+  'cosec': '\\operatorname{cosec}',
+  'cosh': '\\cosh',
+  'cot': '\\cot',
+  'cotg': '\\operatorname{cotg}',
+  'coth': '\\coth',
+  'csc': '\\csc',
+  'ctg': '\\operatorname{ctg}',
+  'cth': '\\operatorname{cth}',
+  'sec': '\\sec',
+  'sech': '\\operatorname{sech}',
+  'sinh': '\\sinh',
+  'sh': '\\operatorname{sh}',
+  'tanh': '\\tanh',
+  'tg': '\\operatorname{tg}',
+  'th': '\\operatorname{th}',
+
+  'arg': '\\arg',
   'lg': '\\lg',
-  'lb': '\\lb',
-  'log': '\\log',
+  'lb': '\\operatorname{lb}', // not in amsmath
+  'log': '\\log_{#?}',
   'ln': '\\ln',
   'exp': '\\exp',
-  'lim': '\\lim_{#?}',
+  'lim': '\\lim_{#?\\to#?}',
 
   // Differentials
   // According to ISO31/XI (ISO 80000-2), differentials should be upright
@@ -148,10 +164,10 @@ export const INLINE_SHORTCUTS: InlineShortcutDefinitions = {
 
   // Sets
   'NN': '\\mathbb{N}', // Natural numbers
-  'ZZ': '\\Z', // Integers
-  'QQ': '\\Q', // Rational numbers
-  'RR': '\\R', // Real numbers
-  'CC': '\\C', // Complex numbers
+  'ZZ': '\\mathbb{Z}', // Integers
+  'QQ': '\\mathbb{Q}', // Rational numbers
+  'RR': '\\mathbb{R}', // Real numbers
+  'CC': '\\mathbb{C}', // Complex numbers
 
   // Operators
   'xx': '\\times',
@@ -284,7 +300,7 @@ export const INLINE_SHORTCUTS: InlineShortcutDefinitions = {
 
   'lcm': '\\operatorname{lcm}',
 
-  'gcd': '\\operatorname{gcd}',
+  'gcd': '\\gcd',
 
   'randomReal': '\\operatorname{randomReal}',
   'randomInteger': '\\operatorname{randomInteger}',
@@ -309,6 +325,18 @@ export const INLINE_SHORTCUTS: InlineShortcutDefinitions = {
     after: 'nothing+digit+operator',
     value: '\\operatorname{kg}', // Kilogram
   },
+  'ft': {
+    after: 'nothing+digit+operator',
+    value: '\\operatorname{ft}', // feet
+  },
+  'inch': {
+    after: 'nothing+digit+operator',
+    value: '\\operatorname{inch}', // inch
+  },
+  'mi': {
+    after: 'nothing+digit+operator',
+    value: '\\operatorname{mi}', // mile
+  },
 
   // '||':                   '\\lor',
   '...': '\\ldots', // In general, use \ldots
@@ -325,7 +353,7 @@ export const INLINE_SHORTCUTS: InlineShortcutDefinitions = {
   '=>': '\\Rightarrow',
   '==>': '\\Longrightarrow',
   // '<=': '\\Leftarrow',     // CONFLICTS WITH LESS THAN OR EQUAL
-  '<=>': '\\Leftrightarrow',
+  '<=>': '\\iff',
   '<->': '\\leftrightarrow',
 
   '(.)': '\\odot',
@@ -418,6 +446,18 @@ export const INLINE_SHORTCUTS: InlineShortcutDefinitions = {
   '>->': '\\rightarrowtail',
   '->>': '\\twoheadrightarrow', // \char"21A0
   '>->>': '\\twoheadrightarrowtail', // \char"2916
+
+  'times': '\\times',
+  // "?=":"\\questeq"
+  'of': '\\circ',
+  'infinity': '\\infty',
+  'defint': '\\int_{#?}^{#?}',
+
+  'approaches': '\\to',
+  'ceil': '\\left\\lceil#?\\right\\rceil',
+  'floor': '\\left\\lfloor#?\\right\\rfloor',
+  'union': '\\cup',
+  'asterisk': '\\ast',
 
   //
   // Desmos Graphing Calculator

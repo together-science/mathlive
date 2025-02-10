@@ -6,6 +6,8 @@
  *
  */
 
+import '../core/math-environment';
+
 import { Atom } from '../core/atom-class';
 
 import '../latex-commands/definitions';
@@ -19,7 +21,7 @@ import { Box, coalesce, makeStruts } from '../core/box';
 import { Context } from '../core/context';
 import { parseLatex } from '../core/parser';
 import { atomToSpeakableText } from '../formats/atom-to-speakable-text';
-import { Expression } from './mathfield-element';
+import { Expression } from './core-types';
 import { validateLatex as validateLatexInternal } from '../core/parser';
 
 import { atomToAsciiMath } from '../formats/atom-to-ascii-math';
@@ -61,7 +63,7 @@ import {
  * @param text A string of valid LaTeX. It does not have to start
  * with a mode token such as `$$` or `\(`.
  *
- * @param options.mathstyle If `"displaystyle"` the "display" mode of TeX
+ * @param options.defaultMode If `"displaystyle"` the "display" mode of TeX
  * is used to typeset the formula, which is most appropriate for formulas that are
  * displayed in a standalone block.
  *
@@ -232,7 +234,10 @@ export function convertLatexToAsciiMath(
   parseMode: ParseMode = 'math'
 ): string {
   return atomToAsciiMath(
-    new Atom({ type: 'root', body: parseLatex(latex, { parseMode }) })
+    new Atom({
+      type: 'root',
+      body: parseLatex(latex, { parseMode }),
+    })
   );
 }
 

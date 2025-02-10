@@ -17,8 +17,8 @@ describe('ASCII MATH', function () {
   equalASCIIMath('x', 'x');
   equalASCIIMath('-x', '-x');
 
-  equalASCIIMath('npq', 'npq');
-  equalASCIIMath('2npq', '2npq');
+  equalASCIIMath('npq', 'n p q');
+  equalASCIIMath('2npq', '2n p q');
 
   expect(convertLatexToAsciiMath('(x)')).toBe('(x)');
   expect(convertAsciiMathToLatex('(x)')).toBe('\\left(x\\right)');
@@ -33,7 +33,7 @@ describe('ASCII MATH', function () {
   equalASCIIMath('x^{-234.56}', 'x^(-234.56)');
   equalASCIIMath('x^{-234.56}+1', 'x^(-234.56)+1');
   equalASCIIMath('x^{n}+1', 'x^n+1');
-  equalASCIIMath('x^{npq}+1', 'x^(npq)+1');
+  equalASCIIMath('x^{npq}+1', 'x^(n p q)+1');
   equalASCIIMath('x^{n+2}', 'x^(n+2)');
 
   equalASCIIMath('x_{2}', 'x_2');
@@ -41,7 +41,7 @@ describe('ASCII MATH', function () {
   equalASCIIMath('x_{-234.56}', 'x_(-234.56)');
   equalASCIIMath('x_{-234.56}+1', 'x_(-234.56)+1');
   equalASCIIMath('x_{n}+1', 'x_n+1');
-  equalASCIIMath('x_{npq}+1', 'x_(npq)+1');
+  equalASCIIMath('x_{npq}+1', 'x_(n p q)+1');
   equalASCIIMath('x_{n+2}', 'x_(n+2)');
 
   equalASCIIMath('x_{n+2}^{m+3}', 'x_(n+2)^(m+3)');
@@ -56,7 +56,7 @@ describe('ASCII MATH', function () {
   equalASCIIMath('\\Gamma +1', 'Gamma+1');
   equalASCIIMath('\\frac{\\pi }{2\\pi }', '(pi)/(2pi)');
 
-  equalASCIIMath('x\\in \\R ', 'x in RR');
+  equalASCIIMath('x\\in \\mathbb{R} ', 'x in RR');
 
   // Avoid collisions with digits
   expect(convertLatexToAsciiMath('1^2 3^4')).toBe('1^2 3^4');
@@ -81,4 +81,8 @@ describe('ASCII MATH', function () {
   equalASCIIMath('\\left\\lbrack1,1\\right\\rbrack', '[1,1]');
   equalASCIIMath('\\left\\lbrace1,1\\right\\rbrace', '{1,1}');
   equalASCIIMath('\\left(1,1\\right)', '(1,1)');
+
+  expect(convertAsciiMathToLatex('1/2')).toBe('\\frac{1}{2}');
+  expect(convertAsciiMathToLatex('(1/2)')).toBe('\\left(\\frac{1}{2}\\right)');
+  expect(convertAsciiMathToLatex('1/2sin x')).toBe('\\frac{1}{2}\\sin x');
 });

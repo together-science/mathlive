@@ -1,4 +1,4 @@
-import { OutputFormat } from '../public/mathfield';
+import { OutputFormat } from '../public/core-types';
 import {
   InlineShortcutDefinitions,
   getInlineShortcut,
@@ -130,8 +130,9 @@ function parseMathExpression(
     return `\\text{${m[1]}}${parseMathExpression(m[2], options)}`;
   }
 
-  m = s.match(/^([^a-zA-Z\(\{\[\_\^\\\s"]+)(.*)/);
-  // A string of symbols...
+  m = s.match(/^([^a-zA-Z0-9\(\{\[\_\^\\\s"]+)(.*)/);
+  // Starts with a string of symbols, e.g. "=123", ">=b"
+  // Exclude "123x" or "abc="
   // Could be a binary or relational operator, etc...
   if (m) {
     return `${paddedShortcut(m[1], inlineShortcuts)}${parseMathExpression(
@@ -216,8 +217,8 @@ function parseMathArgument(
   let match = '';
   s = s.trim();
   let rest = s;
-  let lFence = s.charAt(0);
-  let rFence = { '(': ')', '{': '}', '[': ']' }[lFence];
+  const lFence = s.charAt(0);
+  const rFence = { '(': ')', '{': '}', '[': ']' }[lFence];
   if (rFence) {
     // It's a fence
     let level = 1;

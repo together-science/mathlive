@@ -1,38 +1,20 @@
 import { Atom } from '../core/atom';
 import type { _Model } from './model-private';
-import { Range } from '../public/mathfield';
 import { isArray } from '../common/types';
 import { DEFAULT_FONT_SIZE } from '../core/font-metrics';
-import type { Style, VariantStyle } from '../public/core-types';
+import type { Style, VariantStyle, Range } from '../public/core-types';
 import { PrivateStyle } from '../core/types';
 
 export function applyStyleToUnstyledAtoms(
-  atom: Atom | Readonly<Atom[]> | undefined,
+  atom: Atom | readonly Atom[] | undefined,
   style?: Style
 ): void {
   if (!atom || !style) return;
   if (isArray<Atom>(atom)) {
     // Apply styling options to each atom
     atom.forEach((x) => applyStyleToUnstyledAtoms(x, style));
-  } else if (typeof atom === 'object') {
-    if (
-      !atom.style.color &&
-      !atom.style.backgroundColor &&
-      !atom.style.fontFamily &&
-      !atom.style.fontShape &&
-      !atom.style.fontSeries &&
-      !atom.style.fontSize &&
-      !atom.style.variant &&
-      !atom.style.variantStyle
-    ) {
-      atom.applyStyle(style);
-      applyStyleToUnstyledAtoms(atom.body, style);
-      applyStyleToUnstyledAtoms(atom.above, style);
-      applyStyleToUnstyledAtoms(atom.below, style);
-      applyStyleToUnstyledAtoms(atom.subscript, style);
-      applyStyleToUnstyledAtoms(atom.superscript, style);
-    }
-  }
+  } else if (typeof atom === 'object')
+    atom.applyStyle(style, { unstyledOnly: true });
 }
 
 /**

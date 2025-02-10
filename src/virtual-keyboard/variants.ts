@@ -155,9 +155,8 @@ export function showVariantsPanel(
     if (
       typeof shiftedDefinition === 'object' &&
       'variants' in shiftedDefinition
-    ) {
+    )
       variantDef = shiftedDefinition.variants ?? '';
-    }
   } else variantDef = keyboard.getKeycap(keycap?.id)?.variants ?? '';
 
   if (
@@ -238,8 +237,6 @@ export function showVariantsPanel(
     );
     const top = position.top - variantPanel.clientHeight + 5;
 
-    console.log('left: ', left);
-
     variantPanel.style.left = `${left}px`;
     variantPanel.style.top = `${top}px`;
     variantPanel.classList.add('is-visible');
@@ -276,6 +273,13 @@ export function showVariantsPanel(
         'pointerleave',
         (ev) => {
           const target = parentKeycap(ev.target);
+          if (
+            ev.target &&
+            'tagName' in ev.target &&
+            typeof ev.target.tagName === 'string' &&
+            ev.target.tagName.toUpperCase() === 'ASIDE'
+          )
+            return;
           if (!target?.id || !variants[target.id]) return;
 
           target.classList.remove('is-active');
@@ -283,23 +287,37 @@ export function showVariantsPanel(
         { capture: true, signal }
       );
 
-      window.addEventListener(
-        'pointercancel',
-        () => {
-          hideVariantsPanel();
-          onClose?.();
-        },
-        { signal }
-      );
+      if (keyboard.getKeycap(keycap?.id)?.stickyVariantPanel) {
+        window.addEventListener(
+          'pointerdown',
+          (ev) => {
+            if (!(ev.target instanceof Node)) return;
+            const isInside = variantPanel.contains(ev.target);
+            if (ev.target === variantPanel || isInside) return;
+            hideVariantsPanel();
+            onClose?.();
+          },
+          { signal }
+        );
+      } else {
+        window.addEventListener(
+          'pointercancel',
+          () => {
+            hideVariantsPanel();
+            onClose?.();
+          },
+          { signal }
+        );
 
-      window.addEventListener(
-        'pointerup',
-        () => {
-          hideVariantsPanel();
-          onClose?.();
-        },
-        { signal }
-      );
+        window.addEventListener(
+          'pointerup',
+          () => {
+            hideVariantsPanel();
+            onClose?.();
+          },
+          { signal }
+        );
+      }
     });
   }
 

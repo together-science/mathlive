@@ -1,6 +1,6 @@
 import { isArray } from '../common/types';
 
-import type { Atom } from '../core/atom';
+import { Atom } from '../core/atom';
 import { GenfracAtom } from '../atoms/genfrac';
 import { LeftRightAtom } from '../atoms/leftright';
 import { ArrayAtom } from '../atoms/array';
@@ -61,10 +61,15 @@ const IDENTIFIERS = {
   '\\quad': ' ',
   '\\infty': 'oo',
   '\\R': 'RR',
+  '\\mathbb{R}': 'RR',
   '\\N': 'NN',
+  '\\mathbb{N}': 'NN',
   '\\Z': 'ZZ',
+  '\\mathbb{Z}': 'ZZ',
   '\\Q': 'QQ',
+  '\\mathbb{Q}': 'QQ',
   '\\C': 'CC',
+  '\\mathbb{C}': 'CC',
   '\\emptyset': 'O/',
   '\\varnothing': 'O/',
   '\\varDelta': 'Delta',
@@ -81,7 +86,7 @@ const IDENTIFIERS = {
 
 const OPERATORS = {
   '\\pm': '+-',
-  '\\colon': ':',
+  '\\colon': ' : ',
   '\\sum': ' sum ',
   '\\prod': ' prod ',
   '\\bigcap': ' nnn ',
@@ -107,14 +112,14 @@ const OPERATORS = {
   '\\implies': '=>',
   '\\iff': '<=>',
 
-  '\\cdot': '*',
-  '\\ast': '**',
-  '\\star': '***',
-  '\\times': 'xx',
-  '\\div': '-:',
-  '\\ltimes': '|><',
-  '\\rtimes': '><|',
-  '\\bowtie': '|><|',
+  '\\cdot': ' * ',
+  '\\ast': ' ** ',
+  '\\star': ' *** ',
+  '\\times': ' * ',
+  '\\div': ' -: ',
+  '\\ltimes': ' |>< ',
+  '\\rtimes': ' ><| ',
+  '\\bowtie': ' |><| ',
   '\\circ': '@',
 
   // '\\lfloor': '\u230a',
@@ -152,7 +157,12 @@ function joinAsciiMath(xs: string[]): string {
   let result = '';
   for (const x of xs) {
     const last = result[result.length - 1];
-    if (last !== undefined && /\d/.test(last) && /^\d/.test(x)) result += ' ';
+    if (
+      last !== undefined &&
+      ((/\d$/.test(last) && /^\d/.test(x)) ||
+        (/[a-zA-Z]$/.test(last) && /^[a-zA-Z]/.test(x)))
+    )
+      result += ' ';
 
     result += x;
   }
@@ -209,6 +219,11 @@ export function atomToAsciiMath(
 
   if (command === '\\placeholder')
     return `(${atomToAsciiMath(atom.body, options)})`;
+
+  const latex = Atom.serialize([atom], {
+    expandMacro: false,
+    defaultMode: 'math',
+  });
 
   switch (atom.type) {
     case 'accent':
@@ -314,8 +329,10 @@ export function atomToAsciiMath(
       break;
 
     case 'mord':
+      if (IDENTIFIERS[latex]) return IDENTIFIERS[latex!];
       result =
         IDENTIFIERS[command!] ??
+        command ??
         command ??
         (typeof atom.value === 'string' ? atom.value : '');
       if (result.startsWith('\\')) result += ' ';
@@ -337,7 +354,11 @@ export function atomToAsciiMath(
     case 'mbin':
     case 'mrel':
     case 'minner':
-      result = IDENTIFIERS[command!] ?? OPERATORS[command!] ?? atom.value;
+      result =
+        IDENTIFIERS[latex] ??
+        IDENTIFIERS[command!] ??
+        OPERATORS[command!] ??
+        atom.value;
       break;
 
     case 'mopen':
@@ -366,32 +387,41 @@ export function atomToAsciiMath(
       break;
 
     case 'array':
-      const array = (atom as ArrayAtom).array;
       const environment = (atom as ArrayAtom).environmentName;
-      const rowDelim = {
-        'bmatrix': ['[', ']'],
-        'bmatrix*': ['[', ']'],
-      }[environment] ?? ['(', ')'];
-      const rows: string[] = [];
-      for (const row of array) {
-        const cells: string[] = [];
-        for (const cell of row) cells.push(atomToAsciiMath(cell, options));
-        rows.push(rowDelim[0] + cells.join(',') + rowDelim[1]);
-      }
+      if ((atom as ArrayAtom).isMultiline) {
+        const lines = (atom as ArrayAtom).rows!;
+        result = lines
+          .map((line) =>
+            line.map((cell) => atomToAsciiMath(cell, options)).join('')
+          )
+          .join('\n');
+      } else {
+        const rowDelim = {
+          'bmatrix': ['[', ']'],
+          'bmatrix*': ['[', ']'],
+        }[environment] ?? ['(', ')'];
+        const rows: string[] = [];
+        const array = (atom as ArrayAtom).rows;
+        for (const row of array) {
+          const cells: string[] = [];
+          for (const cell of row) cells.push(atomToAsciiMath(cell, options));
+          rows.push(rowDelim[0] + cells.join(',') + rowDelim[1]);
+        }
 
-      const delim = {
-        'bmatrix': ['[', ']'],
-        'bmatrix*': ['[', ']'],
-        'cases': ['{', ':}'],
-      }[environment] ?? ['(', ')'];
-      result = delim[0] + rows.join(',') + delim[1];
+        const delim = {
+          'bmatrix': ['[', ']'],
+          'bmatrix*': ['[', ']'],
+          'cases': ['{', ':}'],
+        }[environment] ?? ['(', ')'];
+        result = delim[0] + rows.join(',') + delim[1];
+      }
       break;
 
     case 'box':
       break;
 
     case 'spacing':
-      result = IDENTIFIERS[command] ?? ' ';
+      result = IDENTIFIERS[latex] ?? IDENTIFIERS[command] ?? ' ';
       break;
 
     case 'enclose':
@@ -408,6 +438,7 @@ export function atomToAsciiMath(
 
     case 'macro':
       result =
+        IDENTIFIERS[latex] ??
         IDENTIFIERS[command] ??
         OPERATORS[command] ??
         atomToAsciiMath(atom.body, options);
