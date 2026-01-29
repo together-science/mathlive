@@ -10,7 +10,7 @@
     "target": "es2020",
     "module": "esnext",
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
 
     "strictNullChecks": true,
