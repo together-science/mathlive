@@ -44,6 +44,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
   private _rebuilding: boolean;
   private readonly observer: ResizeObserver;
   private originalContainerBottomPadding: string | null = null;
+  private body = window.top?.document.body ?? document.body;
 
   private connectedMathfieldWindow: Window | undefined;
   private readonly listeners: {
@@ -52,7 +53,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
 
   private keycapRegistry: Record<string, Partial<VirtualKeyboardKeycap>> = {};
 
-  latentLayer: string;
+  latentLayer: string = '';
 
   get currentLayer(): string {
     return this._element?.querySelector('.MLK__layer.is-visible')?.id ?? '';
@@ -210,7 +211,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
 
   private _container: HTMLElement | undefined | null;
   get container(): HTMLElement | null {
-    if (this._container === undefined) return window.document.body;
+    if (this._container === undefined) return this.body;
     return this._container;
   }
   set container(value: HTMLElement | null) {
@@ -233,9 +234,9 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
     return this._singleton;
   }
 
-  private _style: Style;
+  private _style?: Style;
   get style(): Style {
-    return this._style;
+    return this._style!;
   }
 
   constructor() {
@@ -349,7 +350,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
   adjustBoundingRect(): void {
     // Adjust the keyboard height
     const h = this.boundingRect.height;
-    if (this.container === document.body) {
+    if (this.container === this.body) {
       this._element?.style.setProperty(
         '--_keyboard-height',
         `calc(${h}px + var(--_padding-top) + var(--_padding-bottom) + env(safe-area-inset-bottom, 0))`
@@ -450,7 +451,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
       )[0] as HTMLElement;
       if (plate) this.observer.observe(plate);
 
-      if (container === window.document.body) {
+      if (container === this.body) {
         const padding = container.style.paddingBottom;
         this.originalContainerBottomPadding = padding;
         const keyboardHeight = plate.offsetHeight - 1;
