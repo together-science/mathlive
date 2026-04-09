@@ -84,9 +84,9 @@ export class VirtualKeyboardProxy
     this.sendMessage('update-setting', { editToolbar: value });
   }
 
-  // set container(value: HTMLElement | null) {
-  //   throw new Error('Container inside an iframe cannot be changed');
-  // }
+  set container(value: HTMLElement | null) {
+    throw new Error('Container inside an iframe cannot be changed');
+  }
 
   show(options?: { animate: boolean }): void {
     const success = this.dispatchEvent(
