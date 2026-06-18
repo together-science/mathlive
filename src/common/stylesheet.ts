@@ -94,13 +94,14 @@ let gInjectedStylesheets: Partial<Record<StylesheetId, number>>;
 
 export function injectStylesheet(id: StylesheetId): void {
   try {
-    const w = window.top ?? window;
     if (!('adoptedStyleSheets' in document)) {
-      if (w.document.getElementById(`mathlive-style-${id}`)) return;
-      const styleNode = w.document.createElement('style');
+      if (window.document.getElementById(`mathlive-style-${id}`)) return;
+      const styleNode = window.document.createElement('style');
       styleNode.id = `mathlive-style-${id}`;
-      styleNode.append(w.document.createTextNode(getStylesheetContent(id)));
-      w.document.head.appendChild(styleNode);
+      styleNode.append(
+        window.document.createTextNode(getStylesheetContent(id))
+      );
+      window.document.head.appendChild(styleNode);
       return;
     }
 
@@ -108,8 +109,8 @@ export function injectStylesheet(id: StylesheetId): void {
     if ((gInjectedStylesheets[id] ?? 0) !== 0) gInjectedStylesheets[id]! += 1;
     else {
       const stylesheet = getStylesheet(id);
-      w.document.adoptedStyleSheets = [
-        ...w.document.adoptedStyleSheets,
+      document.adoptedStyleSheets = [
+        ...document.adoptedStyleSheets,
         stylesheet,
       ];
       gInjectedStylesheets[id] = 1;

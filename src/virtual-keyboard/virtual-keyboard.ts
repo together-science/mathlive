@@ -38,15 +38,13 @@ import { hideVariantsPanel, showVariantsPanel } from './variants';
 import { Style } from '../public/core-types';
 import { deepActiveElement } from '../ui/events/utils';
 
-let wtop: Window;
-
 export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
   private _visible: boolean;
   private _element?: HTMLDivElement;
   private _rebuilding: boolean;
   private readonly observer: ResizeObserver;
   private originalContainerBottomPadding: string | null = null;
-  private body?: HTMLElement;
+  private body = window.top?.document.body ?? document.body;
 
   private connectedMathfieldWindow: Window | undefined;
   private readonly listeners: {
@@ -213,7 +211,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
 
   private _container: HTMLElement | undefined | null;
   get container(): HTMLElement | null {
-    if (this._container === undefined) return this.body!;
+    if (this._container === undefined) return this.body;
     return this._container;
   }
   set container(value: HTMLElement | null) {
@@ -244,8 +242,6 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
   constructor() {
     this.targetOrigin = window.origin;
     this.originValidator = 'none';
-    wtop = window.top ?? window;
-    this.body = wtop.document.body;
 
     this._alphabeticLayout = 'auto';
     this._layouts = Object.freeze(['default']);
@@ -273,7 +269,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
 
     // Listen for when a mathfield gets focused, and show
     // the virtual keyboard if needed
-    window.document.addEventListener('focusin', (event: FocusEvent) => {
+    document.addEventListener('focusin', (event: FocusEvent) => {
       const target = event.target as HTMLElement;
       if (!target?.isConnected) return;
       setTimeout(() => {
@@ -288,7 +284,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
       }, 300);
     });
 
-    window.document.addEventListener('focusout', (evt) => {
+    document.addEventListener('focusout', (evt) => {
       if (!(evt.target instanceof MathfieldElement)) return;
       if (evt.target.mathVirtualKeyboardPolicy !== 'manual') {
         // If after a short delay the active element is no longer
@@ -439,7 +435,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
     const container = this.container;
     if (!container) return;
 
-    if (!(wtop as any).mathVirtualKeyboard) return;
+    if (!window.mathVirtualKeyboard) return;
 
     // Confirm
     if (!this.stateWillChange(true)) return;
@@ -463,10 +459,10 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
           ? `calc(${padding} + ${keyboardHeight}px)`
           : `${keyboardHeight}px`;
       }
-      wtop.addEventListener('mouseup', this);
-      wtop.addEventListener('blur', this);
-      wtop.addEventListener('keydown', this, { capture: true });
-      wtop.addEventListener('keyup', this, { capture: true });
+      window.addEventListener('mouseup', this);
+      window.addEventListener('blur', this);
+      window.addEventListener('keydown', this, { capture: true });
+      window.addEventListener('keyup', this, { capture: true });
 
       this._element?.classList.toggle(
         'is-caps-lock',
@@ -515,11 +511,11 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
       if (plate) this.observer.unobserve(plate);
 
       // Remove the element from the DOM
-      wtop.removeEventListener('mouseup', this);
-      wtop.removeEventListener('blur', this);
-      wtop.removeEventListener('keydown', this, { capture: true });
-      wtop.removeEventListener('keyup', this, { capture: true });
-      wtop.removeEventListener('contextmenu', this, { capture: true });
+      window.removeEventListener('mouseup', this);
+      window.removeEventListener('blur', this);
+      window.removeEventListener('keydown', this, { capture: true });
+      window.removeEventListener('keyup', this, { capture: true });
+      window.removeEventListener('contextmenu', this, { capture: true });
       hideVariantsPanel();
 
       releaseStylesheets();
@@ -544,7 +540,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
     // this.element.addEventListener('pointerdown', () => this.focus());
 
     // To prevent the long press contextmenu from showing up in Chrome...
-    wtop.addEventListener('contextmenu', this, { capture: true });
+    window.addEventListener('contextmenu', this, { capture: true });
 
     this.element.addEventListener(
       'contextmenu',
@@ -631,10 +627,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
 
       // Avoid an infinite messages loop if within one window
       const commandTarget = getCommandTarget(command!);
-      if (
-        typeof window.top !== 'undefined' &&
-        commandTarget !== 'virtual-keyboard'
-      )
+      if (window.top !== undefined && commandTarget !== 'virtual-keyboard')
         return;
 
       this.executeCommand(command!);
@@ -661,7 +654,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
     // browsing context. If that's the case, safely ignored messages that could
     // be dispatched from other mathfields, as we will only respond to
     // direct invocation via function dispatching on the VK instance.
-    // if (window !== window.top) return;
+    if (window !== window.top) return;
 
     if (action === 'show') {
       if (typeof msg.animate !== 'undefined')
@@ -867,9 +860,9 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
   }
 
   dispose(): void {
-    wtop.removeEventListener('mouseup', this);
-    wtop.removeEventListener('blur', this);
-    wtop.removeEventListener('message', this);
+    window.removeEventListener('mouseup', this);
+    window.removeEventListener('blur', this);
+    window.removeEventListener('message', this);
   }
 }
 
