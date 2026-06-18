@@ -38,7 +38,7 @@ import { hideVariantsPanel, showVariantsPanel } from './variants';
 import { Style } from '../public/core-types';
 import { deepActiveElement } from '../ui/events/utils';
 
-const wtop = window.top ?? window;
+let wtop: Window;
 
 export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
   private _visible: boolean;
@@ -46,7 +46,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
   private _rebuilding: boolean;
   private readonly observer: ResizeObserver;
   private originalContainerBottomPadding: string | null = null;
-  private body = wtop.document.body;
+  private body?: HTMLElement;
 
   private connectedMathfieldWindow: Window | undefined;
   private readonly listeners: {
@@ -213,7 +213,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
 
   private _container: HTMLElement | undefined | null;
   get container(): HTMLElement | null {
-    if (this._container === undefined) return this.body;
+    if (this._container === undefined) return this.body!;
     return this._container;
   }
   set container(value: HTMLElement | null) {
@@ -244,6 +244,8 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
   constructor() {
     this.targetOrigin = window.origin;
     this.originValidator = 'none';
+    wtop = window.top ?? window;
+    this.body = wtop.document.body;
 
     this._alphabeticLayout = 'auto';
     this._layouts = Object.freeze(['default']);
