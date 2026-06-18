@@ -146,11 +146,12 @@ export function showVariantsPanel(
   element: HTMLElement,
   onClose?: () => void
 ): void {
+  const wtop = window.top ?? window;
   const keyboard = VirtualKeyboard.singleton;
   if (!keyboard) return;
   const keycap = parentKeycap(element);
   let variantDef: string | (string | Partial<VirtualKeyboardKeycap>)[] = '';
-  if (window.mathVirtualKeyboard.isShifted) {
+  if (wtop.mathVirtualKeyboard.isShifted) {
     const shiftedDefinition = keyboard.getKeycap(keycap?.id)?.shift;
     if (
       typeof shiftedDefinition === 'object' &&
@@ -231,7 +232,7 @@ export function showVariantsPanel(
     const left = Math.max(
       0,
       Math.min(
-        window.innerWidth - variantPanel.offsetWidth,
+        wtop.innerWidth - variantPanel.offsetWidth,
         (position.left + position.right - variantPanel.offsetWidth) / 2
       )
     );
@@ -288,7 +289,7 @@ export function showVariantsPanel(
       );
 
       if (keyboard.getKeycap(keycap?.id)?.stickyVariantPanel) {
-        window.addEventListener(
+        wtop.addEventListener(
           'pointerdown',
           (ev) => {
             if (!(ev.target instanceof Node)) return;
@@ -300,7 +301,7 @@ export function showVariantsPanel(
           { signal }
         );
       } else {
-        window.addEventListener(
+        wtop.addEventListener(
           'pointercancel',
           () => {
             hideVariantsPanel();
@@ -309,7 +310,7 @@ export function showVariantsPanel(
           { signal }
         );
 
-        window.addEventListener(
+        wtop.addEventListener(
           'pointerup',
           () => {
             hideVariantsPanel();
