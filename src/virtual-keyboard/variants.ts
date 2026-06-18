@@ -151,7 +151,7 @@ export function showVariantsPanel(
   if (!keyboard) return;
   const keycap = parentKeycap(element);
   let variantDef: string | (string | Partial<VirtualKeyboardKeycap>)[] = '';
-  if (wtop.mathVirtualKeyboard.isShifted) {
+  if (window.mathVirtualKeyboard.isShifted) {
     const shiftedDefinition = keyboard.getKeycap(keycap?.id)?.shift;
     if (
       typeof shiftedDefinition === 'object' &&
