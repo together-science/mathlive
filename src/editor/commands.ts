@@ -116,7 +116,9 @@ export function perform(
     dirty = true;
     handled = true;
   } else if (commandTarget === 'virtual-keyboard') {
-    dirty = window.mathVirtualKeyboard?.executeCommand(command) ?? false;
+    dirty =
+      (window.top ?? window).mathVirtualKeyboard?.executeCommand(command) ??
+      false;
     handled = true;
   } else if (COMMANDS[selector]) {
     if (!mathfield.isSelectionEditable && info?.changeContent) {
