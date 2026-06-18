@@ -241,8 +241,6 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
     return this._style!;
   }
 
-
-
   constructor() {
     this.targetOrigin = window.origin;
     this.originValidator = 'none';

@@ -231,7 +231,7 @@ export function showVariantsPanel(
     const left = Math.max(
       0,
       Math.min(
-        w.innerWidth - variantPanel.offsetWidth,
+        wn.innerWidth - variantPanel.offsetWidth,
         (position.left + position.right - variantPanel.offsetWidth) / 2
       )
     );
