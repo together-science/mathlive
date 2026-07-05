@@ -118,6 +118,17 @@
   }
 }
 
+// The mathfield has its own focus indication (see .ML__focused rules below).
+// Because the shadow root uses `delegatesFocus: true`, the host is also
+// treated as focused whenever a descendant in the shadow tree receives
+// focus -- notably the context menu popup, which is mounted inside
+// .ML__container and calls `.focus()` on itself when it opens/closes.
+// Suppress the browser's default focus ring on the host so it doesn't
+// flash a blue outline around the whole control in that case.
+:host {
+  outline: none;
+}
+
 // @media (prefers-color-scheme: dark) {
 //   .ML__container {
 //     --_selection-background-color: hsl(var(--_hue), 25%, 45%);

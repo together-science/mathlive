@@ -39,9 +39,9 @@ const BUILD_OPTIONS = {
   },
   plugins: [less()],
   loader: { '.ts': 'ts' },
-  sourcemap: true, // !PRODUCTION,
+  sourcemap: !PRODUCTION,
   sourceRoot: '../src',
-  sourcesContent: true, //false,
+  sourcesContent: false,
   target: ['es2017'],
   external: ['@cortex-js/compute-engine'],
 };
@@ -82,8 +82,7 @@ build({
   format: 'iife',
   ...UMD_OPTIONS,
   globalName: 'MathLive',
-  // minify: true,
-  minify: false,
+  minify: true,
 });
 
 build({
