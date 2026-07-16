@@ -1026,7 +1026,7 @@ export class Atom<T extends (Argument | null)[] = (Argument | null)[]> {
 
     if (!above && !below) return options.base.wrap(ctx);
 
-    return makeLimitsStack(ctx, { ...options, above, below });
+    return makeLimitsStack(ctx, { ...options, below, above });
   }
 
   /**
