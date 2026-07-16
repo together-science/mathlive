@@ -27,10 +27,10 @@ import type { Argument } from 'latex-commands/types';
  */
 export const NAMED_BRANCHES: BranchName[] = [
   'body',
-  'above',
   'below',
-  'superscript',
+  'above',
   'subscript',
+  'superscript',
 ];
 
 /**
