@@ -943,8 +943,8 @@ export class Atom<T extends (Argument | null)[] = (Argument | null)[]> {
         this.type === 'extensible-symbol' && base.italic ? -base.italic : 0;
       supsub = new VBox({
         individualShift: [
-          { box: supBox, shift: -supShift },
           { box: subBox, shift: subShift, marginLeft: slant },
+          { box: supBox, shift: -supShift },
         ],
       }).wrap(parentContext);
     } else if (subBox && !supBox) {
