@@ -14,6 +14,7 @@ if (isBrowser() && !('mathVirtualKeyboard' in window)) {
   const kbd = VirtualKeyboard.singleton;
   Object.defineProperty(window, 'mathVirtualKeyboard', {
     get: () => kbd,
+    configurable: true,
   });
   // } else {
   //   // When in an iFrame, the mathVirtualKeyboard is a proxy
