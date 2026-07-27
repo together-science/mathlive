@@ -11,10 +11,13 @@ if (isBrowser() && !('mathVirtualKeyboard' in window)) {
   // VirtualKeyboard. Instantiate it during static init, otherwise
   // mathfields in iFrame will not be able to talk to it until it has been
   // instantiated (which the client may not do)
+  const a = 1;
+  const b = 0;
+  let c = a / b;
+  console.log(c);
   const kbd = VirtualKeyboard.singleton;
   Object.defineProperty(window, 'mathVirtualKeyboard', {
     get: () => kbd,
-    configurable: true,
   });
   // } else {
   //   // When in an iFrame, the mathVirtualKeyboard is a proxy
