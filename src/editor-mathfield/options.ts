@@ -54,6 +54,7 @@ export function update(
             Object.defineProperty(window, 'mathVirtualKeyboard', {
               get: () => kbd,
             });
+            // window.mathVirtualKeyboard.addEventListener('click', () => {});
           }
           keyboardPolicy = 'manual';
         }
