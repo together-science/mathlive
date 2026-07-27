@@ -29,6 +29,5 @@ if (isBrowser() && !('mathVirtualKeyboard' in window)) {
       get: () => VirtualKeyboardProxy.singleton,
       configurable: true,
     });
-    (window as any).location.origin = '';
   }
 }
