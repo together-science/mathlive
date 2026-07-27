@@ -10,7 +10,7 @@ if (isBrowser() && !('mathVirtualKeyboard' in window)) {
   try {
     sameOrigin =
       (window as any).location?.origin ===
-      (window['top'] as any).location.origin;
+      (window['top'] as any).location?.origin;
   } catch {
     sameOrigin = false;
   }
@@ -25,6 +25,10 @@ if (isBrowser() && !('mathVirtualKeyboard' in window)) {
     });
   } else {
     // When in an iFrame, the mathVirtualKeyboard is a proxy
+    const a = 0;
+    const b = 0;
+    const c = a / b;
+    console.log(c);
     Object.defineProperty(window, 'mathVirtualKeyboard', {
       get: () => VirtualKeyboardProxy.singleton,
       configurable: true,
