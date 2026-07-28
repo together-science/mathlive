@@ -51,10 +51,16 @@ export function update(
         if (keyboardPolicy === 'sandboxed') {
           if (window !== window['top']) {
             const kbd = VirtualKeyboard.singleton;
-            Object.defineProperty(window, 'mathVirtualKeyboard', {
-              get: () => kbd,
-            });
-            // window.mathVirtualKeyboard.addEventListener('click', () => {});
+            // `kbd` is `null` if this browsing context can't access `window.top`
+            // (e.g. a cross-origin iframe). In that case, leave the existing
+            // `mathVirtualKeyboard` (a working proxy) in place rather than
+            // clobbering it with a getter that always returns `null`.
+            if (kbd) {
+              Object.defineProperty(window, 'mathVirtualKeyboard', {
+                get: () => kbd,
+                configurable: true,
+              });
+            }
           }
           keyboardPolicy = 'manual';
         }
