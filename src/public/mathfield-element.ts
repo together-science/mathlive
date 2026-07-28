@@ -2043,7 +2043,7 @@ import "https://unpkg.com/@cortex-js/compute-engine?module";
 
     // Notify listeners that we're mounted and ready
     window.queueMicrotask(() => {
-      if (!this.isConnected) return;
+      // if (!this.isConnected) return;
       this.dispatchEvent(
         new Event('mount', {
           cancelable: false,
