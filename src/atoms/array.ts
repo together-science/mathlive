@@ -789,7 +789,7 @@ export class ArrayAtom extends Atom {
 
   addColumnBefore(col: number): void {
     console.assert(this.type === 'array' && Array.isArray(this._rows));
-    for (const row of this._rows) row.splice(col, 0, makeEmptyCell(this));
+    for (const row of this._rows) row.splice(col, 0, makeEmptyCell(this, !this.isMultiline));
 
     adjustBranches(this);
     this.isDirty = true;
@@ -797,7 +797,7 @@ export class ArrayAtom extends Atom {
 
   addColumnAfter(col: number): void {
     console.assert(this.type === 'array' && Array.isArray(this._rows));
-    for (const row of this._rows) row.splice(col + 1, 0, makeEmptyCell(this));
+    for (const row of this._rows) row.splice(col + 1, 0, makeEmptyCell(this, !this.isMultiline));
 
     adjustBranches(this);
     this.isDirty = true;
