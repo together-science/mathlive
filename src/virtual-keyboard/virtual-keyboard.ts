@@ -38,13 +38,26 @@ import { hideVariantsPanel, showVariantsPanel } from './variants';
 import { Style } from '../public/core-types';
 import { deepActiveElement } from '../ui/events/utils';
 
+function getTopDocumentBody(): HTMLElement {
+  // `window.top` is a foreign (cross-origin) window when this browsing
+  // context can't reach it, in which case accessing `.document` throws.
+  // Fall back to the current document's body: this is the "current
+  // browsing context (iframe)" the `sandboxed` keyboard policy is
+  // documented to render into when it can't reach the top-level page.
+  try {
+    return window.top?.document.body ?? document.body;
+  } catch {
+    return document.body;
+  }
+}
+
 export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
   private _visible: boolean;
   private _element?: HTMLDivElement;
   private _rebuilding: boolean;
   private readonly observer: ResizeObserver;
   private originalContainerBottomPadding: string | null = null;
-  private body = window.top?.document.body ?? document.body;
+  private body = getTopDocumentBody();
 
   private connectedMathfieldWindow: Window | undefined;
   private readonly listeners: {
