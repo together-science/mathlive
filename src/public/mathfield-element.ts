@@ -567,6 +567,9 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
       'disabled', // Global attribute
       'readonly', // A semi-global attribute (not all standard elements support it, but some do)
       'read-only', // Alternate spelling for `readonly`
+      'aria-label', // Forwarded to the keyboard sink
+      'aria-labelledby', // Forwarded to the keyboard sink
+      'title', // Forwarded to the keyboard sink
     ];
   }
 
@@ -1252,7 +1255,11 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
 
     if (isElementInternalsSupported()) {
       this._internals = this.attachInternals();
-      this._internals['role'] = 'math';
+      // Not `math`: that role has presentational children, but the
+      // mathfield contains a focusable, editable textbox (the keyboard sink)
+      // and buttons. `group` keeps the host's `aria-label` valid while
+      // exposing those controls.
+      this._internals['role'] = 'group';
       this._internals.ariaLabel = 'math input field';
       this._internals.ariaMultiLine = 'false';
     }
@@ -1956,7 +1963,7 @@ import "https://unpkg.com/@cortex-js/compute-engine?module";
     });
 
     if (!isElementInternalsSupported()) {
-      if (!this.hasAttribute('role')) this.setAttribute('role', 'math');
+      if (!this.hasAttribute('role')) this.setAttribute('role', 'group');
       if (!this.hasAttribute('aria-label'))
         this.setAttribute('aria-label', 'math input field');
       this.setAttribute('aria-multiline', 'false');
@@ -2127,6 +2134,11 @@ import "https://unpkg.com/@cortex-js/compute-engine?module";
     switch (name) {
       case 'contenteditable':
         requestUpdate(this._mathfield);
+        break;
+      case 'aria-label':
+      case 'aria-labelledby':
+      case 'title':
+        this._mathfield?.updateAccessibleName();
         break;
       case 'placeholder':
         if (newValue === false) newValue = '';
