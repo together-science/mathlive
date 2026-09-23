@@ -1082,7 +1082,7 @@ defineFunction(['overline', 'underline'], '{:auto}', {
         shift: 0,
         children: [
           { box: inner },
-          4 * ruleThickness,
+          5 * ruleThickness,
           { box: line },
           ruleThickness,
         ],
