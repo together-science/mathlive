@@ -1259,9 +1259,17 @@ export class MathfieldElement extends HTMLElement implements Mathfield {
       // mathfield contains a focusable, editable textbox (the keyboard sink)
       // and buttons. `group` keeps the host's `aria-label` valid while
       // exposing those controls.
+      //
+      // The host has no default `aria-label`: a default would take
+      // precedence over an associated `<label>` or a `title`, and the host
+      // would then have a different name from the keyboard sink. Without an
+      // author-supplied name the group is unnamed, and the keyboard sink
+      // has the default name (see `hostAccessibleName()` in
+      // `src/editor/a11y.ts`).
+      //
+      // The host has no `aria-multiline`: that attribute is not supported by
+      // the `group` role. It is set on the keyboard sink.
       this._internals['role'] = 'group';
-      this._internals.ariaLabel = 'math input field';
-      this._internals.ariaMultiLine = 'false';
     }
 
     this.attachShadow({ mode: 'open', delegatesFocus: true });
@@ -1963,10 +1971,11 @@ import "https://unpkg.com/@cortex-js/compute-engine?module";
     });
 
     if (!isElementInternalsSupported()) {
+      // No default `aria-label` and no `aria-multiline`, for the same
+      // reasons as in the constructor. A default `aria-label` attribute
+      // would also be read by `hostAccessibleName()` as the author's label,
+      // and an associated `<label>` would then be ignored.
       if (!this.hasAttribute('role')) this.setAttribute('role', 'group');
-      if (!this.hasAttribute('aria-label'))
-        this.setAttribute('aria-label', 'math input field');
-      this.setAttribute('aria-multiline', 'false');
     }
 
     // NVDA on Firefox seems to require this attribute
