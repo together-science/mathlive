@@ -19,6 +19,43 @@
   - **Accessibility enhancements**: Auto-generated ARIA labels with speakable
     text, MathML fallback for screen readers, keyboard navigation support when
     focusable (Space/Enter to speak formula), automatic `role="img"` attribute
+- Accessibility: Improved support for the high-contrast (forced colors) mode.
+
+### Breaking Changes
+
+- **#3081** **Accessibility** The `<math-field>` element now has the `group`
+  role instead of `math`. The `math` role has presentational children, but a
+  mathfield contains a focusable textbox and buttons, and axe reported
+  `nested-interactive`. Code that finds a mathfield by its role, for example
+  `getByRole('math')` in a test, must use `group`, or `textbox` for the
+  focusable element. The `<math-field>` element also no longer has a default
+  `aria-label` of "math input field": that default is now on the focusable
+  textbox, and the element takes its name from its `aria-label`,
+  `aria-labelledby`, `<label>` or `title`. (contributed by @rztaylor)
+
+### Resolved Issues
+
+- **#3081** **Accessibility** The focusable element of a mathfield (the
+  keyboard sink, `role="textbox"`) now has an accessible name. It is copied
+  from the `<math-field>` element's `aria-labelledby`, `aria-label`,
+  associated `<label>` or `title`, and defaults to "math input field".
+  Previously the textbox had no name, or had only the spoken form of its
+  content, and axe reported `aria-input-field-name`. (contributed by
+  @rztaylor)
+- **Accessibility** The `aria-readonly` state of a read-only mathfield is now
+  set on the focusable element of the mathfield (the keyboard sink,
+  `role="textbox"`) and no longer on the `<math-field>` element, whose `group`
+  role does not support it. The state is now set when the `readonly`
+  attribute or the `readOnly` property is used, and it is removed when the
+  mathfield becomes editable again. A read-only mathfield with editable prompts
+  is not reported as read-only.
+- **#2906** Fixed a runtime error
+  (`undefined is not an object (evaluating 'this.ariaLiveText.textContent=""')`)
+  that occurred when the mathfield element could not be fully initialized (e.g.
+  in Vue runtime-only builds) or after the mathfield was disposed.
+- Custom macros are now read when using speakable text to speech.
+- Fixed MathML serialization for multiline mathfields (such as
+  `\displaylines{\\ }`), which previously produced invalid MathML.
 
 ## 0.104.0 _2025-02-08_
 
