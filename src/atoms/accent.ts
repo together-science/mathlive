@@ -19,8 +19,11 @@ export class AccentAtom extends Atom {
     if (options.accentChar) this.accent = options.accentChar;
     else this.svgAccent = options?.svgAccent;
 
-    this.skipBoundary = true;
-    this.captureSelection = true;
+    // Fork: don't capture the selection or skip the boundary, so the caret
+    // can enter the body (e.g. a `\placeholder{}` inside `\overparen{#0}`),
+    // like it can for `\overrightarrow` (OverunderAtom).
+    this.skipBoundary = false;
+    this.captureSelection = false;
     // this.limits = 'accent'; // This will suppress the regular
     // supsub attachment and will delegate
     // it to the decomposeAccent
