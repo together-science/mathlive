@@ -30,9 +30,13 @@ if (isBrowser() && !('mathVirtualKeyboard' in window)) {
  */
 export function mountMathVirtualKeyboard() {
   const kbd = VirtualKeyboard.singleton;
-  if (window.mathVirtualKeyboard !== kbd) {
+  // `kbd` is `null` if this browsing context can't access `window.top`
+  // (e.g. a cross-origin iframe). Leave the existing `mathVirtualKeyboard`
+  // (a working proxy) in place rather than replacing it with a null getter.
+  if (kbd && window.mathVirtualKeyboard !== kbd) {
     Object.defineProperty(window, 'mathVirtualKeyboard', {
       get: () => kbd,
+      configurable: true,
     });
   }
   return kbd;

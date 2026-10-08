@@ -120,6 +120,7 @@ declare global {
     'read-aloud-status-change': Event;
     'selection-change': Event;
     'undo-state-change': CustomEvent;
+    'undo-redo-stack-empty': CustomEvent;
 
     // Virtual Keyboard events
     'before-virtual-keyboard-toggle': Event;
@@ -492,6 +493,7 @@ const DEPRECATED_OPTIONS = {
  * | `selection-change` | The selection (or caret position) in the mathfield has changed |
  * | `mode-change` | The mode (`math`, `text`) of the mathfield has changed |
  * | `undo-state-change` |  The state of the undo stack has changed. The `evt.detail.type` indicate if a snapshot was taken or an undo performed. |
+ * | `undo-redo-stack-empty` |  An undo or redo was requested but there was nothing to undo or redo. The `evt.detail.type` is `"undo"` or `"redo"`. |
  * | `read-aloud-status-change` | The status of a read aloud operation has changed |
  * | `before-virtual-keyboard-toggle` | The visibility of the virtual keyboard panel is about to change. The `evt.detail.visible` property indicate if the keyboard will be visible or not. Listen for this event on `window.mathVirtualKeyboard` |
  * | `virtual-keyboard-toggle` | The visibility of the virtual keyboard panel has changed. Listen for this event on `window.mathVirtualKeyboard` |

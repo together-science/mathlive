@@ -489,7 +489,7 @@ function moveUpward(model: _Model, options?: { extend: boolean }): boolean {
           })
         ) ?? true;
     }
-    model.announce(success ? 'line' : 'plonk');
+
     return success;
   };
 
