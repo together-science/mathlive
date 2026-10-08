@@ -161,6 +161,39 @@ test('math fields in iframe with virtual keyboard', async ({ page }) => {
   }
 });
 
+test('virtual keyboard of a same-origin iframe is styled in the top document', async ({
+  page,
+}) => {
+  await page.goto('/dist/playwright-test-page/iframe_test.html');
+
+  const frame = page.frame('mathlive-iframe');
+  expect(frame).toBeTruthy();
+  if (!frame) return;
+
+  await frame.locator('.ML__virtual-keyboard-toggle').nth(0).click();
+  await frame.locator('#mf-1').focus();
+  await page.locator('.ML__keyboard.is-visible').waitFor();
+
+  // The keyboard is displayed in the top document, so its stylesheets must be
+  // injected there (not only in the iframe): only one layer is displayed.
+  const layerDisplays = await page
+    .locator('.ML__keyboard .MLK__layer')
+    .evaluateAll((layers) =>
+      layers.map((layer) => getComputedStyle(layer).display)
+    );
+  expect(layerDisplays.filter((x) => x !== 'none')).toHaveLength(1);
+  expect(
+    await page
+      .locator('.ML__keyboard')
+      .evaluate((kbd) => getComputedStyle(kbd).position)
+  ).toBe('fixed');
+
+  // The stylesheets are removed from the top document when the keyboard hides
+  await frame.evaluate(() => window.mathVirtualKeyboard.hide());
+  await page.locator('.ML__keyboard').waitFor({ state: 'detached' });
+  expect(await page.locator('style[id^="mathlive-style-"]').count()).toBe(0);
+});
+
 test('sandboxed iframe math field with virtual keyboard', async ({ page }) => {
   await page.goto('/dist/playwright-test-page/iframe_test.html');
 

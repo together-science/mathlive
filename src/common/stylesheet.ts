@@ -92,8 +92,53 @@ export function getStylesheet(id: StylesheetId): CSSStyleSheet {
 
 let gInjectedStylesheets: Partial<Record<StylesheetId, number>>;
 
-export function injectStylesheet(id: StylesheetId): void {
+/**
+ * Reference counts of the stylesheets injected in a document other than the
+ * one this code is running in (e.g. the top-level document, when a virtual
+ * keyboard created in a same-origin iframe is displayed there).
+ *
+ * A `CSSStyleSheet` can only be adopted by the document it was constructed in,
+ * so a `<style>` element is used for those documents.
+ */
+const gForeignStylesheets = new WeakMap<
+  Document,
+  Partial<Record<StylesheetId, number>>
+>();
+
+function injectForeignStylesheet(id: StylesheetId, target: Document): void {
+  let counts = gForeignStylesheets.get(target);
+  if (!counts) {
+    counts = {};
+    gForeignStylesheets.set(target, counts);
+  }
+  counts[id] = (counts[id] ?? 0) + 1;
+  if (counts[id] > 1) return;
+
+  const nodeId = `mathlive-style-${id}`;
+  if (target.getElementById(nodeId)) return;
+  const styleNode = target.createElement('style');
+  styleNode.id = nodeId;
+  styleNode.append(target.createTextNode(getStylesheetContent(id)));
+  target.head.appendChild(styleNode);
+}
+
+function releaseForeignStylesheet(id: StylesheetId, target: Document): void {
+  const counts = gForeignStylesheets.get(target);
+  if (!counts?.[id]) return;
+  counts[id]! -= 1;
+  if (counts[id]! <= 0) target.getElementById(`mathlive-style-${id}`)?.remove();
+}
+
+export function injectStylesheet(
+  id: StylesheetId,
+  target: Document = document
+): void {
   try {
+    if (target !== document) {
+      injectForeignStylesheet(id, target);
+      return;
+    }
+
     if (!('adoptedStyleSheets' in document)) {
       if (window.document.getElementById(`mathlive-style-${id}`)) return;
       const styleNode = window.document.createElement('style');
@@ -120,7 +165,15 @@ export function injectStylesheet(id: StylesheetId): void {
   }
 }
 
-export function releaseStylesheet(id: StylesheetId): void {
+export function releaseStylesheet(
+  id: StylesheetId,
+  target: Document = document
+): void {
+  if (target !== document) {
+    releaseForeignStylesheet(id, target);
+    return;
+  }
+
   if (!('adoptedStyleSheets' in document)) return;
 
   if (!gInjectedStylesheets?.[id]) return;

@@ -148,6 +148,9 @@ export function showVariantsPanel(
 ): void {
   const keyboard = VirtualKeyboard.singleton;
   if (!keyboard) return;
+  // The window the keyboard is rendered in. It may be the top window if the
+  // keyboard was created in a same-origin iframe.
+  const kbdWindow = keyboard.container?.ownerDocument.defaultView ?? window;
   const keycap = parentKeycap(element);
   let variantDef: string | (string | Partial<VirtualKeyboardKeycap>)[] = '';
   if (window.mathVirtualKeyboard.isShifted) {
@@ -231,7 +234,7 @@ export function showVariantsPanel(
     const left = Math.max(
       0,
       Math.min(
-        window.innerWidth - variantPanel.offsetWidth,
+        kbdWindow.innerWidth - variantPanel.offsetWidth,
         (position.left + position.right - variantPanel.offsetWidth) / 2
       )
     );
@@ -288,7 +291,7 @@ export function showVariantsPanel(
       );
 
       if (keyboard.getKeycap(keycap?.id)?.stickyVariantPanel) {
-        window.addEventListener(
+        kbdWindow.addEventListener(
           'pointerdown',
           (ev) => {
             if (!(ev.target instanceof Node)) return;
@@ -300,7 +303,7 @@ export function showVariantsPanel(
           { signal }
         );
       } else {
-        window.addEventListener(
+        kbdWindow.addEventListener(
           'pointercancel',
           () => {
             hideVariantsPanel();
@@ -309,7 +312,7 @@ export function showVariantsPanel(
           { signal }
         );
 
-        window.addEventListener(
+        kbdWindow.addEventListener(
           'pointerup',
           () => {
             hideVariantsPanel();

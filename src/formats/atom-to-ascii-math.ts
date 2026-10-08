@@ -157,12 +157,9 @@ function joinAsciiMath(xs: string[]): string {
   let result = '';
   for (const x of xs) {
     const last = result[result.length - 1];
-    if (
-      last !== undefined &&
-      ((/\d$/.test(last) && /^\d/.test(x)) ||
-        (/[a-zA-Z]$/.test(last) && /^[a-zA-Z]/.test(x)))
-    )
-      result += ' ';
+    // Only separate adjoining numbers (e.g. `1^2 3^4`): adjoining letters
+    // (e.g. `xy`) are left unseparated.
+    if (last !== undefined && /\d$/.test(last) && /^\d/.test(x)) result += ' ';
 
     result += x;
   }

@@ -365,8 +365,9 @@ export function makeEditToolbar(
 
   const availableActions: string[] = [];
 
+  availableActions.push('undo', 'redo');
   if (mathfield.selectionIsCollapsed)
-    availableActions.push('undo', 'redo', 'pasteFromClipboard');
+    availableActions.push('pasteFromClipboard');
   else {
     availableActions.push(
       'cutToClipboard',
@@ -376,12 +377,12 @@ export function makeEditToolbar(
   }
 
   const actionsMarkup = {
-    undo: `<div class='action ${mathfield.canUndo === false ? 'disabled' : ''}'
+    undo: `<div class='action'
           data-command='"undo"'
           data-tooltip='${l10n('tooltip.undo')}'>
           <svg><use xlink:href='#svg-undo' /></svg>
       </div>`,
-    redo: `<div class='action ${mathfield.canRedo === false ? 'disabled' : ''}'
+    redo: `<div class='action'
           data-command='"redo"'
           data-tooltip='${l10n('tooltip.redo')}'>
           <svg><use xlink:href='#svg-redo' /></svg>
@@ -471,15 +472,24 @@ function makeSyntheticKeycap(element: HTMLElement): void {
   }
 }
 
-function injectStylesheets(): void {
-  injectStylesheet('virtual-keyboard');
-  injectStylesheet('core');
+// The document each keyboard injected its stylesheets in: this is the document
+// of its container, which is not the current document if the keyboard was
+// created in a same-origin iframe and is displayed in the top-level document.
+const gStylesheetDocuments = new WeakMap<VirtualKeyboard, Document>();
+
+function injectStylesheets(keyboard: VirtualKeyboard): void {
+  const target = keyboard.container?.ownerDocument ?? document;
+  gStylesheetDocuments.set(keyboard, target);
+  injectStylesheet('virtual-keyboard', target);
+  injectStylesheet('core', target);
   void loadFonts();
 }
 
-export function releaseStylesheets(): void {
-  releaseStylesheet('core');
-  releaseStylesheet('virtual-keyboard');
+export function releaseStylesheets(keyboard: VirtualKeyboard): void {
+  const target = gStylesheetDocuments.get(keyboard) ?? document;
+  gStylesheetDocuments.delete(keyboard);
+  releaseStylesheet('core', target);
+  releaseStylesheet('virtual-keyboard', target);
 }
 
 const SVG_ICONS = `<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
@@ -550,7 +560,7 @@ const SVG_ICONS = `<svg xmlns="http://www.w3.org/2000/svg" style="display: none;
 export function makeKeyboardElement(keyboard: VirtualKeyboard): HTMLDivElement {
   keyboard.resetKeycapRegistry();
 
-  injectStylesheets();
+  injectStylesheets(keyboard);
 
   const result = document.createElement('div');
   result.className = 'ML__keyboard';

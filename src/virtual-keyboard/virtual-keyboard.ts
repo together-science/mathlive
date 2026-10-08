@@ -39,12 +39,26 @@ import { Style } from '../public/core-types';
 import { deepActiveElement } from '../ui/events/utils';
 import { _Mathfield } from 'editor-mathfield/mathfield-private';
 
+function getTopDocumentBody(): HTMLElement {
+  // `window.top` is a foreign (cross-origin) window when this browsing
+  // context can't reach it, in which case accessing `.document` throws.
+  // Fall back to the current document's body: this is the "current
+  // browsing context (iframe)" the `sandboxed` keyboard policy is
+  // documented to render into when it can't reach the top-level page.
+  try {
+    return window.top?.document.body ?? document.body;
+  } catch {
+    return document.body;
+  }
+}
+
 export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
   private _visible: boolean;
   private _element?: HTMLDivElement;
   private _rebuilding: boolean;
   private readonly observer: ResizeObserver;
   private originalContainerBottomPadding: string | null = null;
+  private body = getTopDocumentBody();
 
   private connectedMathfieldWindow: Window | undefined;
   private readonly listeners: {
@@ -53,7 +67,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
 
   private keycapRegistry: Record<string, Partial<VirtualKeyboardKeycap>> = {};
 
-  latentLayer: string;
+  latentLayer: string = '';
 
   get currentLayer(): string {
     return this._element?.querySelector('.MLK__layer.is-visible')?.id ?? '';
@@ -211,7 +225,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
 
   private _container: HTMLElement | undefined | null;
   get container(): HTMLElement | null {
-    if (this._container === undefined) return window.document.body;
+    if (this._container === undefined) return this.body;
     return this._container;
   }
   set container(value: HTMLElement | null) {
@@ -235,9 +249,9 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
     return this._singleton;
   }
 
-  private _style: Style;
+  private _style?: Style;
   get style(): Style {
-    return this._style;
+    return this._style!;
   }
 
   constructor() {
@@ -351,7 +365,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
     if (!this._element) return;
     // Adjust the keyboard height
     const h = this.boundingRect.height;
-    if (this.container === document.body) {
+    if (this.container === this.body) {
       this._element.style.setProperty(
         '--_keyboard-height',
         `calc(${h}px + var(--_padding-top) + var(--_padding-bottom))`
@@ -474,7 +488,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
       )[0] as HTMLElement;
       if (plate) this.observer.observe(plate);
 
-      if (container === window.document.body) {
+      if (container === this.body) {
         const padding = container.style.paddingBottom;
         this.originalContainerBottomPadding = padding;
         const keyboardHeight = plate.offsetHeight - 1;
@@ -541,7 +555,7 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
       window.removeEventListener('contextmenu', this, { capture: true });
       hideVariantsPanel();
 
-      releaseStylesheets();
+      releaseStylesheets(this);
 
       this._element?.remove();
       this._element = undefined;
@@ -835,8 +849,8 @@ export class VirtualKeyboard implements VirtualKeyboardInterface, EventTarget {
     el.classList.toggle('is-math-mode', mf.mode === 'math');
     el.classList.toggle('is-text-mode', mf.mode === 'text');
 
-    el.classList.toggle('can-undo', mf.canUndo);
-    el.classList.toggle('can-redo', mf.canRedo);
+    el.classList.toggle('can-undo', true /*mf.canUndo*/);
+    el.classList.toggle('can-redo', true /*mf.canRedo*/);
     el.classList.toggle('can-copy', !mf.selectionIsCollapsed);
     el.classList.toggle('can-cut', !mf.selectionIsCollapsed); // @fixme: Should check if readonly
     el.classList.toggle('can-paste', true);
