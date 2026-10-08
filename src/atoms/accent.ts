@@ -119,8 +119,14 @@ export class AccentAtom extends Atom {
     // for any existing margin, then add 2*skew for italic correction.
     // We use 2*skew because the accent is centered, so adding to marginLeft
     // effectively shifts the accent to the right by half that amount.
+    // Fork: an SVG accent (\overparen, \widehat...) has no intrinsic width
+    // (its box width is 0) and stretches to 100% of the stack, which is
+    // already centered with `ML__center`. Adding half the base width as a
+    // margin would push it to the right edge, so skip the centering term.
     const accentMargin =
-      (base.width - accentBox!.width) / 2 + base.left + 2 * skew;
+      (this.svgAccent ? 0 : (base.width - accentBox!.width) / 2) +
+      base.left +
+      2 * skew;
 
     accentBox = new VBox({
       shift: 0,
