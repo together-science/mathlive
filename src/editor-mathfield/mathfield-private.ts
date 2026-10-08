@@ -934,9 +934,25 @@ If you are using Vue, this may be because you are using the runtime-only build o
           // Prevent the blur/focus cycle from triggering onBlur/onFocus
           // which would disconnect/reconnect the virtual keyboard
           this.focusBlurInProgress = true;
-          this.keyboardDelegate.blur();
-          this.keyboardDelegate.focus();
-          this.focusBlurInProgress = false;
+          // Fork: this blur/focus cycle is an internal workaround, but the
+          // DOM events it generates (blur, focusout, focus, focusin) reach the
+          // host's listeners, which take them for a real loss of focus. Keep
+          // them from leaking out. The events are dispatched synchronously.
+          const abortController = new AbortController();
+          const swallowEvent = (evt: Event) => evt.stopImmediatePropagation();
+          for (const type of ['blur', 'focusout', 'focus', 'focusin']) {
+            this.host?.addEventListener(type, swallowEvent, {
+              capture: true,
+              signal: abortController.signal,
+            });
+          }
+          try {
+            this.keyboardDelegate.blur();
+            this.keyboardDelegate.focus();
+          } finally {
+            abortController.abort();
+            this.focusBlurInProgress = false;
+          }
         }
         break;
 
