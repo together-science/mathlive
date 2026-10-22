@@ -77,6 +77,38 @@ import { ArrayAtom } from 'atoms/array';
 //     return true;
 // }
 
+const STYLE_GROUP_COMMANDS = new Set([
+  '\\displaystyle',
+  '\\textstyle',
+  '\\scriptstyle',
+  '\\scriptscriptstyle',
+]);
+
+/**
+ * `\displaystyle`, `\textstyle`, etc... capture the rest of the expression
+ * in their body. Deleting the group atom itself would delete the entire
+ * expression that follows, so the delete should act on its content instead.
+ *
+ * If `atom` is such a group with some content, move the position to the
+ * start (forward) or end (backward) of its body and return true.
+ */
+function enterStyleGroup(
+  model: _Model,
+  direction: 'forward' | 'backward',
+  atom: Atom
+): boolean {
+  // The body always contains a leading 'first' atom: only enter the group if
+  // there is some actual content
+  if (!STYLE_GROUP_COMMANDS.has(atom.command) || (atom.body?.length ?? 0) < 2)
+    return false;
+
+  model.position =
+    direction === 'forward'
+      ? model.offsetOf(atom.body![0])
+      : model.offsetOf(atom.lastChild);
+  return true;
+}
+
 /**
  * Handle special cases when deleting an atom with a collapsed selection as
  * per the list below:
@@ -403,6 +435,9 @@ export function deleteBackward(model: _Model): boolean {
     () => {
       let target: Atom | null = model.at(model.position);
 
+      while (target && enterStyleGroup(model, 'backward', target))
+        target = model.at(model.position);
+
       if (target && onDelete(model, 'backward', target)) return;
 
       if (target?.isFirstSibling) {
@@ -458,6 +493,9 @@ export function deleteForward(model: _Model): boolean {
     { content: true, selection: true, type: 'deleteContentForward' },
     () => {
       let target: Atom | undefined = model.at(model.position).rightSibling;
+
+      while (target && enterStyleGroup(model, 'forward', target))
+        target = model.at(model.position).rightSibling;
 
       if (target && onDelete(model, 'forward', target)) return;
 
